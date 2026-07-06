@@ -13,7 +13,11 @@ const ICONS_256 = [
 ];
 const GUIDE_H512 = ["guide_idle.png", "guide_happy.png", "guide_point.png"];
 const WIDTH_1024 = ["title_frame.png", "map_chuo.png", "map_settaya.png"];
-const CARD_W768 = ["card_aore.png", "card_yamamoto.png", "card_kawai.png", "card_kina_saffron.png", "card_yoshinogawa.png"];
+const CARD_W768 = [
+  "card_aore.png", "card_yamamoto.png", "card_kawai.png", "card_kina_saffron.png", "card_yoshinogawa.png",
+  "card_sensai.png", "card_nyozekura.png", "card_honmaru.png", "card_yukyuzan.png",
+  "card_koshimurasaki.png", "card_hasegawa.png"
+];
 
 async function processFile(filename, resizeOpts) {
   const origPath = path.join(ORIGINAL, filename);
