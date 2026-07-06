@@ -228,6 +228,53 @@
   .nav-btn.active img{ opacity:1; }
   .nav-btn:disabled{ opacity:0.35; }
 
+  /* ---------- Book subtabs ---------- */
+  .book-subtabs{ display:flex; gap:8px; padding:10px 14px 4px; }
+  .book-subtab{
+    flex:1; text-align:center; padding:8px 4px; border-radius:10px; font-size:13px; font-weight:700;
+    background:var(--paper-dark); color:var(--ink-soft); cursor:pointer; box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .book-subtab.active{ background:var(--indigo); color:#fff; }
+
+  /* ---------- Title badge (home) ---------- */
+  .title-badge{
+    margin:0 16px 4px; text-align:center; font-size:12px; font-weight:700; color:var(--vermillion);
+  }
+
+  /* ---------- Shop ---------- */
+  .shop-topbar-coin{ display:flex; justify-content:center; padding:8px 0 2px; font-size:13px; }
+  .shop-grid{ display:flex; flex-direction:column; gap:10px; padding:10px 14px; }
+  .shop-card{
+    background:var(--card-bg); border-radius:12px; padding:12px 14px; box-shadow: var(--shadow);
+  }
+  .shop-name{ font-weight:700; font-size:14px; margin-bottom:4px; }
+  .shop-desc{ font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin-bottom:8px; }
+  .shop-count{ font-size:11.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .shop-buy-btn{
+    background:var(--vermillion); color:#fff; border:none; border-radius:999px; padding:8px 18px;
+    font-weight:700; font-size:12.5px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;
+  }
+  .shop-buy-btn:disabled{ background:#a9a186; color:#eee; }
+  .shop-buy-btn.owned{ background:#5a8a4a; }
+  .inline-coin{ width:14px; height:14px; vertical-align:-2px; }
+
+  /* ---------- Achievements / Titles ---------- */
+  .ach-list, .title-list{ display:flex; flex-direction:column; gap:8px; padding:10px 14px; }
+  .ach-item, .title-item{
+    background:var(--card-bg); border-radius:12px; padding:10px 14px; box-shadow: inset 0 0 0 1px #d8c497;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .ach-item.locked, .title-item.locked{ opacity:0.5; }
+  .ach-item .name, .title-item .name{ font-weight:700; font-size:13.5px; margin-bottom:2px; }
+  .ach-item .desc{ font-size:11.5px; color:var(--ink-soft); }
+  .ach-item .mark{ font-size:20px; flex:none; }
+  .title-select-btn{
+    background:var(--indigo); color:#fff; border:none; border-radius:999px; padding:6px 14px;
+    font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap; flex:none;
+  }
+  .title-select-btn.selected{ background:#5a8a4a; }
+  .title-select-btn:disabled{ background:#a9a186; color:#eee; }
+
   /* ---------- Discovery overlay ---------- */
   #discovery-overlay{
     position:absolute; inset:0; background:rgba(20,14,8,0.78); z-index:50;
@@ -249,7 +296,7 @@
   }
   .discover-title{ color:#fff2d6; font-size:20px; font-weight:900; margin:6px 0 2px; text-align:center; }
   .discover-sub{ color:#fff2d6; font-size:14px; margin-bottom:10px; text-align:center; }
-  .discover-rewards{ display:flex; gap:14px; margin-bottom:16px; }
+  .discover-rewards{ display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; justify-content:center; }
   .reward-pill{
     background:#fbf4e2; border-radius:999px; padding:6px 14px; font-weight:700; font-size:13px;
     display:flex; align-items:center; gap:6px; color:var(--ink);
@@ -302,6 +349,8 @@
       <div class="speech-bubble" id="home-guide-text">今日はどこへ探検に行こうか！</div>
     </div>
 
+    <div class="title-badge" id="home-title-badge">称号：みならい探検家</div>
+
     <div class="sim-badge" id="home-sim-badge" style="display:none;">シミュレーションモード中</div>
 
     <div class="in-range-banner" id="home-inrange-banner" style="display:none;">この場所であやしい気配…その場にとどまろう</div>
@@ -338,9 +387,29 @@
   <!-- BOOK -->
   <div class="screen" id="screen-book">
     <div class="topbar"><h1>図鑑</h1><div></div></div>
-    <div class="book-progress" id="book-progress">発見数：0 / 0</div>
-    <div class="book-grid" id="book-grid"></div>
-    <div class="book-detail" id="book-detail" style="display:none;"></div>
+    <div class="book-subtabs" id="book-subtabs">
+      <div class="book-subtab active" data-sub="book">図鑑</div>
+      <div class="book-subtab" data-sub="ach">実績</div>
+      <div class="book-subtab" data-sub="title">称号</div>
+    </div>
+    <div id="book-panel-book">
+      <div class="book-progress" id="book-progress">発見数：0 / 0</div>
+      <div class="book-grid" id="book-grid"></div>
+      <div class="book-detail" id="book-detail" style="display:none;"></div>
+    </div>
+    <div id="book-panel-ach" style="display:none;">
+      <div class="ach-list" id="ach-list"></div>
+    </div>
+    <div id="book-panel-title" style="display:none;">
+      <div class="title-list" id="title-list"></div>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="screen" id="screen-shop">
+    <div class="topbar"><h1>店</h1><div></div></div>
+    <div class="shop-topbar-coin"><div class="stat-pill"><img src="assets/coin.png" alt="coin">所持コイン：<span id="shop-coins">0</span></div></div>
+    <div class="shop-grid" id="shop-grid"></div>
   </div>
 
   <!-- SETTINGS -->
@@ -372,7 +441,7 @@
       <h2>このアプリについて</h2>
       <div class="settings-note">
         位置情報は端末内だけで処理し、外部には送信しません。進捗はブラウザのlocalStorageに保存されます。<br>
-        Phase 1（MVP）：中心部・摂田屋の2地区、5スポット対応。
+        現在：中心部・摂田屋の2地区、5スポット対応。ショップ・実績・称号・デイリーストリークに対応。
       </div>
     </div>
   </div>
@@ -382,7 +451,7 @@
     <button class="nav-btn active" data-screen="home"><img src="assets/ic_home.png">ホーム</button>
     <button class="nav-btn" data-screen="map"><img src="assets/ic_map.png">マップ</button>
     <button class="nav-btn" data-screen="book"><img src="assets/ic_book.png">図鑑</button>
-    <button class="nav-btn" disabled title="Phase3で実装予定"><img src="assets/ic_shop.png">店</button>
+    <button class="nav-btn" data-screen="shop"><img src="assets/ic_shop.png">店</button>
     <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png">設定</button>
   </div>
 
@@ -408,7 +477,7 @@
   /* ============================================================
    * 0. データ（fetch失敗時のインラインフォールバック）
    * ========================================================== */
-  var INLINE_POI_DATA = {"_note":"緯度経度は実測値（国土地理院アドレスマッチング＋各施設公式サイト等で確認）。史実解説は簡易・要事実確認。","districts":[{"id":"chuo","name":"長岡（中心部）","center":{"lat":37.450403,"lng":138.852175},"unlockLevel":1},{"id":"settaya","name":"摂田屋","center":{"lat":37.416123,"lng":138.840705},"unlockLevel":1}],"pois":[{"id":"aore","districtId":"chuo","name":"アオーレ長岡","lat":37.446645,"lng":138.851112,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":30,"category":"建築・公共","treasure":{"title":"アオーレ長岡（シティホールプラザ）","era":"2012年開館","blurb":"隈研吾の設計。市役所・アリーナ・屋根付き広場ナカドマが一体化した、市民が集う複合施設。（※要事実確認）","image":"card_aore.png"}},{"id":"yamamoto","districtId":"chuo","name":"山本五十六記念館","lat":37.452419,"lng":138.851395,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"山本五十六記念館","era":"生誕1884年（長岡出身）","blurb":"長岡出身の海軍軍人・山本五十六の生涯を伝える記念館。生家跡や関連資料を展示する。（※要事実確認）","image":"card_yamamoto.png"}},{"id":"kawai","districtId":"chuo","name":"河井継之助記念館","lat":37.452145,"lng":138.854019,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"河井継之助記念館","era":"幕末（長岡藩家老）","blurb":"幕末の長岡藩家老・河井継之助の思想と生涯を紹介する記念館。北越戊辰戦争ゆかりの地。（※要事実確認）","image":"card_kawai.png"}},{"id":"kina_saffron","districtId":"settaya","name":"機那サフラン酒本舗（鏝絵の蔵）","lat":37.415909,"lng":138.840512,"radius":75,"rarity":"rare","coinsFirst":220,"coinsRepeat":10,"xp":50,"category":"醸造・文化財","treasure":{"title":"機那サフラン酒本舗","era":"明治期〜","blurb":"鏝絵（こてえ）で飾られた土蔵で知られる、醸造の町・摂田屋を象徴する史跡。（※要事実確認）","image":"card_kina_saffron.png"}},{"id":"yoshinogawa","districtId":"settaya","name":"吉乃川 醸蔵","lat":37.416336,"lng":138.840897,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"吉乃川 醸蔵","era":"創業1548年と伝わる","blurb":"摂田屋に蔵を構える老舗酒蔵・吉乃川の醸造施設。長岡の酒造りの歴史を今に伝える。（※要事実確認）","image":"card_yoshinogawa.png"}}]};
+  var INLINE_POI_DATA = {"_note":"緯度経度は実測値（国土地理院アドレスマッチング＋各施設公式サイト等で確認）。史実解説はWebSearchで各施設公式サイト・自治体観光サイト等を確認して記載（2026-07時点）。","districts":[{"id":"chuo","name":"長岡（中心部）","center":{"lat":37.450403,"lng":138.852175},"unlockLevel":1},{"id":"settaya","name":"摂田屋","center":{"lat":37.416123,"lng":138.840705},"unlockLevel":1}],"pois":[{"id":"aore","districtId":"chuo","name":"アオーレ長岡","lat":37.446645,"lng":138.851112,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":30,"category":"建築・公共","treasure":{"title":"アオーレ長岡（シティホールプラザ）","era":"2012年開館","blurb":"2012年開館。建築家・隈研吾が設計した、市役所本庁舎とアリーナ、屋根付き広場「ナカドマ」が一体になった全国初の複合施設。愛称は長岡弁で「会いましょう」を意味する「会おうれ」に由来し、市民が日常的に集う交流拠点となっている。","image":"card_aore.png"}},{"id":"yamamoto","districtId":"chuo","name":"山本五十六記念館","lat":37.452419,"lng":138.851395,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"山本五十六記念館","era":"生誕1884年（長岡出身）","blurb":"長岡出身の海軍軍人・山本五十六の遺品や資料を通じてその人柄と生涯を伝える記念館。日本海海戦で被弾した際の軍服や搭乗機の一部などが並ぶ。近くの生家跡には、空襲で焼失した生家を復元した建物と胸像が建てられている。","image":"card_yamamoto.png"}},{"id":"kawai","districtId":"chuo","name":"河井継之助記念館","lat":37.452145,"lng":138.854019,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"河井継之助記念館","era":"幕末（長岡藩家老）","blurb":"2006年開館。幕末の長岡藩首席家老・河井継之助の生涯を伝える記念館で、ゆかりの品約30点を展示する。武装中立を掲げながらも北越戊辰戦争へと進んだ継之助の足跡を、愛用のガトリング砲や旅日記「塵壺」などから辿ることができる。","image":"card_kawai.png"}},{"id":"kina_saffron","districtId":"settaya","name":"機那サフラン酒本舗（鏝絵の蔵）","lat":37.415909,"lng":138.840512,"radius":75,"rarity":"rare","coinsFirst":220,"coinsRepeat":10,"xp":50,"category":"醸造・文化財","treasure":{"title":"機那サフラン酒本舗","era":"明治期〜","blurb":"創業者・吉澤仁太郎が薬用酒「機那サフラン酒」で財を成し、その富を注いで築いた土蔵群が残る史跡。左官職人・河上伊吉が手がけた極彩色の鏝絵で飾られた蔵は「日本一の鏝絵」と讃えられ、国の登録有形文化財に指定されている。","image":"card_kina_saffron.png"}},{"id":"yoshinogawa","districtId":"settaya","name":"吉乃川 醸蔵","lat":37.416336,"lng":138.840897,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"吉乃川 醸蔵","era":"創業1548年と伝わる","blurb":"1548年（天文17年）創業と伝わる老舗酒蔵・吉乃川の酒ミュージアム。大正期に建てられた瓶詰め工場「常倉」（国登録有形文化財）を改装し、2019年にオープンした。三角形に組まれたトラス構造の天井が特徴で、酒造りの歴史を学べる展示やSAKEバーが楽しめる。","image":"card_yoshinogawa.png"}}]};
 
   var DISTRICT_MAP_IMG = { chuo:"assets/map_chuo.png", settaya:"assets/map_settaya.png" };
 
@@ -428,12 +497,36 @@
       found: [],
       visits: {},     // poiId -> { count, lastDate }
       streak: 0,
-      inventory: {},
-      settings: { mode: "gps", simLat: null, simLng: null }
+      inventory: {    // Phase3: purchasable upgrades / consumables
+        radarBoost: false,
+        nearestHint: false,
+        doubleCoinTicket: 0,
+        treasureReplayTicket: 0
+      },
+      settings: { mode: "gps", simLat: null, simLng: null },
+      // Phase3 additions（後方互換：欠けていてもdefaultSaveの値で補完される）
+      totalCoinsEarned: 0,
+      achievements: [],          // unlocked achievement ids
+      selectedTitle: "t1",       // currently displayed title id
+      shopPurchasedOnce: false,
+      lastDiscoveryDate: null,   // yyyy-mm-dd（ストリーク計算用）
+      dailyMission: { date: null, claimed: false }
     };
   }
 
   var save = loadSave();
+
+  function mergeSave(d, parsed){
+    // 欠けているフィールドはdefaultSave()の値で補完し、既存セーブを壊さない
+    return Object.assign(d, parsed, {
+      settings: Object.assign(d.settings, parsed.settings || {}),
+      inventory: Object.assign(d.inventory, parsed.inventory || {}),
+      dailyMission: Object.assign(d.dailyMission, parsed.dailyMission || {}),
+      visits: parsed.visits || {},
+      found: parsed.found || [],
+      achievements: parsed.achievements || []
+    });
+  }
 
   function loadSave(){
     try{
@@ -442,11 +535,7 @@
       var parsed = JSON.parse(raw);
       var d = defaultSave();
       // shallow-merge with defaults so older/partial saves still work
-      return Object.assign(d, parsed, {
-        settings: Object.assign(d.settings, parsed.settings || {}),
-        visits: parsed.visits || {},
-        found: parsed.found || []
-      });
+      return mergeSave(d, parsed);
     }catch(e){
       console.warn("save load failed", e);
       return defaultSave();
@@ -593,28 +682,69 @@
    * ========================================================== */
   var lastDistances = []; // sorted [{poi, dist}]
 
+  function prevDateStr(dateStr){
+    var parts = dateStr.split("-").map(Number);
+    var d = new Date(parts[0], parts[1]-1, parts[2]);
+    d.setDate(d.getDate()-1);
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+
+  // 本日はじめての発見イベントかどうかを判定し、ストリーク＆デイリーミッションを更新する。
+  // 本日すでに登録済みならnull（ボーナスなし）を返す。
+  function registerDailyActivity(dateStr){
+    if(save.lastDiscoveryDate === dateStr) return null;
+    if(save.lastDiscoveryDate === prevDateStr(dateStr)){
+      save.streak += 1;
+    } else {
+      save.streak = 1;
+    }
+    save.lastDiscoveryDate = dateStr;
+    var streakBonus = Math.min(save.streak * 5, 50);
+    var missionBonus = 20; // デイリーミッション「今日1スポット発見」
+    save.dailyMission = { date: dateStr, claimed: true };
+    return { streak: save.streak, streakBonus: streakBonus, missionBonus: missionBonus, total: streakBonus + missionBonus };
+  }
+
+  function consumeDoubleCoin(){
+    if(save.inventory.doubleCoinTicket > 0){
+      save.inventory.doubleCoinTicket -= 1;
+      return true;
+    }
+    return false;
+  }
+
   function attemptDiscovery(poi){
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
+    var dailyBonus = registerDailyActivity(dateStr);
+    var bonusCoins = dailyBonus ? dailyBonus.total : 0;
 
     if(save.found.indexOf(poi.id) === -1){
       // 初回発見
       save.found.push(poi.id);
       save.visits[poi.id] = { count: 1, lastDate: dateStr };
       var coinsFirst = poi.coinsFirst;
-      save.coins += coinsFirst;
+      var doubled = consumeDoubleCoin();
+      if(doubled) coinsFirst *= 2;
+      save.coins += coinsFirst + bonusCoins;
+      save.totalCoinsEarned += coinsFirst + bonusCoins;
       var leveled = addXp(poi.xp);
       persist();
-      showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled });
+      showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled, doubled: doubled, bonus: dailyBonus });
+      checkAchievements();
       renderAll();
     } else if(!visit || visit.lastDate !== dateStr){
       // 再訪（本日未取得）
       var count = (visit ? visit.count : 0) + 1;
       var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
-      save.coins += repeatCoins;
+      var doubled2 = consumeDoubleCoin();
+      if(doubled2) repeatCoins *= 2;
+      save.coins += repeatCoins + bonusCoins;
+      save.totalCoinsEarned += repeatCoins + bonusCoins;
       save.visits[poi.id] = { count: count, lastDate: dateStr };
       persist();
-      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins });
+      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: doubled2, bonus: dailyBonus });
+      checkAchievements();
       renderAll();
     }
     // 本日すでに取得済みなら何もしない（アイドル）
@@ -629,12 +759,25 @@
     var levelBanner = document.getElementById("levelup-banner");
 
     chestImg.src = "assets/chest_closed.png";
-    title.textContent = opts.first ? "発見！" : "再訪の証";
-    sub.textContent = opts.first ? poi.treasure.title + " を図鑑に登録した！" : poi.name + " にまた来た！";
+    if(opts.replay){
+      title.textContent = "お宝再鑑賞";
+      sub.textContent = poi.treasure.title + " を再び開いた！";
+    } else {
+      title.textContent = opts.first ? "発見！" : "再訪の証";
+      sub.textContent = opts.first ? poi.treasure.title + " を図鑑に登録した！" : poi.name + " にまた来た！";
+    }
     levelBanner.style.display = opts.leveled ? "block" : "none";
 
-    var rewardHtml = '<div class="reward-pill"><img src="assets/coin.png">+' + opts.coins + '</div>';
-    if(opts.xp){ rewardHtml += '<div class="reward-pill">XP +' + opts.xp + '</div>'; }
+    var rewardHtml = "";
+    if(!opts.replay){
+      rewardHtml += '<div class="reward-pill"><img src="assets/coin.png">+' + opts.coins + '</div>';
+      if(opts.xp){ rewardHtml += '<div class="reward-pill">XP +' + opts.xp + '</div>'; }
+      if(opts.doubled){ rewardHtml += '<div class="reward-pill">ダブルコイン発動！</div>'; }
+      if(opts.bonus){
+        rewardHtml += '<div class="reward-pill">デイリー +' + opts.bonus.missionBonus + '</div>';
+        rewardHtml += '<div class="reward-pill">ストリーク' + opts.bonus.streak + '日 +' + opts.bonus.streakBonus + '</div>';
+      }
+    }
     rewards.innerHTML = rewardHtml;
 
     setGuideMood("happy");
@@ -686,9 +829,10 @@
     distances.sort(function(a,b){ return a.dist - b.dist; });
     lastDistances = distances;
 
+    var radarBonus = hasItem("radarBoost") ? RADAR_BONUS_M : 0;
     var inRange = null;
     for(var i=0;i<distances.length;i++){
-      if(distances[i].dist <= distances[i].poi.radius){ inRange = distances[i]; break; }
+      if(distances[i].dist <= (distances[i].poi.radius + radarBonus)){ inRange = distances[i]; break; }
     }
 
     var banner = document.getElementById("home-inrange-banner");
@@ -723,7 +867,8 @@
       btn.classList.toggle("active", btn.getAttribute("data-screen") === name);
     });
     if(name === "map") renderMap();
-    if(name === "book") renderBook();
+    if(name === "book") showBookSubtab(currentBookSubtab);
+    if(name === "shop") renderShop();
     if(name === "settings") renderSettings();
     if(name === "home") renderHomeFull();
   }
@@ -742,11 +887,25 @@
     }
   }
 
+  var toastQueue = [];
+  var toastBusy = false;
+
   function toast(msg){
+    toastQueue.push(msg);
+    processToastQueue();
+  }
+
+  function processToastQueue(){
+    if(toastBusy || !toastQueue.length) return;
+    toastBusy = true;
+    var msg = toastQueue.shift();
     var t = document.getElementById("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+    setTimeout(function(){
+      t.classList.remove("show");
+      setTimeout(function(){ toastBusy = false; processToastQueue(); }, 250);
+    }, 1800);
   }
 
   /* ============================================================
@@ -760,7 +919,16 @@
     document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
     document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
     document.getElementById("home-sim-badge").style.display = (save.settings.mode === "simulate") ? "block" : "none";
+    document.getElementById("home-title-badge").textContent = "称号：" + getSelectedTitleName();
     renderHomeNearest();
+  }
+
+  function distanceBucket(d){
+    if(d <= 100) return "100m以内";
+    if(d <= 300) return "300m以内";
+    if(d <= 800) return "800m以内";
+    if(d <= 2000) return "2km以内";
+    return "2km以上";
   }
 
   function renderHomeNearest(){
@@ -770,6 +938,7 @@
     var need = xpForLevel(save.level);
     document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
     document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
+    document.getElementById("home-title-badge").textContent = "称号：" + getSelectedTitleName();
 
     var nameEl = document.getElementById("home-nearest-name");
     var distEl = document.getElementById("home-nearest-dist");
@@ -791,11 +960,20 @@
     }
     if(!target) target = lastDistances[0];
 
-    nameEl.textContent = target.poi.name;
     var d = target.dist;
-    distEl.textContent = (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km") + " 先";
-    badgeEl.style.display = "inline-block";
     var isFound = save.found.indexOf(target.poi.id) !== -1;
+    var hintUnlocked = hasItem("nearestHint");
+
+    if(isFound || hintUnlocked){
+      // 発見済み、または「最寄りヒント」購入済みなら正確な名前・距離を表示
+      nameEl.textContent = target.poi.name;
+      distEl.textContent = (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km") + " 先";
+    } else {
+      // 未発見＆未購入：おおまかな距離のみ（ショップ「最寄りヒント」で正確な位置が分かる）
+      nameEl.textContent = "？？？（未発見スポット）";
+      distEl.textContent = distanceBucket(d) + "・方角はコンパスを頼りに";
+    }
+    badgeEl.style.display = "inline-block";
     badgeEl.textContent = isFound ? "発見済み" : "未発見";
     badgeEl.className = "badge" + (isFound ? " found" : "");
 
@@ -924,16 +1102,103 @@
     var detail = document.getElementById("book-detail");
     detail.style.display = "block";
     if(found){
+      var replayCount = save.inventory.treasureReplayTicket || 0;
       detail.innerHTML =
         '<img src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
         '<h3>' + poi.treasure.title + '</h3>' +
         '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
-        '<p>' + poi.treasure.blurb + '</p>';
+        '<p>' + poi.treasure.blurb + '</p>' +
+        (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">お宝再鑑賞（所持：' + replayCount + '）</button>' : '');
+      var replayBtn = document.getElementById("btn-replay-treasure");
+      if(replayBtn){
+        replayBtn.addEventListener("click", function(){
+          if(save.inventory.treasureReplayTicket > 0){
+            save.inventory.treasureReplayTicket -= 1;
+            persist();
+            showDiscoveryOverlay(poi, { replay: true });
+            showBookDetail(poi, found);
+          }
+        });
+      }
     } else {
       detail.innerHTML =
         '<h3>？？？</h3><div class="era">未発見</div><p>現地に近づくと図鑑に登録されます。</p>';
     }
     detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* ============================================================
+   * 11b. UI: 実績／称号（図鑑タブ内のサブ切替）
+   * ========================================================== */
+  var currentBookSubtab = "book";
+
+  function showBookSubtab(name){
+    currentBookSubtab = name;
+    document.querySelectorAll(".book-subtab").forEach(function(t){
+      t.classList.toggle("active", t.getAttribute("data-sub") === name);
+    });
+    document.getElementById("book-panel-book").style.display = (name === "book") ? "block" : "none";
+    document.getElementById("book-panel-ach").style.display = (name === "ach") ? "block" : "none";
+    document.getElementById("book-panel-title").style.display = (name === "title") ? "block" : "none";
+    if(name === "book") renderBook();
+    if(name === "ach") renderAchievements();
+    if(name === "title") renderTitlesList();
+  }
+
+  function renderAchievements(){
+    var list = document.getElementById("ach-list");
+    list.innerHTML = "";
+    ACHIEVEMENTS.forEach(function(a){
+      var unlocked = save.achievements.indexOf(a.id) !== -1;
+      var item = document.createElement("div");
+      item.className = "ach-item" + (unlocked ? "" : " locked");
+      item.innerHTML =
+        '<div><div class="name">' + a.name + '</div><div class="desc">' + a.desc + '</div></div>' +
+        '<div class="mark">' + (unlocked ? "🏅" : "🔒") + '</div>';
+      list.appendChild(item);
+    });
+  }
+
+  function renderTitlesList(){
+    var list = document.getElementById("title-list");
+    list.innerHTML = "";
+    TITLES.forEach(function(t){
+      var unlocked = t.check(save);
+      var selected = save.selectedTitle === t.id;
+      var item = document.createElement("div");
+      item.className = "title-item" + (unlocked ? "" : " locked");
+      var btnHtml;
+      if(!unlocked){
+        btnHtml = '<button class="title-select-btn" disabled>未解放</button>';
+      } else if(selected){
+        btnHtml = '<button class="title-select-btn selected" disabled>選択中</button>';
+      } else {
+        btnHtml = '<button class="title-select-btn" data-title="' + t.id + '">選択する</button>';
+      }
+      item.innerHTML = '<div><div class="name">' + t.name + '</div></div>' + btnHtml;
+      list.appendChild(item);
+    });
+    Array.prototype.slice.call(list.querySelectorAll(".title-select-btn[data-title]")).forEach(function(btn){
+      btn.addEventListener("click", function(){ selectTitle(btn.getAttribute("data-title")); });
+    });
+  }
+
+  function selectTitle(id){
+    var t = TITLES.filter(function(x){ return x.id === id; })[0];
+    if(!t || !t.check(save)) return;
+    save.selectedTitle = id;
+    persist();
+    renderTitlesList();
+    renderHomeFull();
+    toast(t.name + " を称号に設定しました");
+  }
+
+  function getSelectedTitleName(){
+    var t = TITLES.filter(function(x){ return x.id === save.selectedTitle; })[0];
+    if(t && t.check(save)) return t.name;
+    // フォールバック：選択中の称号が未解放なら、解放済みの最上位称号を表示
+    var unlocked = TITLES.filter(function(x){ return x.check(save); });
+    return unlocked.length ? unlocked[unlocked.length-1].name : TITLES[0].name;
   }
 
   /* ============================================================
@@ -993,11 +1258,7 @@
       try{
         var parsed = JSON.parse(e.target.result);
         var d = defaultSave();
-        save = Object.assign(d, parsed, {
-          settings: Object.assign(d.settings, parsed.settings || {}),
-          visits: parsed.visits || {},
-          found: parsed.found || []
-        });
+        save = mergeSave(d, parsed);
         persist();
         applyMode();
         renderAll();
@@ -1019,12 +1280,143 @@
   }
 
   /* ============================================================
+   * 12b. ショップ／インベントリ
+   * ========================================================== */
+  var RADAR_BONUS_M = 25; // 「探知レーダー強化」購入時の判定半径ボーナス（m）
+
+  function hasItem(key){
+    return !!(save.inventory && save.inventory[key]);
+  }
+
+  var SHOP_ITEMS = [
+    {
+      id: "radarBoost", name: "探知レーダー強化", type: "permanent", price: 300,
+      desc: "スポットの発見判定範囲に+" + RADAR_BONUS_M + "mのボーナス。少し遠くからでもお宝の気配を感知できるようになる。（購入後は常時有効）"
+    },
+    {
+      id: "nearestHint", name: "最寄りヒント", type: "permanent", price: 250,
+      desc: "ホーム画面に、次に近い未発見スポットの名前と正確な距離を常時表示する。（購入後は常時有効）"
+    },
+    {
+      id: "doubleCoinTicket", name: "ダブルコイン券", type: "consumable", price: 80,
+      desc: "使用後、次に発見したときの獲得コインが2倍になる（1回で消費）。"
+    },
+    {
+      id: "treasureReplayTicket", name: "お宝再鑑賞券", type: "consumable", price: 50,
+      desc: "図鑑から、発見済みのお宝の発見演出をもう一度見られる（1回で消費）。"
+    }
+  ];
+
+  function buyItem(itemId){
+    var item = SHOP_ITEMS.filter(function(i){ return i.id === itemId; })[0];
+    if(!item) return;
+    if(item.type === "permanent" && hasItem(item.id)){
+      toast("すでに購入済みです");
+      return;
+    }
+    if(save.coins < item.price){
+      toast("コインが足りません");
+      return;
+    }
+    save.coins -= item.price;
+    if(item.type === "permanent"){
+      save.inventory[item.id] = true;
+    } else {
+      save.inventory[item.id] = (save.inventory[item.id] || 0) + 1;
+    }
+    save.shopPurchasedOnce = true;
+    persist();
+    checkAchievements();
+    renderShop();
+    renderHomeFull();
+    toast(item.name + " を購入しました！");
+  }
+
+  function renderShop(){
+    document.getElementById("shop-coins").textContent = save.coins;
+    var grid = document.getElementById("shop-grid");
+    grid.innerHTML = "";
+    SHOP_ITEMS.forEach(function(item){
+      var owned = item.type === "permanent" && hasItem(item.id);
+      var card = document.createElement("div");
+      card.className = "shop-card";
+      var countHtml = (item.type === "consumable")
+        ? '<div class="shop-count">所持：' + (save.inventory[item.id] || 0) + '個</div>' : '';
+      var btnHtml;
+      if(owned){
+        btnHtml = '<button class="shop-buy-btn owned" disabled>購入済み</button>';
+      } else {
+        btnHtml = '<button class="shop-buy-btn" data-item="' + item.id + '"' +
+          (save.coins < item.price ? ' disabled' : '') + '>購入（<img src="assets/coin.png" class="inline-coin" alt="coin">' + item.price + '）</button>';
+      }
+      card.innerHTML =
+        '<div class="shop-name">' + item.name + '</div>' +
+        '<div class="shop-desc">' + item.desc + '</div>' +
+        countHtml + btnHtml;
+      grid.appendChild(card);
+    });
+    Array.prototype.slice.call(grid.querySelectorAll(".shop-buy-btn[data-item]")).forEach(function(btn){
+      btn.addEventListener("click", function(){ buyItem(btn.getAttribute("data-item")); });
+    });
+  }
+
+  /* ============================================================
+   * 12c. 実績
+   * ========================================================== */
+  function isDistrictComplete(districtId){
+    if(!DATA) return false;
+    var ids = DATA.pois.filter(function(p){ return p.districtId === districtId; }).map(function(p){ return p.id; });
+    if(!ids.length) return false;
+    return ids.every(function(id){ return save.found.indexOf(id) !== -1; });
+  }
+
+  var ACHIEVEMENTS = [
+    { id: "first_discovery", name: "はじめての発見", desc: "はじめてお宝を発見した", check: function(s){ return s.found.length >= 1; } },
+    { id: "chuo_complete", name: "中心部コンプ", desc: "中心部の全スポットを発見した", check: function(){ return isDistrictComplete("chuo"); } },
+    { id: "settaya_complete", name: "摂田屋コンプ", desc: "摂田屋の全スポットを発見した", check: function(){ return isDistrictComplete("settaya"); } },
+    { id: "all_complete", name: "全スポット制覇", desc: "すべてのスポットを発見した", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
+    { id: "level5", name: "Lv5到達", desc: "レベル5に到達した", check: function(s){ return s.level >= 5; } },
+    { id: "level10", name: "Lv10到達", desc: "レベル10に到達した", check: function(s){ return s.level >= 10; } },
+    { id: "coins1000", name: "コイン収集家", desc: "累計コインを1000枚獲得した", check: function(s){ return s.totalCoinsEarned >= 1000; } },
+    { id: "first_purchase", name: "はじめてのお買い物", desc: "ショップで何かを購入した", check: function(s){ return !!s.shopPurchasedOnce; } },
+    { id: "streak3", name: "3日連続探検", desc: "3日連続でスポットを発見した", check: function(s){ return s.streak >= 3; } },
+    { id: "streak7", name: "一週間探検家", desc: "7日連続でスポットを発見した", check: function(s){ return s.streak >= 7; } }
+  ];
+
+  function checkAchievements(opts){
+    var silent = opts && opts.silent;
+    var changed = false;
+    ACHIEVEMENTS.forEach(function(a){
+      if(save.achievements.indexOf(a.id) === -1 && a.check(save)){
+        save.achievements.push(a.id);
+        changed = true;
+        if(!silent) toast("実績解除：" + a.name);
+      }
+    });
+    if(changed) persist();
+  }
+
+  /* ============================================================
+   * 12d. 称号（段階制・7段階）
+   * ========================================================== */
+  var TITLES = [
+    { id: "t1", name: "みならい探検家", check: function(){ return true; } },
+    { id: "t2", name: "まちなか探検見習い", check: function(s){ return s.found.length >= 1; } },
+    { id: "t3", name: "摂田屋通", check: function(s){ return s.found.length >= 2; } },
+    { id: "t4", name: "長岡さんぽ人", check: function(s){ return s.found.length >= 3; } },
+    { id: "t5", name: "郷土史コレクター", check: function(s){ return s.found.length >= 4; } },
+    { id: "t6", name: "長岡探検マスター見習い", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
+    { id: "t7", name: "長岡マスター", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length && s.streak >= 7; } }
+  ];
+
+  /* ============================================================
    * 13. 初期化
    * ========================================================== */
   function renderAll(){
     renderHomeFull();
     if(currentScreen === "map") renderMap();
-    if(currentScreen === "book") renderBook();
+    if(currentScreen === "book") showBookSubtab(currentBookSubtab);
+    if(currentScreen === "shop") renderShop();
     if(currentScreen === "settings") renderSettings();
   }
 
@@ -1046,6 +1438,10 @@
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
     });
 
+    document.querySelectorAll(".book-subtab").forEach(function(tab){
+      tab.addEventListener("click", function(){ showBookSubtab(tab.getAttribute("data-sub")); });
+    });
+
     document.getElementById("mode-btn-gps").addEventListener("click", function(){ setMode("gps"); });
     document.getElementById("mode-btn-sim").addEventListener("click", function(){ setMode("simulate"); });
 
@@ -1065,6 +1461,7 @@
     initBBoxes();
     wireEvents();
     applyMode();
+    checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     renderHomeFull();
     setInterval(tick, 1000);
   }
