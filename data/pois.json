@@ -1,0 +1,104 @@
+{
+  "_note": "Phase1 MVP用データ。緯度経度は仮値（各地区中心付近に配置）。史実解説は簡易・要事実確認。",
+  "districts": [
+    { "id": "chuo", "name": "長岡（中心部）", "center": { "lat": 37.4461, "lng": 138.8515 }, "unlockLevel": 1 },
+    { "id": "settaya", "name": "摂田屋", "center": { "lat": 37.4200, "lng": 138.8700 }, "unlockLevel": 1 }
+  ],
+  "pois": [
+    {
+      "id": "aore",
+      "districtId": "chuo",
+      "name": "アオーレ長岡",
+      "lat": 37.4470,
+      "lng": 138.8510,
+      "radius": 70,
+      "rarity": "common",
+      "coinsFirst": 120,
+      "coinsRepeat": 10,
+      "xp": 30,
+      "category": "建築・公共",
+      "treasure": {
+        "title": "アオーレ長岡（シティホールプラザ）",
+        "era": "2012年開館",
+        "blurb": "隈研吾の設計。市役所・アリーナ・屋根付き広場ナカドマが一体化した、市民が集う複合施設。（※要事実確認）",
+        "image": "card_aore.png"
+      }
+    },
+    {
+      "id": "yamamoto",
+      "districtId": "chuo",
+      "name": "山本五十六記念館",
+      "lat": 37.4478,
+      "lng": 138.8562,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 150,
+      "coinsRepeat": 10,
+      "xp": 35,
+      "category": "偉人・記念館",
+      "treasure": {
+        "title": "山本五十六記念館",
+        "era": "生誕1884年（長岡出身）",
+        "blurb": "長岡出身の海軍軍人・山本五十六の生涯を伝える記念館。生家跡や関連資料を展示する。（※要事実確認）",
+        "image": "card_yamamoto.png"
+      }
+    },
+    {
+      "id": "kawai",
+      "districtId": "chuo",
+      "name": "河井継之助記念館",
+      "lat": 37.4453,
+      "lng": 138.8535,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 150,
+      "coinsRepeat": 10,
+      "xp": 35,
+      "category": "偉人・記念館",
+      "treasure": {
+        "title": "河井継之助記念館",
+        "era": "幕末（長岡藩家老）",
+        "blurb": "幕末の長岡藩家老・河井継之助の思想と生涯を紹介する記念館。北越戊辰戦争ゆかりの地。（※要事実確認）",
+        "image": "card_kawai.png"
+      }
+    },
+    {
+      "id": "kina_saffron",
+      "districtId": "settaya",
+      "name": "機那サフラン酒本舗（鏝絵の蔵）",
+      "lat": 37.4205,
+      "lng": 138.8695,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 220,
+      "coinsRepeat": 10,
+      "xp": 50,
+      "category": "醸造・文化財",
+      "treasure": {
+        "title": "機那サフラン酒本舗",
+        "era": "明治期〜",
+        "blurb": "鏝絵（こてえ）で飾られた土蔵で知られる、醸造の町・摂田屋を象徴する史跡。（※要事実確認）",
+        "image": "card_kina_saffron.png"
+      }
+    },
+    {
+      "id": "yoshinogawa",
+      "districtId": "settaya",
+      "name": "吉乃川 醸蔵",
+      "lat": 37.4198,
+      "lng": 138.8710,
+      "radius": 60,
+      "rarity": "common",
+      "coinsFirst": 130,
+      "coinsRepeat": 10,
+      "xp": 30,
+      "category": "醸造・文化財",
+      "treasure": {
+        "title": "吉乃川 醸蔵",
+        "era": "創業1548年と伝わる",
+        "blurb": "摂田屋に蔵を構える老舗酒蔵・吉乃川の醸造施設。長岡の酒造りの歴史を今に伝える。（※要事実確認）",
+        "image": "card_yoshinogawa.png"
+      }
+    }
+  ]
+}

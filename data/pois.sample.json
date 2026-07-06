@@ -1,0 +1,47 @@
+{
+  "_note": "スキーマ確定用サンプル。座標は仮値（要調査＝Haiku委譲）。本番は data/pois.json に全件。",
+  "districts": [
+    { "id": "chuo", "name": "長岡（中心部）", "center": { "lat": 37.4461, "lng": 138.8515 }, "unlockLevel": 1 },
+    { "id": "settaya", "name": "摂田屋", "center": { "lat": 37.4200, "lng": 138.8700 }, "unlockLevel": 1 }
+  ],
+  "pois": [
+    {
+      "id": "aore",
+      "districtId": "chuo",
+      "name": "アオーレ長岡",
+      "lat": 37.4470,
+      "lng": 138.8510,
+      "radius": 70,
+      "rarity": "common",
+      "coinsFirst": 120,
+      "coinsRepeat": 10,
+      "xp": 30,
+      "category": "建築・公共",
+      "treasure": {
+        "title": "アオーレ長岡（シティホールプラザ）",
+        "era": "2012年開館",
+        "blurb": "隈研吾の設計。市役所・アリーナ・屋根付き広場ナカドマが一体化した、市民が集う複合施設。（※解説は要事実確認）",
+        "image": ""
+      }
+    },
+    {
+      "id": "kina_saffron",
+      "districtId": "settaya",
+      "name": "機那サフラン酒本舗（鏝絵の蔵）",
+      "lat": 37.4205,
+      "lng": 138.8695,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 220,
+      "coinsRepeat": 10,
+      "xp": 50,
+      "category": "醸造・文化財",
+      "treasure": {
+        "title": "機那サフラン酒本舗",
+        "era": "明治期〜",
+        "blurb": "鏝絵（こてえ）で飾られた土蔵で知られる、醸造の町・摂田屋を象徴する史跡。（※解説は要事実確認）",
+        "image": ""
+      }
+    }
+  ]
+}

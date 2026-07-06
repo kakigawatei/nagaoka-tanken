@@ -1,0 +1,21 @@
+{
+  "name": "nagaoka-walk",
+  "version": "1.0.0",
+  "description": "新潟県長岡市を実際に歩いて巡る位置情報ゲーム。史跡・名所にGPSで近づくとお宝を発見し、コイン・XPを獲得。買い物・レベルアップしながら長岡の歴史文化を知る。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jimp": "^1.6.1",
+    "puppeteer-core": "^25.3.0",
+    "sharp": "^0.35.3"
+  }
+}

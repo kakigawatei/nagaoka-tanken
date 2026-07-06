@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ながおか探検録</title>
+<style>
+  :root{
+    --paper:#f1e6c9;
+    --paper-dark:#e3d3ab;
+    --ink:#4a3423;
+    --ink-soft:#7a5c3e;
+    --vermillion:#c0392b;
+    --indigo:#2c3e63;
+    --gold:#c9a227;
+    --card-bg:#fbf4e2;
+    --shadow: 0 4px 10px rgba(74,52,35,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:#2a2118;
+    font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden;
+    width:100%;
+  }
+  #app{
+    max-width:480px;
+    width:100%;
+    margin:0 auto;
+    min-height:100dvh;
+    background:var(--paper);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 0 30px rgba(0,0,0,0.5);
+  }
+  img{ -webkit-user-drag:none; user-select:none; max-width:100%; }
+
+  /* ---------- Screens ---------- */
+  .screen{ display:none; flex:1; flex-direction:column; overflow-y:auto; overflow-x:hidden; padding-bottom:78px; }
+  .screen.active{ display:flex; }
+
+  /* ---------- Title ---------- */
+  #screen-title{
+    justify-content:center; align-items:center; background:#2a2118;
+    padding:5vh 5%; box-sizing:border-box;
+  }
+  .title-frame-wrap{
+    position:relative;
+    width:100%;
+    max-width:480px;
+    margin:0 auto;
+  }
+  .title-frame-wrap img{ width:100%; max-width:100%; display:block; }
+  .title-text{
+    position:absolute; top:38%; left:50%; transform:translate(-50%,-50%);
+    text-align:center; width:86%;
+  }
+  .title-text .main{
+    font-size:8vw; font-weight:900; color:#5a2e17; letter-spacing:0.08em;
+    text-shadow: 0 2px 0 #f0d98c, 0 4px 6px rgba(0,0,0,0.35);
+    margin:0;
+  }
+  .title-text .sub{
+    font-size:3vw; color:#5a2e17; letter-spacing:0.3em; margin-top:6px; opacity:0.85;
+  }
+  .title-start-btn{
+    position:absolute; bottom:8%; left:50%; transform:translateX(-50%);
+    background:var(--vermillion); color:#fff; border:none; border-radius:999px;
+    padding:14px 34px; font-size:4.2vw; font-weight:700; box-shadow:var(--shadow);
+    letter-spacing:0.1em; max-width:90%; white-space:nowrap;
+  }
+  .title-start-btn:active{ transform:translateX(-50%) scale(0.96); }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; background:var(--paper-dark); border-bottom:2px solid #cbb98a;
+    position:sticky; top:0; z-index:5;
+  }
+  .topbar h1{ font-size:16px; margin:0; color:var(--ink); }
+  .stat-pill{
+    display:flex; align-items:center; gap:4px; background:var(--card-bg);
+    border-radius:999px; padding:4px 10px; font-weight:700; font-size:13px;
+    box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .stat-pill img{ width:18px; height:18px; }
+  .stat-row{ display:flex; gap:8px; }
+
+  /* ---------- Home ---------- */
+  .home-guide-area{
+    display:flex; flex-direction:column; align-items:center; padding:14px 0 6px;
+  }
+  .home-guide-area img.guide{ width:150px; }
+  .speech-bubble{
+    background:#fff; border:2px solid var(--ink-soft); border-radius:14px;
+    padding:10px 14px; margin:4px 16px 10px; font-size:13.5px; line-height:1.5;
+    position:relative; text-align:center;
+  }
+  .level-box{
+    margin:0 16px 12px; background:var(--card-bg); border-radius:12px; padding:10px 14px;
+    box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .level-box .lvl-row{ display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .xp-bar-outer{ background:#e4d5b0; border-radius:8px; height:10px; overflow:hidden; }
+  .xp-bar-inner{ background:linear-gradient(90deg,var(--gold),#e8c65a); height:100%; width:0%; transition:width .4s; }
+
+  .nearest-card{
+    margin:0 16px 12px; background:var(--card-bg); border-radius:14px; padding:14px;
+    box-shadow: var(--shadow);
+  }
+  .nearest-card h2{ font-size:13px; margin:0 0 8px; color:var(--ink-soft); letter-spacing:0.05em; }
+  .nearest-main{ display:flex; align-items:center; gap:14px; }
+  .compass-wrap{ position:relative; width:70px; height:70px; flex:none; }
+  .compass-wrap img{ width:100%; height:100%; transition:transform .3s ease-out; }
+  .nearest-info{ flex:1; }
+  .nearest-info .name{ font-weight:700; font-size:15px; margin-bottom:2px; }
+  .nearest-info .dist{ font-size:13px; color:var(--ink-soft); }
+  .nearest-info .badge{
+    display:inline-block; margin-top:6px; font-size:11px; padding:2px 8px; border-radius:999px;
+    background:var(--indigo); color:#fff;
+  }
+  .nearest-info .badge.found{ background:#5a8a4a; }
+  .in-range-banner{
+    margin:0 16px 12px; background:var(--vermillion); color:#fff; border-radius:12px;
+    padding:10px 14px; font-weight:700; text-align:center; font-size:13.5px;
+    animation:pulse 1.2s infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .sim-badge{
+    margin:0 16px 4px; font-size:11px; color:var(--vermillion); text-align:center; font-weight:700;
+  }
+
+  /* ---------- Map ---------- */
+  .district-tabs{ display:flex; gap:8px; padding:10px 14px 4px; }
+  .district-tab{
+    flex:1; text-align:center; padding:8px 4px; border-radius:10px; font-size:13px; font-weight:700;
+    background:var(--paper-dark); color:var(--ink-soft); cursor:pointer; box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .district-tab.active{ background:var(--indigo); color:#fff; }
+  .map-stage{
+    position:relative; margin:8px 14px 12px; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
+    background:#ddd;
+  }
+  .map-stage img.mapbg{ width:100%; display:block; }
+  .map-pin{
+    position:absolute; width:34px; height:34px; transform:translate(-50%,-100%);
+    cursor:pointer; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+  }
+  .map-pin img{ width:100%; height:100%; }
+  .you-are-here{
+    position:absolute; width:20px; height:20px; border-radius:50%; background:var(--vermillion);
+    border:3px solid #fff; transform:translate(-50%,-50%); box-shadow:0 0 0 4px rgba(192,57,43,0.35);
+  }
+  .map-hint{ margin:0 16px 8px; font-size:12px; color:var(--ink-soft); text-align:center; }
+  .poi-popup{
+    margin:0 16px 12px; background:var(--card-bg); border-radius:12px; padding:12px 14px;
+    box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .poi-popup .name{ font-weight:700; font-size:14px; margin-bottom:4px; }
+  .poi-popup .meta{ font-size:12px; color:var(--ink-soft); }
+
+  /* ---------- Book ---------- */
+  .book-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px 14px;
+  }
+  .book-card{
+    background:var(--card-bg); border-radius:12px; overflow:hidden; box-shadow:var(--shadow);
+    display:flex; flex-direction:column;
+  }
+  .book-card .thumb{ width:100%; aspect-ratio:4/5; object-fit:cover; background:#cfc09a; }
+  .book-card .thumb.unknown{
+    display:flex; align-items:center; justify-content:center; font-size:34px; color:#a5906a; font-weight:900;
+  }
+  .book-card .info{ padding:8px 10px 10px; }
+  .book-card .title{ font-size:12.5px; font-weight:700; line-height:1.3; margin-bottom:2px; }
+  .book-card .era{ font-size:10.5px; color:var(--ink-soft); }
+  .book-detail{
+    margin:0 14px 14px; background:var(--card-bg); border-radius:12px; padding:14px; box-shadow:var(--shadow);
+  }
+  .book-detail img{ width:100%; border-radius:10px; margin-bottom:8px; }
+  .book-detail h3{ margin:0 0 4px; font-size:15px; }
+  .book-detail .era{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .book-detail p{ font-size:13px; line-height:1.6; margin:0; }
+  .book-progress{ margin:10px 14px 0; font-size:13px; font-weight:700; color:var(--ink-soft); }
+
+  /* ---------- Settings ---------- */
+  .settings-section{
+    margin:14px 14px 0; background:var(--card-bg); border-radius:12px; padding:14px;
+    box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .settings-section h2{ font-size:13px; margin:0 0 10px; color:var(--ink-soft); }
+  .mode-toggle{ display:flex; gap:8px; margin-bottom:10px; }
+  .mode-btn{
+    flex:1; padding:10px; text-align:center; border-radius:10px; font-weight:700; font-size:13px;
+    background:var(--paper-dark); color:var(--ink-soft); cursor:pointer;
+  }
+  .mode-btn.active{ background:var(--vermillion); color:#fff; }
+  .sim-pos-line{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .teleport-list{ display:flex; flex-direction:column; gap:6px; }
+  .teleport-btn{
+    text-align:left; padding:9px 12px; border-radius:8px; border:none; background:var(--indigo); color:#fff;
+    font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .teleport-btn:disabled{ background:#a9a186; color:#eee; }
+  .settings-btn{
+    display:inline-block; padding:10px 16px; border-radius:8px; border:none; background:var(--indigo);
+    color:#fff; font-weight:700; font-size:13px; margin-right:8px; margin-top:4px; cursor:pointer;
+  }
+  .settings-btn.danger{ background:var(--vermillion); }
+  .settings-note{ font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav{
+    position:absolute; bottom:0; left:0; right:0; height:66px; display:flex;
+    background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
+  }
+  .nav-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; background:none; border:none; color:var(--ink-soft); font-size:10px; cursor:pointer;
+  }
+  .nav-btn img{ width:26px; height:26px; opacity:0.55; }
+  .nav-btn.active{ color:var(--indigo); font-weight:700; }
+  .nav-btn.active img{ opacity:1; }
+  .nav-btn:disabled{ opacity:0.35; }
+
+  /* ---------- Discovery overlay ---------- */
+  #discovery-overlay{
+    position:absolute; inset:0; background:rgba(20,14,8,0.78); z-index:50;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    padding:20px;
+  }
+  #discovery-overlay.show{ display:flex; }
+  .chest-stage{ position:relative; width:160px; height:160px; margin-bottom:10px; }
+  .chest-stage img.chest{ width:100%; height:100%; object-fit:contain; }
+  .coin-fly{
+    position:absolute; width:28px; height:28px; left:50%; top:40%;
+    animation: coinfly 0.9s ease-out forwards;
+    opacity:0;
+  }
+  @keyframes coinfly{
+    0%{ opacity:1; transform:translate(-50%,-50%) scale(0.4) translateY(0);}
+    70%{ opacity:1; }
+    100%{ opacity:0; transform:translate(-50%,-50%) scale(1.1) translateY(-90px);}
+  }
+  .discover-title{ color:#fff2d6; font-size:20px; font-weight:900; margin:6px 0 2px; text-align:center; }
+  .discover-sub{ color:#fff2d6; font-size:14px; margin-bottom:10px; text-align:center; }
+  .discover-rewards{ display:flex; gap:14px; margin-bottom:16px; }
+  .reward-pill{
+    background:#fbf4e2; border-radius:999px; padding:6px 14px; font-weight:700; font-size:13px;
+    display:flex; align-items:center; gap:6px; color:var(--ink);
+  }
+  .reward-pill img{ width:18px; height:18px; }
+  .discover-close-btn{
+    background:var(--gold); color:#3a2a12; border:none; border-radius:999px; padding:10px 30px;
+    font-weight:900; font-size:14px;
+  }
+  .levelup-banner{
+    background:var(--vermillion); color:#fff; font-weight:900; font-size:13px; border-radius:8px;
+    padding:6px 14px; margin-bottom:10px;
+  }
+
+  .toast{
+    position:absolute; bottom:80px; left:50%; transform:translateX(-50%);
+    background:rgba(40,28,16,0.92); color:#fff; padding:8px 18px; border-radius:999px;
+    font-size:12.5px; z-index:60; opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <div class="screen active" id="screen-title">
+    <div class="title-frame-wrap">
+      <img src="assets/title_frame.png" alt="ながおか探検録">
+      <div class="title-text">
+        <p class="main">ながおか探検録</p>
+        <p class="sub">NAGAOKA EXPLORATION LOG</p>
+      </div>
+      <button class="title-start-btn" id="btn-start">たんけんへ出る</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="topbar">
+      <h1>ながおか探検録</h1>
+      <div class="stat-row">
+        <div class="stat-pill"><img src="assets/coin.png" alt="coin"><span id="home-coins">0</span></div>
+        <div class="stat-pill">Lv <span id="home-level">1</span></div>
+      </div>
+    </div>
+
+    <div class="home-guide-area">
+      <img class="guide" id="home-guide-img" src="assets/guide_idle.png" alt="ガイド">
+      <div class="speech-bubble" id="home-guide-text">今日はどこへ探検に行こうか！</div>
+    </div>
+
+    <div class="sim-badge" id="home-sim-badge" style="display:none;">シミュレーションモード中</div>
+
+    <div class="in-range-banner" id="home-inrange-banner" style="display:none;">この場所であやしい気配…その場にとどまろう</div>
+
+    <div class="level-box">
+      <div class="lvl-row"><span>Lv <span id="home-level2">1</span></span><span id="home-xp-label">0 / 50 XP</span></div>
+      <div class="xp-bar-outer"><div class="xp-bar-inner" id="home-xp-bar"></div></div>
+    </div>
+
+    <div class="nearest-card">
+      <h2>最寄りのスポット</h2>
+      <div class="nearest-main">
+        <div class="compass-wrap"><img id="home-compass-img" src="assets/compass.png" alt="コンパス"></div>
+        <div class="nearest-info">
+          <div class="name" id="home-nearest-name">現在地を取得中…</div>
+          <div class="dist" id="home-nearest-dist">-</div>
+          <span class="badge" id="home-nearest-badge">未発見</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="screen" id="screen-map">
+    <div class="topbar"><h1>マップ</h1><div></div></div>
+    <div class="district-tabs" id="map-district-tabs"></div>
+    <div class="map-stage" id="map-stage">
+      <img class="mapbg" id="map-bg-img" src="assets/map_chuo.png" alt="地区マップ">
+    </div>
+    <div class="map-hint" id="map-hint">ピンをタップすると詳細が見られます</div>
+    <div class="poi-popup" id="map-popup" style="display:none;"></div>
+  </div>
+
+  <!-- BOOK -->
+  <div class="screen" id="screen-book">
+    <div class="topbar"><h1>図鑑</h1><div></div></div>
+    <div class="book-progress" id="book-progress">発見数：0 / 0</div>
+    <div class="book-grid" id="book-grid"></div>
+    <div class="book-detail" id="book-detail" style="display:none;"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar"><h1>設定</h1><div></div></div>
+
+    <div class="settings-section">
+      <h2>位置情報モード</h2>
+      <div class="mode-toggle">
+        <div class="mode-btn" id="mode-btn-gps">実GPS</div>
+        <div class="mode-btn" id="mode-btn-sim">シミュレーション</div>
+      </div>
+      <div class="sim-pos-line" id="sim-pos-line">現在の仮想現在地：未設定</div>
+      <div class="teleport-list" id="teleport-list"></div>
+      <div class="settings-note">シミュレーション中は「マップ」画面をタップすると、その場所に仮想現在地を置けます。実地に行かなくても発見のテストができます。</div>
+    </div>
+
+    <div class="settings-section">
+      <h2>データ</h2>
+      <button class="settings-btn" id="btn-export">書き出し（JSON）</button>
+      <button class="settings-btn" id="btn-import">読み込み</button>
+      <input type="file" id="file-import" accept="application/json" style="display:none;">
+      <br>
+      <button class="settings-btn danger" id="btn-reset">進捗をリセット</button>
+      <div class="settings-note">書き出したJSONファイルを保管しておくと、機種変更時などにデータを復元できます。</div>
+    </div>
+
+    <div class="settings-section">
+      <h2>このアプリについて</h2>
+      <div class="settings-note">
+        位置情報は端末内だけで処理し、外部には送信しません。進捗はブラウザのlocalStorageに保存されます。<br>
+        Phase 1（MVP）：中心部・摂田屋の2地区、5スポット対応。
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" id="bottom-nav" style="display:none;">
+    <button class="nav-btn active" data-screen="home"><img src="assets/ic_home.png">ホーム</button>
+    <button class="nav-btn" data-screen="map"><img src="assets/ic_map.png">マップ</button>
+    <button class="nav-btn" data-screen="book"><img src="assets/ic_book.png">図鑑</button>
+    <button class="nav-btn" disabled title="Phase3で実装予定"><img src="assets/ic_shop.png">店</button>
+    <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png">設定</button>
+  </div>
+
+  <!-- Discovery overlay -->
+  <div id="discovery-overlay">
+    <div class="chest-stage" id="chest-stage">
+      <img class="chest" id="chest-img" src="assets/chest_closed.png" alt="宝箱">
+    </div>
+    <div class="levelup-banner" id="levelup-banner" style="display:none;">レベルアップ！</div>
+    <div class="discover-title" id="discover-title">発見！</div>
+    <div class="discover-sub" id="discover-sub"></div>
+    <div class="discover-rewards" id="discover-rewards"></div>
+    <button class="discover-close-btn" id="discover-close-btn">とじる</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+   * 0. データ（fetch失敗時のインラインフォールバック）
+   * ========================================================== */
+  var INLINE_POI_DATA = {"_note":"Phase1 MVP用データ。緯度経度は仮値（各地区中心付近に配置）。史実解説は簡易・要事実確認。","districts":[{"id":"chuo","name":"長岡（中心部）","center":{"lat":37.4461,"lng":138.8515},"unlockLevel":1},{"id":"settaya","name":"摂田屋","center":{"lat":37.42,"lng":138.87},"unlockLevel":1}],"pois":[{"id":"aore","districtId":"chuo","name":"アオーレ長岡","lat":37.447,"lng":138.851,"radius":70,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":30,"category":"建築・公共","treasure":{"title":"アオーレ長岡（シティホールプラザ）","era":"2012年開館","blurb":"隈研吾の設計。市役所・アリーナ・屋根付き広場ナカドマが一体化した、市民が集う複合施設。（※要事実確認）","image":"card_aore.png"}},{"id":"yamamoto","districtId":"chuo","name":"山本五十六記念館","lat":37.4478,"lng":138.8562,"radius":60,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"山本五十六記念館","era":"生誕1884年（長岡出身）","blurb":"長岡出身の海軍軍人・山本五十六の生涯を伝える記念館。生家跡や関連資料を展示する。（※要事実確認）","image":"card_yamamoto.png"}},{"id":"kawai","districtId":"chuo","name":"河井継之助記念館","lat":37.4453,"lng":138.8535,"radius":60,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"河井継之助記念館","era":"幕末（長岡藩家老）","blurb":"幕末の長岡藩家老・河井継之助の思想と生涯を紹介する記念館。北越戊辰戦争ゆかりの地。（※要事実確認）","image":"card_kawai.png"}},{"id":"kina_saffron","districtId":"settaya","name":"機那サフラン酒本舗（鏝絵の蔵）","lat":37.4205,"lng":138.8695,"radius":60,"rarity":"rare","coinsFirst":220,"coinsRepeat":10,"xp":50,"category":"醸造・文化財","treasure":{"title":"機那サフラン酒本舗","era":"明治期〜","blurb":"鏝絵（こてえ）で飾られた土蔵で知られる、醸造の町・摂田屋を象徴する史跡。（※要事実確認）","image":"card_kina_saffron.png"}},{"id":"yoshinogawa","districtId":"settaya","name":"吉乃川 醸蔵","lat":37.4198,"lng":138.871,"radius":60,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"吉乃川 醸蔵","era":"創業1548年と伝わる","blurb":"摂田屋に蔵を構える老舗酒蔵・吉乃川の醸造施設。長岡の酒造りの歴史を今に伝える。（※要事実確認）","image":"card_yoshinogawa.png"}}]};
+
+  var DISTRICT_MAP_IMG = { chuo:"assets/map_chuo.png", settaya:"assets/map_settaya.png" };
+
+  var DATA = null; // { districts, pois }
+  var BBOX = {};   // districtId -> bbox for map projection
+
+  /* ============================================================
+   * 1. 保存（localStorage, prefix: tekuteku_）
+   * ========================================================== */
+  var STORAGE_KEY = "tekuteku_save";
+
+  function defaultSave(){
+    return {
+      coins: 0,
+      level: 1,
+      xp: 0,
+      found: [],
+      visits: {},     // poiId -> { count, lastDate }
+      streak: 0,
+      inventory: {},
+      settings: { mode: "gps", simLat: null, simLng: null }
+    };
+  }
+
+  var save = loadSave();
+
+  function loadSave(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultSave();
+      var parsed = JSON.parse(raw);
+      var d = defaultSave();
+      // shallow-merge with defaults so older/partial saves still work
+      return Object.assign(d, parsed, {
+        settings: Object.assign(d.settings, parsed.settings || {}),
+        visits: parsed.visits || {},
+        found: parsed.found || []
+      });
+    }catch(e){
+      console.warn("save load failed", e);
+      return defaultSave();
+    }
+  }
+
+  function persist(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(save));
+  }
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+
+  /* ============================================================
+   * 2. 幾何：Haversine距離・方位角
+   * ========================================================== */
+  function haversine(lat1, lon1, lat2, lon2){
+    var R = 6371000;
+    var toRad = Math.PI/180;
+    var dLat = (lat2-lat1)*toRad;
+    var dLon = (lon2-lon1)*toRad;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*toRad)*Math.cos(lat2*toRad)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R*c;
+  }
+
+  function bearing(lat1, lon1, lat2, lon2){
+    var toRad = Math.PI/180, toDeg = 180/Math.PI;
+    var y = Math.sin((lon2-lon1)*toRad) * Math.cos(lat2*toRad);
+    var x = Math.cos(lat1*toRad)*Math.sin(lat2*toRad) -
+            Math.sin(lat1*toRad)*Math.cos(lat2*toRad)*Math.cos((lon2-lon1)*toRad);
+    var brng = Math.atan2(y, x) * toDeg;
+    return (brng + 360) % 360;
+  }
+
+  /* ============================================================
+   * 3. マップ投影（緯度経度 <-> 地図画像%座標）
+   * ========================================================== */
+  function computeBBox(pois){
+    var lats = pois.map(function(p){return p.lat;});
+    var lngs = pois.map(function(p){return p.lng;});
+    var latMin = Math.min.apply(null, lats), latMax = Math.max.apply(null, lats);
+    var lngMin = Math.min.apply(null, lngs), lngMax = Math.max.apply(null, lngs);
+    var latRange = (latMax-latMin) || 0.002;
+    var lngRange = (lngMax-lngMin) || 0.002;
+    var latPad = Math.max(latRange*0.6, 0.0018);
+    var lngPad = Math.max(lngRange*0.6, 0.0018);
+    return { latMin: latMin-latPad, latMax: latMax+latPad, lngMin: lngMin-lngPad, lngMax: lngMax+lngPad };
+  }
+
+  function project(lat, lng, bbox){
+    var x = (lng - bbox.lngMin) / (bbox.lngMax - bbox.lngMin);
+    var y = 1 - (lat - bbox.latMin) / (bbox.latMax - bbox.latMin);
+    return { xPct: Math.min(95, Math.max(5, x*100)), yPct: Math.min(95, Math.max(5, y*100)) };
+  }
+
+  function unproject(xPct, yPct, bbox){
+    var lng = bbox.lngMin + (xPct/100) * (bbox.lngMax - bbox.lngMin);
+    var lat = bbox.latMin + (1 - yPct/100) * (bbox.latMax - bbox.latMin);
+    return { lat: lat, lng: lng };
+  }
+
+  /* ============================================================
+   * 4. XP / レベル
+   * ========================================================== */
+  function xpForLevel(lvl){ return 50 + (lvl-1)*25; }
+
+  function addXp(amount){
+    save.xp += amount;
+    var leveled = false;
+    while(save.xp >= xpForLevel(save.level)){
+      save.xp -= xpForLevel(save.level);
+      save.level += 1;
+      leveled = true;
+    }
+    return leveled;
+  }
+
+  /* ============================================================
+   * 5. 位置エンジン（実GPS／シミュレーション）
+   * ========================================================== */
+  var geoWatchId = null;
+  var positionBuffer = [];
+  var currentPos = null; // {lat,lng}
+  var dwellCandidate = null; // {poiId, since}
+  var DWELL_MS = 3000;
+  var POSITION_BUFFER_SIZE = 5;
+
+  function averagePositions(buf){
+    var sLat=0, sLng=0;
+    buf.forEach(function(p){ sLat+=p.lat; sLng+=p.lng; });
+    return { lat: sLat/buf.length, lng: sLng/buf.length };
+  }
+
+  function onGeoSuccess(pos){
+    positionBuffer.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, t: Date.now() });
+    if(positionBuffer.length > POSITION_BUFFER_SIZE) positionBuffer.shift();
+    currentPos = averagePositions(positionBuffer);
+  }
+  function onGeoError(err){
+    console.warn("geolocation error", err);
+  }
+
+  function startGeo(){
+    if(!("geolocation" in navigator)) return;
+    if(geoWatchId != null) return;
+    positionBuffer = [];
+    geoWatchId = navigator.geolocation.watchPosition(onGeoSuccess, onGeoError, {
+      enableHighAccuracy: true, maximumAge: 2000, timeout: 15000
+    });
+  }
+  function stopGeo(){
+    if(geoWatchId != null){
+      navigator.geolocation.clearWatch(geoWatchId);
+      geoWatchId = null;
+    }
+  }
+
+  function applyMode(){
+    if(save.settings.mode === "gps"){
+      startGeo();
+    } else {
+      stopGeo();
+      if(save.settings.simLat != null && save.settings.simLng != null){
+        currentPos = { lat: save.settings.simLat, lng: save.settings.simLng };
+      } else {
+        currentPos = null;
+      }
+    }
+  }
+
+  function setSimPosition(lat, lng){
+    save.settings.simLat = lat;
+    save.settings.simLng = lng;
+    currentPos = { lat: lat, lng: lng };
+    persist();
+  }
+
+  /* ============================================================
+   * 6. 発見フロー
+   * ========================================================== */
+  var lastDistances = []; // sorted [{poi, dist}]
+
+  function attemptDiscovery(poi){
+    var dateStr = todayStr();
+    var visit = save.visits[poi.id];
+
+    if(save.found.indexOf(poi.id) === -1){
+      // 初回発見
+      save.found.push(poi.id);
+      save.visits[poi.id] = { count: 1, lastDate: dateStr };
+      var coinsFirst = poi.coinsFirst;
+      save.coins += coinsFirst;
+      var leveled = addXp(poi.xp);
+      persist();
+      showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled });
+      renderAll();
+    } else if(!visit || visit.lastDate !== dateStr){
+      // 再訪（本日未取得）
+      var count = (visit ? visit.count : 0) + 1;
+      var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
+      save.coins += repeatCoins;
+      save.visits[poi.id] = { count: count, lastDate: dateStr };
+      persist();
+      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins });
+      renderAll();
+    }
+    // 本日すでに取得済みなら何もしない（アイドル）
+  }
+
+  function showDiscoveryOverlay(poi, opts){
+    var overlay = document.getElementById("discovery-overlay");
+    var chestImg = document.getElementById("chest-img");
+    var title = document.getElementById("discover-title");
+    var sub = document.getElementById("discover-sub");
+    var rewards = document.getElementById("discover-rewards");
+    var levelBanner = document.getElementById("levelup-banner");
+
+    chestImg.src = "assets/chest_closed.png";
+    title.textContent = opts.first ? "発見！" : "再訪の証";
+    sub.textContent = opts.first ? poi.treasure.title + " を図鑑に登録した！" : poi.name + " にまた来た！";
+    levelBanner.style.display = opts.leveled ? "block" : "none";
+
+    var rewardHtml = '<div class="reward-pill"><img src="assets/coin.png">+' + opts.coins + '</div>';
+    if(opts.xp){ rewardHtml += '<div class="reward-pill">XP +' + opts.xp + '</div>'; }
+    rewards.innerHTML = rewardHtml;
+
+    setGuideMood("happy");
+    overlay.classList.add("show");
+
+    setTimeout(function(){
+      chestImg.src = "assets/chest_open.png";
+      spawnCoinFly();
+    }, 450);
+
+    function closeOverlay(){
+      overlay.classList.remove("show");
+      setGuideMood("idle");
+      document.getElementById("discover-close-btn").removeEventListener("click", closeOverlay);
+    }
+    document.getElementById("discover-close-btn").addEventListener("click", closeOverlay);
+  }
+
+  function spawnCoinFly(){
+    var stage = document.getElementById("chest-stage");
+    for(var i=0;i<5;i++){
+      (function(i){
+        setTimeout(function(){
+          var c = document.createElement("img");
+          c.src = "assets/coin.png";
+          c.className = "coin-fly";
+          c.style.left = (40 + Math.random()*20) + "%";
+          stage.appendChild(c);
+          setTimeout(function(){ c.remove(); }, 1000);
+        }, i*80);
+      })(i);
+    }
+  }
+
+  /* ============================================================
+   * 7. メインループ
+   * ========================================================== */
+  function tick(){
+    if(save.settings.mode === "gps"){
+      // currentPos updated via geolocation callback
+    }
+    renderHomeNearest();
+
+    if(!currentPos || !DATA) return;
+
+    var distances = DATA.pois.map(function(p){
+      return { poi: p, dist: haversine(currentPos.lat, currentPos.lng, p.lat, p.lng) };
+    });
+    distances.sort(function(a,b){ return a.dist - b.dist; });
+    lastDistances = distances;
+
+    var inRange = null;
+    for(var i=0;i<distances.length;i++){
+      if(distances[i].dist <= distances[i].poi.radius){ inRange = distances[i]; break; }
+    }
+
+    var banner = document.getElementById("home-inrange-banner");
+
+    if(inRange){
+      banner.style.display = "block";
+      if(!dwellCandidate || dwellCandidate.poiId !== inRange.poi.id){
+        dwellCandidate = { poiId: inRange.poi.id, since: Date.now() };
+      } else if(Date.now() - dwellCandidate.since >= DWELL_MS){
+        attemptDiscovery(inRange.poi);
+      }
+    } else {
+      dwellCandidate = null;
+      banner.style.display = "none";
+    }
+
+    renderHomeNearest();
+    if(currentScreen === "map") renderMapYouAreHere();
+  }
+
+  /* ============================================================
+   * 8. UI: ナビゲーション
+   * ========================================================== */
+  var currentScreen = "home";
+  var currentDistrict = "chuo";
+
+  function showScreen(name){
+    currentScreen = name;
+    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active"); });
+    document.getElementById("screen-" + name).classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(function(btn){
+      btn.classList.toggle("active", btn.getAttribute("data-screen") === name);
+    });
+    if(name === "map") renderMap();
+    if(name === "book") renderBook();
+    if(name === "settings") renderSettings();
+    if(name === "home") renderHomeFull();
+  }
+
+  function setGuideMood(mood){
+    var img = document.getElementById("home-guide-img");
+    var text = document.getElementById("home-guide-text");
+    if(mood === "happy"){
+      img.src = "assets/guide_happy.png";
+    } else if(mood === "point"){
+      img.src = "assets/guide_point.png";
+      text.textContent = "あっちに何かありそうだよ！";
+    } else {
+      img.src = "assets/guide_idle.png";
+      text.textContent = "今日はどこへ探検に行こうか！";
+    }
+  }
+
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ============================================================
+   * 9. UI: ホーム
+   * ========================================================== */
+  function renderHomeFull(){
+    document.getElementById("home-coins").textContent = save.coins;
+    document.getElementById("home-level").textContent = save.level;
+    document.getElementById("home-level2").textContent = save.level;
+    var need = xpForLevel(save.level);
+    document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
+    document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
+    document.getElementById("home-sim-badge").style.display = (save.settings.mode === "simulate") ? "block" : "none";
+    renderHomeNearest();
+  }
+
+  function renderHomeNearest(){
+    document.getElementById("home-coins").textContent = save.coins;
+    document.getElementById("home-level").textContent = save.level;
+    document.getElementById("home-level2").textContent = save.level;
+    var need = xpForLevel(save.level);
+    document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
+    document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
+
+    var nameEl = document.getElementById("home-nearest-name");
+    var distEl = document.getElementById("home-nearest-dist");
+    var badgeEl = document.getElementById("home-nearest-badge");
+    var compassImg = document.getElementById("home-compass-img");
+
+    if(!currentPos || !DATA){
+      nameEl.textContent = (save.settings.mode === "gps") ? "現在地を取得中…" : "仮想現在地が未設定です";
+      distEl.textContent = "設定画面からテレポートしてみよう";
+      badgeEl.style.display = "none";
+      return;
+    }
+    if(!lastDistances.length) return;
+
+    // 未発見優先、全部発見済みなら最寄り
+    var target = null;
+    for(var i=0;i<lastDistances.length;i++){
+      if(save.found.indexOf(lastDistances[i].poi.id) === -1){ target = lastDistances[i]; break; }
+    }
+    if(!target) target = lastDistances[0];
+
+    nameEl.textContent = target.poi.name;
+    var d = target.dist;
+    distEl.textContent = (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km") + " 先";
+    badgeEl.style.display = "inline-block";
+    var isFound = save.found.indexOf(target.poi.id) !== -1;
+    badgeEl.textContent = isFound ? "発見済み" : "未発見";
+    badgeEl.className = "badge" + (isFound ? " found" : "");
+
+    var brg = bearing(currentPos.lat, currentPos.lng, target.poi.lat, target.poi.lng);
+    compassImg.style.transform = "rotate(" + brg + "deg)";
+  }
+
+  /* ============================================================
+   * 10. UI: マップ
+   * ========================================================== */
+  function renderMap(){
+    var tabsEl = document.getElementById("map-district-tabs");
+    tabsEl.innerHTML = "";
+    DATA.districts.forEach(function(d){
+      var btn = document.createElement("div");
+      btn.className = "district-tab" + (d.id === currentDistrict ? " active" : "");
+      btn.textContent = d.name;
+      btn.addEventListener("click", function(){
+        currentDistrict = d.id;
+        document.getElementById("map-popup").style.display = "none";
+        renderMap();
+      });
+      tabsEl.appendChild(btn);
+    });
+
+    document.getElementById("map-bg-img").src = DISTRICT_MAP_IMG[currentDistrict];
+
+    var stage = document.getElementById("map-stage");
+    // 既存ピン・現在地マーカーを除去（背景imgは残す）
+    Array.prototype.slice.call(stage.querySelectorAll(".map-pin, .you-are-here")).forEach(function(el){ el.remove(); });
+
+    var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict; });
+    var bbox = BBOX[currentDistrict];
+
+    pois.forEach(function(poi){
+      var pos = project(poi.lat, poi.lng, bbox);
+      var pin = document.createElement("div");
+      pin.className = "map-pin";
+      pin.style.left = pos.xPct + "%";
+      pin.style.top = pos.yPct + "%";
+      var found = save.found.indexOf(poi.id) !== -1;
+      pin.innerHTML = '<img src="assets/' + (found ? "pin_found" : "pin_unknown") + '.png">';
+      pin.addEventListener("click", function(ev){
+        ev.stopPropagation();
+        showPoiPopup(poi, found);
+      });
+      stage.appendChild(pin);
+    });
+
+    renderMapYouAreHere();
+
+    stage.onclick = function(ev){
+      if(save.settings.mode !== "simulate") {
+        toast("設定画面で「シミュレーション」に切り替えるとタップで移動できます");
+        return;
+      }
+      var rect = stage.getBoundingClientRect();
+      var xPct = ((ev.clientX - rect.left) / rect.width) * 100;
+      var yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+      var latlng = unproject(xPct, yPct, bbox);
+      setSimPosition(latlng.lat, latlng.lng);
+      renderMap();
+      renderSettings();
+      toast("この場所に仮想現在地を置きました");
+    };
+  }
+
+  function renderMapYouAreHere(){
+    var stage = document.getElementById("map-stage");
+    var existing = stage.querySelector(".you-are-here");
+    if(existing) existing.remove();
+    if(!currentPos) return;
+    var bbox = BBOX[currentDistrict];
+    // 現在地がこの地区のbbox範囲内にある場合のみ表示（大まかな範囲チェック）
+    var pos = project(currentPos.lat, currentPos.lng, bbox);
+    var marker = document.createElement("div");
+    marker.className = "you-are-here";
+    marker.style.left = pos.xPct + "%";
+    marker.style.top = pos.yPct + "%";
+    stage.appendChild(marker);
+  }
+
+  function showPoiPopup(poi, found){
+    var popup = document.getElementById("map-popup");
+    popup.style.display = "block";
+    var distText = "";
+    if(currentPos){
+      var d = haversine(currentPos.lat, currentPos.lng, poi.lat, poi.lng);
+      distText = "現在地から " + (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km");
+    }
+    if(found){
+      popup.innerHTML = '<div class="name">' + poi.name + '</div><div class="meta">' + poi.treasure.era + ' ・ ' + distText + '</div>';
+    } else {
+      popup.innerHTML = '<div class="name">？？？（未発見）</div><div class="meta">' + distText + '</div>';
+    }
+  }
+
+  /* ============================================================
+   * 11. UI: 図鑑
+   * ========================================================== */
+  function renderBook(){
+    document.getElementById("book-detail").style.display = "none";
+    var grid = document.getElementById("book-grid");
+    grid.innerHTML = "";
+    document.getElementById("book-progress").textContent = "発見数：" + save.found.length + " / " + DATA.pois.length;
+
+    DATA.pois.forEach(function(poi){
+      var found = save.found.indexOf(poi.id) !== -1;
+      var card = document.createElement("div");
+      card.className = "book-card";
+      if(found){
+        card.innerHTML =
+          '<img class="thumb" src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
+          '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
+      } else {
+        card.innerHTML =
+          '<div class="thumb unknown">？？？</div>' +
+          '<div class="info"><div class="title">未発見</div><div class="era">現地を訪れよう</div></div>';
+      }
+      card.addEventListener("click", function(){ showBookDetail(poi, found); });
+      grid.appendChild(card);
+    });
+  }
+
+  function showBookDetail(poi, found){
+    var detail = document.getElementById("book-detail");
+    detail.style.display = "block";
+    if(found){
+      detail.innerHTML =
+        '<img src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
+        '<h3>' + poi.treasure.title + '</h3>' +
+        '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
+        '<p>' + poi.treasure.blurb + '</p>';
+    } else {
+      detail.innerHTML =
+        '<h3>？？？</h3><div class="era">未発見</div><p>現地に近づくと図鑑に登録されます。</p>';
+    }
+    detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* ============================================================
+   * 12. UI: 設定
+   * ========================================================== */
+  function renderSettings(){
+    document.getElementById("mode-btn-gps").classList.toggle("active", save.settings.mode === "gps");
+    document.getElementById("mode-btn-sim").classList.toggle("active", save.settings.mode === "simulate");
+
+    var posLine = document.getElementById("sim-pos-line");
+    if(save.settings.simLat != null){
+      posLine.textContent = "現在の仮想現在地：緯度 " + save.settings.simLat.toFixed(5) + " / 経度 " + save.settings.simLng.toFixed(5);
+    } else {
+      posLine.textContent = "現在の仮想現在地：未設定";
+    }
+
+    var list = document.getElementById("teleport-list");
+    list.innerHTML = "";
+    DATA.pois.forEach(function(poi){
+      var btn = document.createElement("button");
+      btn.className = "teleport-btn";
+      var districtName = (DATA.districts.filter(function(d){return d.id===poi.districtId;})[0]||{}).name || "";
+      btn.textContent = "▶ " + districtName + "：" + poi.name + " へテレポート";
+      btn.disabled = (save.settings.mode !== "simulate");
+      btn.addEventListener("click", function(){
+        setSimPosition(poi.lat, poi.lng);
+        currentDistrict = poi.districtId;
+        renderSettings();
+        toast(poi.name + " にテレポートしました");
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  function setMode(mode){
+    save.settings.mode = mode;
+    persist();
+    applyMode();
+    renderSettings();
+    renderHomeFull();
+  }
+
+  function exportData(){
+    var blob = new Blob([JSON.stringify(save, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var d = new Date();
+    var fname = "tekuteku_save_" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0") + ".json";
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var parsed = JSON.parse(e.target.result);
+        var d = defaultSave();
+        save = Object.assign(d, parsed, {
+          settings: Object.assign(d.settings, parsed.settings || {}),
+          visits: parsed.visits || {},
+          found: parsed.found || []
+        });
+        persist();
+        applyMode();
+        renderAll();
+        toast("データを読み込みました");
+      }catch(err){
+        toast("読み込みに失敗しました：不正なファイルです");
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function resetData(){
+    if(!confirm("進捗をすべてリセットします。よろしいですか？")) return;
+    save = defaultSave();
+    persist();
+    applyMode();
+    renderAll();
+    toast("リセットしました");
+  }
+
+  /* ============================================================
+   * 13. 初期化
+   * ========================================================== */
+  function renderAll(){
+    renderHomeFull();
+    if(currentScreen === "map") renderMap();
+    if(currentScreen === "book") renderBook();
+    if(currentScreen === "settings") renderSettings();
+  }
+
+  function initBBoxes(){
+    DATA.districts.forEach(function(d){
+      var pois = DATA.pois.filter(function(p){ return p.districtId === d.id; });
+      BBOX[d.id] = computeBBox(pois.length ? pois : [{lat:d.center.lat,lng:d.center.lng}]);
+    });
+  }
+
+  function wireEvents(){
+    document.getElementById("btn-start").addEventListener("click", function(){
+      showScreen("home");
+      document.getElementById("bottom-nav").style.display = "flex";
+      applyMode();
+    });
+
+    document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
+      btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
+    });
+
+    document.getElementById("mode-btn-gps").addEventListener("click", function(){ setMode("gps"); });
+    document.getElementById("mode-btn-sim").addEventListener("click", function(){ setMode("simulate"); });
+
+    document.getElementById("btn-export").addEventListener("click", exportData);
+    document.getElementById("btn-import").addEventListener("click", function(){
+      document.getElementById("file-import").click();
+    });
+    document.getElementById("file-import").addEventListener("change", function(ev){
+      if(ev.target.files && ev.target.files[0]) importData(ev.target.files[0]);
+      ev.target.value = "";
+    });
+    document.getElementById("btn-reset").addEventListener("click", resetData);
+  }
+
+  function boot(data){
+    DATA = data;
+    initBBoxes();
+    wireEvents();
+    applyMode();
+    renderHomeFull();
+    setInterval(tick, 1000);
+  }
+
+  // fetchはfile://環境で失敗しうるためインラインデータへフォールバック
+  fetch("data/pois.json")
+    .then(function(res){ if(!res.ok) throw new Error("http " + res.status); return res.json(); })
+    .then(function(data){ boot(data); })
+    .catch(function(err){
+      console.warn("pois.json fetch failed, using inline fallback", err);
+      boot(INLINE_POI_DATA);
+    });
+
+})();
+</script>
+</body>
+</html>
