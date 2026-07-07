@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>ながおか探検録</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2a1f16">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="探検録">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple_touch_icon.png">
 <style>
   :root{
     --paper:#f1e6c9;
@@ -315,8 +323,89 @@
     position:absolute; bottom:80px; left:50%; transform:translateX(-50%);
     background:rgba(40,28,16,0.92); color:#fff; padding:8px 18px; border-radius:999px;
     font-size:12.5px; z-index:60; opacity:0; pointer-events:none; transition:opacity .3s;
+    max-width:86%; text-align:center;
   }
   .toast.show{ opacity:1; }
+  .toast.achievement{
+    background:var(--gold); color:#3a2a12; font-weight:900;
+    box-shadow:0 0 0 2px #fff2d6 inset, 0 0 18px rgba(201,162,39,0.75);
+    animation: toastPop .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes toastPop{
+    0%{ transform:translateX(-50%) scale(0.7); }
+    60%{ transform:translateX(-50%) scale(1.06); }
+    100%{ transform:translateX(-50%) scale(1); }
+  }
+
+  /* ---------- Screen transitions ---------- */
+  .screen{ transition: opacity .18s ease-out, transform .18s ease-out; opacity:1; transform:translateY(0); }
+  .screen.screen-enter{ opacity:0; transform:translateY(8px); }
+
+  /* ---------- Map pin drop animation ---------- */
+  @keyframes pinDrop{
+    0%{ transform:translate(-50%,-160%) scale(0.6); opacity:0; }
+    60%{ transform:translate(-50%,-94%) scale(1.1); opacity:1; }
+    100%{ transform:translate(-50%,-100%) scale(1); opacity:1; }
+  }
+  .map-pin{ animation: pinDrop .4s cubic-bezier(.34,1.56,.64,1) backwards; }
+
+  /* ---------- Reward pill pop ---------- */
+  @keyframes pillPop{
+    0%{ transform:scale(0.35); opacity:0; }
+    65%{ transform:scale(1.1); opacity:1; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .reward-pill{ animation: pillPop .4s cubic-bezier(.34,1.56,.64,1) backwards; }
+  .reward-pill:nth-child(1){ animation-delay:.05s; }
+  .reward-pill:nth-child(2){ animation-delay:.13s; }
+  .reward-pill:nth-child(3){ animation-delay:.21s; }
+  .reward-pill:nth-child(4){ animation-delay:.29s; }
+  .reward-pill:nth-child(5){ animation-delay:.37s; }
+
+  /* ---------- Level up glow ---------- */
+  @keyframes levelGlow{
+    0%,100%{ box-shadow:0 0 0 rgba(255,215,0,0); }
+    50%{ box-shadow:0 0 16px rgba(255,215,0,0.7); }
+  }
+  .levelup-banner{ animation: levelGlow 1s ease-in-out infinite; }
+
+  /* ---------- Discovery particles (sparkle / confetti) ---------- */
+  .sparkle-particle{
+    position:absolute; left:50%; top:44%; width:9px; height:9px; pointer-events:none;
+    background:radial-gradient(circle, #fff6d8 0%, var(--gold) 55%, transparent 75%);
+    border-radius:50%; z-index:2;
+    animation: sparkleBurst .85s ease-out forwards;
+  }
+  @keyframes sparkleBurst{
+    0%{ opacity:1; transform:translate(-50%,-50%) scale(0.3) translate(0,0) rotate(0deg); }
+    100%{ opacity:0; transform:translate(-50%,-50%) scale(1) translate(var(--dx), var(--dy)) rotate(180deg); }
+  }
+  .confetti-particle{
+    position:absolute; left:50%; top:40%; width:7px; height:11px; pointer-events:none;
+    border-radius:2px; z-index:2;
+    animation: confettiBurst 1s ease-out forwards;
+  }
+  @keyframes confettiBurst{
+    0%{ opacity:1; transform:translate(-50%,-50%) translate(0,0) rotate(0deg); }
+    100%{ opacity:0; transform:translate(-50%,-50%) translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+  }
+
+  /* ---------- Book card gloss / tap feedback ---------- */
+  .book-card{ transition: transform .15s ease-out; }
+  .book-card:active{ transform: scale(0.96); }
+  .book-card.found .thumb{ position:relative; overflow:hidden; }
+  .book-card.found .thumb::after{
+    content:""; position:absolute; top:0; left:-160%; width:55%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: cardShine 3.6s ease-in-out infinite;
+  }
+  @keyframes cardShine{
+    0%{ left:-160%; }
+    35%{ left:160%; }
+    100%{ left:160%; }
+  }
+
+  /* ---------- SFX settings toggle (reuse mode-btn look) ---------- */
 </style>
 </head>
 <body>
@@ -417,6 +506,15 @@
     <div class="topbar"><h1>設定</h1><div></div></div>
 
     <div class="settings-section">
+      <h2>効果音</h2>
+      <div class="mode-toggle">
+        <div class="mode-btn" id="sfx-btn-on">ON</div>
+        <div class="mode-btn" id="sfx-btn-off">OFF</div>
+      </div>
+      <div class="settings-note">発見・レベルアップ・実績解除・お買い物などのタイミングで短い効果音を鳴らします。</div>
+    </div>
+
+    <div class="settings-section">
       <h2>位置情報モード</h2>
       <div class="mode-toggle">
         <div class="mode-btn" id="mode-btn-gps">実GPS</div>
@@ -441,7 +539,8 @@
       <h2>このアプリについて</h2>
       <div class="settings-note">
         位置情報は端末内だけで処理し、外部には送信しません。進捗はブラウザのlocalStorageに保存されます。<br>
-        現在：中心部・摂田屋・山古志・寺泊の4地区、13スポット対応。ショップ・実績・称号・デイリーストリークに対応。
+        現在：中心部・摂田屋・山古志・寺泊の4地区、13スポット対応。ショップ・実績・称号・デイリーストリークに対応。<br>
+        ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
       </div>
     </div>
   </div>
@@ -503,7 +602,7 @@
         doubleCoinTicket: 0,
         treasureReplayTicket: 0
       },
-      settings: { mode: "gps", simLat: null, simLng: null },
+      settings: { mode: "gps", simLat: null, simLng: null, sfx: true },
       // Phase3 additions（後方互換：欠けていてもdefaultSaveの値で補完される）
       totalCoinsEarned: 0,
       achievements: [],          // unlocked achievement ids
@@ -615,6 +714,99 @@
       leveled = true;
     }
     return leveled;
+  }
+
+  /* ============================================================
+   * 4b. 効果音（Web Audio合成・外部ファイル不要）
+   * ========================================================== */
+  var audioCtx = null;
+
+  function ensureAudioCtx(){
+    if(!audioCtx){
+      try{
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if(AC) audioCtx = new AC();
+      }catch(e){ audioCtx = null; }
+    }
+    if(audioCtx && audioCtx.state === "suspended"){
+      audioCtx.resume().catch(function(){});
+    }
+    return audioCtx;
+  }
+
+  function sfxEnabled(){
+    return !!(save.settings && save.settings.sfx !== false);
+  }
+
+  function playNote(ctx, time, freq, duration, opts){
+    opts = opts || {};
+    try{
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = opts.type || "sine";
+      osc.frequency.setValueAtTime(freq, time);
+      if(opts.freqEnd){
+        osc.frequency.exponentialRampToValueAtTime(opts.freqEnd, time + duration);
+      }
+      var peak = opts.volume != null ? opts.volume : 0.16;
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(peak, time + (opts.attack || 0.012));
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(time);
+      osc.stop(time + duration + 0.05);
+    }catch(e){ /* 合成音の失敗はゲーム進行に影響させない */ }
+  }
+
+  function sfxTap(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    playNote(ctx, t, 740, 0.06, { type:"sine", volume:0.06, attack:0.002 });
+  }
+
+  function sfxCoin(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    playNote(ctx, t, 880, 0.12, { type:"triangle", volume:0.15, freqEnd:1320 });
+    playNote(ctx, t+0.05, 1320, 0.14, { type:"triangle", volume:0.11 });
+  }
+
+  function sfxDiscoveryFanfare(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    [523.25, 659.25, 783.99, 1046.50].forEach(function(f, i){
+      playNote(ctx, t + i*0.09, f, 0.28, { type:"triangle", volume:0.17 });
+    });
+  }
+
+  function sfxLevelUp(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    [392.00, 523.25, 659.25, 783.99, 1046.50].forEach(function(f, i){
+      playNote(ctx, t + i*0.06, f, 0.3, { type:"sawtooth", volume:0.10 });
+    });
+  }
+
+  function sfxAchievement(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    [1046.5, 1318.5, 1568.0].forEach(function(f, i){
+      playNote(ctx, t + i*0.08, f, 0.24, { type:"sine", volume:0.14 });
+    });
+  }
+
+  function sfxPurchase(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    playNote(ctx, t, 220, 0.1, { type:"square", volume:0.11 });
+    playNote(ctx, t+0.08, 660, 0.18, { type:"triangle", volume:0.13 });
   }
 
   /* ============================================================
@@ -782,10 +974,14 @@
 
     setGuideMood("happy");
     overlay.classList.add("show");
+    sfxDiscoveryFanfare();
+    if(opts.leveled){ setTimeout(sfxLevelUp, 320); }
 
     setTimeout(function(){
       chestImg.src = "assets/chest_open.png";
       spawnCoinFly();
+      spawnDiscoveryParticles();
+      sfxCoin();
     }, 450);
 
     function closeOverlay(){
@@ -809,6 +1005,38 @@
           setTimeout(function(){ c.remove(); }, 1000);
         }, i*80);
       })(i);
+    }
+  }
+
+  var CONFETTI_COLORS = ["#c0392b", "#2c3e63", "#c9a227", "#fbf4e2"];
+
+  function spawnDiscoveryParticles(){
+    var stage = document.getElementById("chest-stage");
+    // キラキラ（放射状の小さな光の粒）
+    for(var i=0;i<10;i++){
+      var s = document.createElement("div");
+      s.className = "sparkle-particle";
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 55 + Math.random()*50;
+      s.style.setProperty("--dx", Math.cos(angle)*dist + "px");
+      s.style.setProperty("--dy", Math.sin(angle)*dist + "px");
+      s.style.animationDelay = (Math.random()*0.15) + "s";
+      stage.appendChild(s);
+      (function(el){ setTimeout(function(){ el.remove(); }, 1100); })(s);
+    }
+    // 紙吹雪（控えめな数の小さな矩形）
+    for(var j=0;j<8;j++){
+      var c = document.createElement("div");
+      c.className = "confetti-particle";
+      var a2 = Math.random() * Math.PI * 2;
+      var d2 = 60 + Math.random()*60;
+      c.style.setProperty("--dx", Math.cos(a2)*d2 + "px");
+      c.style.setProperty("--dy", (Math.sin(a2)*d2 - 20) + "px");
+      c.style.setProperty("--rot", (Math.random()*360-180) + "deg");
+      c.style.background = CONFETTI_COLORS[j % CONFETTI_COLORS.length];
+      c.style.animationDelay = (Math.random()*0.12) + "s";
+      stage.appendChild(c);
+      (function(el){ setTimeout(function(){ el.remove(); }, 1250); })(c);
     }
   }
 
@@ -861,8 +1089,12 @@
 
   function showScreen(name){
     currentScreen = name;
-    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active"); });
-    document.getElementById("screen-" + name).classList.add("active");
+    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active", "screen-enter"); });
+    var target = document.getElementById("screen-" + name);
+    target.classList.add("active", "screen-enter");
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ target.classList.remove("screen-enter"); });
+    });
     document.querySelectorAll(".nav-btn").forEach(function(btn){
       btn.classList.toggle("active", btn.getAttribute("data-screen") === name);
     });
@@ -890,17 +1122,18 @@
   var toastQueue = [];
   var toastBusy = false;
 
-  function toast(msg){
-    toastQueue.push(msg);
+  function toast(msg, opts){
+    toastQueue.push({ msg: msg, achievement: !!(opts && opts.achievement) });
     processToastQueue();
   }
 
   function processToastQueue(){
     if(toastBusy || !toastQueue.length) return;
     toastBusy = true;
-    var msg = toastQueue.shift();
+    var item = toastQueue.shift();
     var t = document.getElementById("toast");
-    t.textContent = msg;
+    t.textContent = item.msg;
+    t.classList.toggle("achievement", item.achievement);
     t.classList.add("show");
     setTimeout(function(){
       t.classList.remove("show");
@@ -1008,12 +1241,13 @@
     var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict; });
     var bbox = BBOX[currentDistrict];
 
-    pois.forEach(function(poi){
+    pois.forEach(function(poi, idx){
       var pos = project(poi.lat, poi.lng, bbox);
       var pin = document.createElement("div");
       pin.className = "map-pin";
       pin.style.left = pos.xPct + "%";
       pin.style.top = pos.yPct + "%";
+      pin.style.animationDelay = (idx * 0.04) + "s";
       var found = save.found.indexOf(poi.id) !== -1;
       pin.innerHTML = '<img src="assets/' + (found ? "pin_found" : "pin_unknown") + '.png">';
       pin.addEventListener("click", function(ev){
@@ -1083,7 +1317,7 @@
     DATA.pois.forEach(function(poi){
       var found = save.found.indexOf(poi.id) !== -1;
       var card = document.createElement("div");
-      card.className = "book-card";
+      card.className = "book-card" + (found ? " found" : "");
       if(found){
         card.innerHTML =
           '<img class="thumb" src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
@@ -1205,6 +1439,8 @@
    * 12. UI: 設定
    * ========================================================== */
   function renderSettings(){
+    document.getElementById("sfx-btn-on").classList.toggle("active", sfxEnabled());
+    document.getElementById("sfx-btn-off").classList.toggle("active", !sfxEnabled());
     document.getElementById("mode-btn-gps").classList.toggle("active", save.settings.mode === "gps");
     document.getElementById("mode-btn-sim").classList.toggle("active", save.settings.mode === "simulate");
 
@@ -1239,6 +1475,13 @@
     applyMode();
     renderSettings();
     renderHomeFull();
+  }
+
+  function setSfx(on){
+    save.settings.sfx = on;
+    persist();
+    renderSettings();
+    if(on) sfxTap();
   }
 
   function exportData(){
@@ -1326,6 +1569,7 @@
     }
     save.shopPurchasedOnce = true;
     persist();
+    sfxPurchase();
     checkAchievements();
     renderShop();
     renderHomeFull();
@@ -1392,7 +1636,10 @@
       if(save.achievements.indexOf(a.id) === -1 && a.check(save)){
         save.achievements.push(a.id);
         changed = true;
-        if(!silent) toast("実績解除：" + a.name);
+        if(!silent){
+          toast("実績解除：" + a.name, { achievement: true });
+          sfxAchievement();
+        }
       }
     });
     if(changed) persist();
@@ -1447,6 +1694,27 @@
     document.getElementById("mode-btn-gps").addEventListener("click", function(){ setMode("gps"); });
     document.getElementById("mode-btn-sim").addEventListener("click", function(){ setMode("simulate"); });
 
+    document.getElementById("sfx-btn-on").addEventListener("click", function(){ setSfx(true); });
+    document.getElementById("sfx-btn-off").addEventListener("click", function(){ setSfx(false); });
+
+    // iOSはユーザー操作が起きるまでAudioContextが動かないため、最初のタップ/タッチでresumeしておく
+    function unlockAudioOnce(){
+      ensureAudioCtx();
+      document.removeEventListener("pointerdown", unlockAudioOnce);
+      document.removeEventListener("touchend", unlockAudioOnce);
+    }
+    document.addEventListener("pointerdown", unlockAudioOnce, { once:true, passive:true });
+    document.addEventListener("touchend", unlockAudioOnce, { once:true, passive:true });
+
+    // ボタン/タブの控えめなタップ音（既存のクリック処理には干渉しない委譲リスナー）
+    document.addEventListener("click", function(ev){
+      var el = ev.target.closest && ev.target.closest(
+        ".nav-btn, .district-tab, .book-subtab, .mode-btn, .teleport-btn, .settings-btn, " +
+        ".shop-buy-btn, .title-select-btn, .title-start-btn, .discover-close-btn"
+      );
+      if(el) sfxTap();
+    }, true);
+
     document.getElementById("btn-export").addEventListener("click", exportData);
     document.getElementById("btn-import").addEventListener("click", function(){
       document.getElementById("file-import").click();
@@ -1477,6 +1745,18 @@
       boot(INLINE_POI_DATA);
     });
 
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function(err){
+        console.warn("service worker registration failed", err);
+      });
+    });
+  }
 })();
 </script>
 </body>
