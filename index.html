@@ -160,6 +160,25 @@
     cursor:pointer; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));
   }
   .map-pin img{ width:100%; height:100%; }
+
+  /* ---------- Map layer toggle (お宝／お店) ---------- */
+  .map-layer-toggle{ display:flex; gap:8px; padding:0 14px 8px; }
+  .layer-chip{
+    flex:1; text-align:center; padding:6px 4px; border-radius:999px; font-size:12px; font-weight:700;
+    background:var(--paper-dark); color:var(--ink-soft); cursor:pointer; box-shadow: inset 0 0 0 1px #d8c497;
+    opacity:0.55;
+  }
+  .layer-chip.active{ opacity:1; }
+  .layer-chip.layer-treasure.active{ background:var(--gold); color:#3a2a12; }
+  .layer-chip.layer-shop.active{ background:var(--indigo); color:#fff; }
+
+  /* ---------- Shop (加盟店) pin — visually distinct from treasure pins ---------- */
+  .shop-pin-badge{
+    width:100%; height:100%; border-radius:50%; background:var(--indigo);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 2px #fff2d6, 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .shop-pin-badge img{ width:20px; height:20px; filter:brightness(0) invert(1); }
   .you-are-here{
     position:absolute; width:20px; height:20px; border-radius:50%; background:var(--vermillion);
     border:3px solid #fff; transform:translate(-50%,-50%); box-shadow:0 0 0 4px rgba(192,57,43,0.35);
@@ -406,6 +425,62 @@
   }
 
   /* ---------- SFX settings toggle (reuse mode-btn look) ---------- */
+
+  /* ---------- Shop (加盟店) detail modal ---------- */
+  #shop-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:55;
+    display:none; align-items:flex-end; justify-content:center; padding:0;
+  }
+  #shop-modal.show{ display:flex; }
+  .shop-modal-card{
+    width:100%; max-height:86%; overflow-y:auto; background:var(--card-bg);
+    border-radius:18px 18px 0 0; padding:18px 18px 24px; box-shadow:0 -4px 20px rgba(0,0,0,0.4);
+    position:relative; animation: shopModalUp .22s ease-out;
+  }
+  @keyframes shopModalUp{
+    0%{ transform:translateY(24px); opacity:0; }
+    100%{ transform:translateY(0); opacity:1; }
+  }
+  .shop-modal-close{
+    position:absolute; top:8px; right:10px; background:none; border:none; font-size:24px;
+    color:var(--ink-soft); cursor:pointer; line-height:1; padding:6px;
+  }
+  .shop-modal-category{ font-size:11.5px; color:var(--ink-soft); margin-bottom:2px; }
+  .shop-modal-name{ font-size:17px; font-weight:900; margin-bottom:6px; padding-right:24px; }
+  .shop-modal-address{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+  .shop-modal-offer{
+    background:#fff; border:2px dashed var(--vermillion); border-radius:10px; padding:10px 12px; margin-bottom:12px;
+  }
+  .shop-modal-offer .offer-title{ font-weight:900; color:var(--vermillion); font-size:13.5px; margin-bottom:3px; }
+  .shop-modal-offer .offer-desc{ font-size:12.5px; line-height:1.5; }
+  .shop-modal-links{ display:flex; gap:8px; margin-bottom:12px; }
+  .shop-modal-link-btn{
+    flex:1; text-align:center; padding:8px; border-radius:8px; background:var(--indigo); color:#fff;
+    font-size:12.5px; font-weight:700; text-decoration:none;
+  }
+  .coupon-box{
+    background:var(--paper-dark); border-radius:12px; padding:12px 14px; box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .coupon-box .coupon-title{ font-weight:700; font-size:13.5px; margin-bottom:4px; }
+  .coupon-box .coupon-terms{ font-size:11px; color:var(--ink-soft); line-height:1.5; margin-bottom:8px; }
+  .coupon-range-note{ font-size:11.5px; color:var(--ink-soft); margin-bottom:8px; }
+  .coupon-action-btn{
+    background:var(--vermillion); color:#fff; border:none; border-radius:999px; padding:9px 20px;
+    font-weight:700; font-size:13px; cursor:pointer; width:100%;
+  }
+  .coupon-action-btn:disabled{ background:#a9a186; color:#eee; cursor:default; }
+  .coupon-pin-row{ display:flex; gap:8px; margin:0 0 8px; }
+  .coupon-pin-input{
+    flex:1; font-size:16px; letter-spacing:0.3em; text-align:center; padding:9px; border-radius:8px;
+    border:2px solid #d8c497; background:#fff;
+  }
+  .coupon-pin-error{ font-size:11.5px; color:var(--vermillion); font-weight:700; margin-bottom:8px; }
+  .coupon-used-badge{
+    display:flex; flex-direction:column; gap:2px; background:#5a8a4a; color:#fff; border-radius:10px;
+    padding:10px 12px; font-weight:700; font-size:13px;
+  }
+  .coupon-used-badge .at{ font-weight:400; font-size:11.5px; opacity:0.92; }
+  .coupon-note-small{ font-size:10.5px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -466,6 +541,10 @@
   <div class="screen" id="screen-map">
     <div class="topbar"><h1>マップ</h1><div></div></div>
     <div class="district-tabs" id="map-district-tabs"></div>
+    <div class="map-layer-toggle">
+      <div class="layer-chip layer-treasure active" id="layer-chip-treasure">🗺️ お宝</div>
+      <div class="layer-chip layer-shop active" id="layer-chip-shop">🏪 お店</div>
+    </div>
     <div class="map-stage" id="map-stage">
       <img class="mapbg" id="map-bg-img" src="assets/map_chuo.png" alt="地区マップ">
     </div>
@@ -536,10 +615,17 @@
     </div>
 
     <div class="settings-section">
+      <h2>加盟店の方へ</h2>
+      <button class="settings-btn" id="btn-shop-application">法人・個人店のお客様はこちら</button>
+      <div class="settings-note">押すと申請フォームが開きます。※申請フォームは準備中です。</div>
+    </div>
+
+    <div class="settings-section">
       <h2>このアプリについて</h2>
       <div class="settings-note">
         位置情報は端末内だけで処理し、外部には送信しません。進捗はブラウザのlocalStorageに保存されます。<br>
         現在：中心部・摂田屋・山古志・寺泊・栃尾・与板・越路の7地区、16スポット対応。ショップ・実績・称号・デイリーストリークに対応。<br>
+        マップには「お宝」に加えて地域の加盟店（お店）ピンも表示されます（フェーズA・デモ実装）。お店の近くではクーポンの利用も試せます。<br>
         ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
       </div>
     </div>
@@ -566,6 +652,14 @@
     <button class="discover-close-btn" id="discover-close-btn">とじる</button>
   </div>
 
+  <!-- Shop (加盟店) detail modal -->
+  <div id="shop-modal">
+    <div class="shop-modal-card">
+      <button class="shop-modal-close" id="shop-modal-close" aria-label="とじる">×</button>
+      <div id="shop-modal-body"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -580,7 +674,19 @@
 
   var DISTRICT_MAP_IMG = { chuo:"assets/map_chuo.png", settaya:"assets/map_settaya.png", yamakoshi:"assets/map_yamakoshi.png", teradomari:"assets/map_teradomari.png", tochio:"assets/map_tochio.png", yoita:"assets/map_yoita.png", koshiji:"assets/map_koshiji.png" };
 
+  /* ============================================================
+   * 0b. 地域ビジネス連携フェーズA（docs/BUSINESS_PLATFORM.md）
+   *   ・加盟店データ（お宝ピンとは別レイヤー）／fetch失敗時のインラインフォールバック
+   *   ・申請フォームURLはまだ未定のためプレースホルダ。
+   *     TODO: masaさんの本番Googleフォーム（またはTally等）のURLに差し替える
+   * ========================================================== */
+  var SHOP_APPLICATION_URL = "https://forms.gle/REPLACE_ME"; // TODO: masaさんの本番フォームURLに差し替え
+  var DEFAULT_SHOP_RADIUS = 120; // radiusが未指定の加盟店に使う既定の圏内判定半径（m）
+
+  var INLINE_SHOP_DATA = {"_note":"フェーズA・地域ビジネス連携（docs/BUSINESS_PLATFORM.md）のデモ用データ。「東京油そば 柿川亭」はmasaさんの実店舗（長岡市南町1-10-16／国土地理院アドレスマッチングで座標取得、2026-07時点）。もう1件はフェーズA動作確認用のダミー加盟店で実在の店舗ではない。クーポンのstaffPINは全店共通で\"1234\"（デモ用固定値。本番運用では店舗ごとに変更すること）。","shops":[{"id":"kakigawatei","name":"東京油そば 柿川亭","category":"飲食店（油そば専門店）","districtId":"chuo","lat":37.44397,"lng":138.849243,"radius":100,"address":"新潟県長岡市南町1-10-16","offer":{"title":"探検者限定！トッピング1品無料","desc":"「ながおか探検録」を見せてくれた探検者に、お好きなトッピングを1つ無料でプレゼント！"},"coupon":{"id":"topping_free","title":"トッピング1つ無料券","terms":"お一人様1回限り。他のクーポン・割引との併用不可。店内飲食時のみ有効。","staffPIN":"1234"},"links":{"web":"https://kakigawatei.com/","tel":""}},{"id":"demo_settaya_zakka","name":"摂田屋のれん市場（デモ店舗）","category":"雑貨・お土産（サンプル）","districtId":"settaya","lat":37.4155,"lng":138.842,"radius":80,"address":"（デモ用の架空データです・実在の店舗ではありません）","offer":{"title":"来店記念スタンプ","desc":"来店の記念にオリジナルスタンプを1つ押します（デモ用サンプル特典）。"},"coupon":{"id":"demo_stamp","title":"記念スタンプ引換券（デモ）","terms":"これはフェーズAの動作確認用サンプルデータです。実在の店舗ではありません。","staffPIN":"1234"},"links":{"web":"","tel":""}}]};
+
   var DATA = null; // { districts, pois }
+  var SHOP_DATA = null; // { shops } - 加盟店データ（フェーズA）
   var BBOX = {};   // districtId -> bbox for map projection
 
   /* ============================================================
@@ -609,7 +715,11 @@
       selectedTitle: "t1",       // currently displayed title id
       shopPurchasedOnce: false,
       lastDiscoveryDate: null,   // yyyy-mm-dd（ストリーク計算用）
-      dailyMission: { date: null, claimed: false }
+      dailyMission: { date: null, claimed: false },
+      // 地域ビジネス連携フェーズA（後方互換：欠けていてもdefaultSave()の値で補完される）
+      // 端末内記録による簡易クーポン利用履歴。{ shopId, couponId, at(ISO日時文字列) } の配列。
+      // 低額特典向けの簡易方式（サーバー検証なし）。将来フェーズBでサーバー側検証に置き換え予定。
+      redeemedCoupons: []
     };
   }
 
@@ -623,7 +733,8 @@
       dailyMission: Object.assign(d.dailyMission, parsed.dailyMission || {}),
       visits: parsed.visits || {},
       found: parsed.found || [],
-      achievements: parsed.achievements || []
+      achievements: parsed.achievements || [],
+      redeemedCoupons: parsed.redeemedCoupons || []
     });
   }
 
@@ -1089,6 +1200,7 @@
 
   function showScreen(name){
     currentScreen = name;
+    closeShopModal();
     document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active", "screen-enter"); });
     var target = document.getElementById("screen-" + name);
     target.classList.add("active", "screen-enter");
@@ -1227,10 +1339,14 @@
       btn.addEventListener("click", function(){
         currentDistrict = d.id;
         document.getElementById("map-popup").style.display = "none";
+        closeShopModal();
         renderMap();
       });
       tabsEl.appendChild(btn);
     });
+
+    document.getElementById("layer-chip-treasure").classList.toggle("active", mapLayerState.treasure);
+    document.getElementById("layer-chip-shop").classList.toggle("active", mapLayerState.shop);
 
     document.getElementById("map-bg-img").src = DISTRICT_MAP_IMG[currentDistrict];
 
@@ -1241,21 +1357,42 @@
     var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict; });
     var bbox = BBOX[currentDistrict];
 
-    pois.forEach(function(poi, idx){
-      var pos = project(poi.lat, poi.lng, bbox);
-      var pin = document.createElement("div");
-      pin.className = "map-pin";
-      pin.style.left = pos.xPct + "%";
-      pin.style.top = pos.yPct + "%";
-      pin.style.animationDelay = (idx * 0.04) + "s";
-      var found = save.found.indexOf(poi.id) !== -1;
-      pin.innerHTML = '<img src="assets/' + (found ? "pin_found" : "pin_unknown") + '.png">';
-      pin.addEventListener("click", function(ev){
-        ev.stopPropagation();
-        showPoiPopup(poi, found);
+    if(mapLayerState.treasure){
+      pois.forEach(function(poi, idx){
+        var pos = project(poi.lat, poi.lng, bbox);
+        var pin = document.createElement("div");
+        pin.className = "map-pin";
+        pin.style.left = pos.xPct + "%";
+        pin.style.top = pos.yPct + "%";
+        pin.style.animationDelay = (idx * 0.04) + "s";
+        var found = save.found.indexOf(poi.id) !== -1;
+        pin.innerHTML = '<img src="assets/' + (found ? "pin_found" : "pin_unknown") + '.png">';
+        pin.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          showPoiPopup(poi, found);
+        });
+        stage.appendChild(pin);
       });
-      stage.appendChild(pin);
-    });
+    }
+
+    // 加盟店（お店）ピン — お宝ピンとは別レイヤー・別デザイン（フェーズA）
+    if(mapLayerState.shop && SHOP_DATA && SHOP_DATA.shops){
+      var shops = SHOP_DATA.shops.filter(function(s){ return s.districtId === currentDistrict; });
+      shops.forEach(function(shop, idx){
+        var pos = project(shop.lat, shop.lng, bbox);
+        var pin = document.createElement("div");
+        pin.className = "map-pin shop-pin";
+        pin.style.left = pos.xPct + "%";
+        pin.style.top = pos.yPct + "%";
+        pin.style.animationDelay = ((pois.length + idx) * 0.04) + "s";
+        pin.innerHTML = '<div class="shop-pin-badge"><img src="assets/ic_shop.png" alt="お店"></div>';
+        pin.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          showShopModal(shop);
+        });
+        stage.appendChild(pin);
+      });
+    }
 
     renderMapYouAreHere();
 
@@ -1303,6 +1440,163 @@
     } else {
       popup.innerHTML = '<div class="name">？？？（未発見）</div><div class="meta">' + distText + '</div>';
     }
+  }
+
+  /* ============================================================
+   * 10b. UI: マップ・お宝／お店レイヤートグル
+   * ========================================================== */
+  var mapLayerState = { treasure: true, shop: true }; // 表示中のレイヤー（セッション内のみ・保存はしない）
+
+  function toggleMapLayer(layer){
+    mapLayerState[layer] = !mapLayerState[layer];
+    renderMap();
+  }
+
+  /* ============================================================
+   * 10c. UI: 加盟店（お店）詳細モーダル・クーポン利用フロー
+   *
+   * 【フェーズA・簡易方式について】
+   * クーポンの利用確定は「スタッフ用PIN」を店頭で入力してもらう方式で、
+   * 利用記録は端末内のsave.redeemedCouponsに保存するだけ（サーバー側の検証は無い）。
+   * 低額特典（トッピング1つ無料など）向けの簡易的な不正防止（利用日時の表示のみ）であり、
+   * 確実な二重利用防止や不正対策にはならない。将来のフェーズBでサーバー側検証に置き換える想定。
+   * （docs/BUSINESS_PLATFORM.md フェーズA／セクション7・14 参照）
+   * ========================================================== */
+  var currentModalShop = null;
+  var shopModalStep = "detail"; // "detail" | "confirm" | "pin"
+  var shopModalPinError = false;
+
+  function findRedeemedCoupon(shop){
+    var couponId = shop.coupon && shop.coupon.id;
+    var list = save.redeemedCoupons || [];
+    for(var i=0;i<list.length;i++){
+      if(list[i].shopId === shop.id && (!couponId || list[i].couponId === couponId)) return list[i];
+    }
+    return null;
+  }
+
+  function redeemCoupon(shop){
+    var couponId = (shop.coupon && shop.coupon.id) || shop.id;
+    save.redeemedCoupons = save.redeemedCoupons || [];
+    save.redeemedCoupons.push({ shopId: shop.id, couponId: couponId, at: new Date().toISOString() });
+    persist();
+    sfxPurchase();
+    toast((shop.coupon.title || "クーポン") + " を使用しました！");
+  }
+
+  function formatTimestamp(iso){
+    try{
+      var d = new Date(iso);
+      return d.getFullYear() + "/" + String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") +
+        " " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+    }catch(e){ return iso; }
+  }
+
+  function showShopModal(shop){
+    currentModalShop = shop;
+    shopModalStep = "detail";
+    shopModalPinError = false;
+    document.getElementById("shop-modal").classList.add("show");
+    renderShopModalBody();
+  }
+
+  function closeShopModal(){
+    var modal = document.getElementById("shop-modal");
+    if(modal) modal.classList.remove("show");
+    currentModalShop = null;
+    shopModalStep = "detail";
+    shopModalPinError = false;
+  }
+
+  function renderShopModalBody(){
+    var shop = currentModalShop;
+    if(!shop) return;
+    var body = document.getElementById("shop-modal-body");
+    var redeemed = findRedeemedCoupon(shop);
+
+    var dist = null;
+    if(currentPos){ dist = haversine(currentPos.lat, currentPos.lng, shop.lat, shop.lng); }
+    var radius = shop.radius || DEFAULT_SHOP_RADIUS;
+    var inRange = (dist != null) && dist <= radius;
+
+    var html = "";
+    html += '<div class="shop-modal-category">' + shop.category + '</div>';
+    html += '<div class="shop-modal-name">' + shop.name + '</div>';
+    if(shop.address) html += '<div class="shop-modal-address">' + shop.address + '</div>';
+
+    if(shop.offer){
+      html += '<div class="shop-modal-offer"><div class="offer-title">' + shop.offer.title + '</div><div class="offer-desc">' + shop.offer.desc + '</div></div>';
+    }
+
+    var links = shop.links || {};
+    if(links.web || links.tel){
+      html += '<div class="shop-modal-links">';
+      if(links.web) html += '<a class="shop-modal-link-btn" href="' + links.web + '" target="_blank" rel="noopener">公式サイト</a>';
+      if(links.tel) html += '<a class="shop-modal-link-btn" href="tel:' + links.tel + '">電話をかける</a>';
+      html += '</div>';
+    }
+
+    if(shop.coupon){
+      html += '<div class="coupon-box">';
+      html += '<div class="coupon-title">' + shop.coupon.title + '</div>';
+      html += '<div class="coupon-terms">' + shop.coupon.terms + '</div>';
+
+      if(redeemed){
+        html += '<div class="coupon-used-badge">✅ 使用済み<span class="at">利用日時：' + formatTimestamp(redeemed.at) + '</span></div>';
+      } else if(shopModalStep === "confirm"){
+        html += '<div class="coupon-range-note">店頭でスタッフに画面を見せ、確認をお願いしてください。</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-to-pin">スタッフPIN入力へ進む</button>';
+      } else if(shopModalStep === "pin"){
+        html += '<div class="coupon-range-note">スタッフの方は、確認用PINをここに入力してください。</div>';
+        html += '<div class="coupon-pin-row"><input type="tel" inputmode="numeric" maxlength="8" class="coupon-pin-input" id="coupon-pin-input" placeholder="PIN"></div>';
+        if(shopModalPinError) html += '<div class="coupon-pin-error">PINが違います。もう一度お試しください。</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-confirm-pin">確定する</button>';
+      } else if(inRange){
+        html += '<div class="coupon-range-note">お店の近くにいます（現在地から約' + Math.round(dist) + 'm）</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-use">クーポンを使う</button>';
+      } else {
+        var distText = dist != null
+          ? ('現在地から約' + (dist < 1000 ? Math.round(dist) + 'm' : (dist/1000).toFixed(1) + 'km'))
+          : '現在地が取得できません（設定でシミュレーションを使うと確認できます）';
+        html += '<div class="coupon-range-note">お店の近くに来ると使えるようになります（' + distText + '）</div>';
+        html += '<button class="coupon-action-btn" disabled>クーポンを使う</button>';
+      }
+
+      html += '<div class="coupon-note-small">※このクーポンは端末内の記録による簡易方式です（フェーズA）。ご利用は店頭でスタッフの確認のもとお願いします。将来的にはサーバー側で確認する仕組みに拡張予定です。</div>';
+      html += '</div>';
+    }
+
+    body.innerHTML = html;
+
+    var useBtn = document.getElementById("btn-coupon-use");
+    if(useBtn) useBtn.addEventListener("click", function(){
+      shopModalStep = "confirm";
+      renderShopModalBody();
+    });
+
+    var toPinBtn = document.getElementById("btn-coupon-to-pin");
+    if(toPinBtn) toPinBtn.addEventListener("click", function(){
+      shopModalStep = "pin";
+      shopModalPinError = false;
+      renderShopModalBody();
+    });
+
+    var confirmPinBtn = document.getElementById("btn-coupon-confirm-pin");
+    if(confirmPinBtn) confirmPinBtn.addEventListener("click", function(){
+      var input = document.getElementById("coupon-pin-input");
+      var val = input ? input.value.trim() : "";
+      if(shop.coupon.staffPIN && val === shop.coupon.staffPIN){
+        redeemCoupon(shop);
+        shopModalPinError = false;
+        shopModalStep = "detail";
+        renderShopModalBody();
+      } else {
+        shopModalPinError = true;
+        renderShopModalBody();
+        var retryInput = document.getElementById("coupon-pin-input");
+        if(retryInput) retryInput.focus();
+      }
+    });
   }
 
   /* ============================================================
@@ -1675,7 +1969,10 @@
   function initBBoxes(){
     DATA.districts.forEach(function(d){
       var pois = DATA.pois.filter(function(p){ return p.districtId === d.id; });
-      BBOX[d.id] = computeBBox(pois.length ? pois : [{lat:d.center.lat,lng:d.center.lng}]);
+      // 加盟店（お店）ピンも同じ地図上に投影するため、bbox計算にお店の座標も含める（既存のcomputeBBox/projectをそのまま流用）
+      var shops = (SHOP_DATA && SHOP_DATA.shops) ? SHOP_DATA.shops.filter(function(s){ return s.districtId === d.id; }) : [];
+      var points = pois.concat(shops);
+      BBOX[d.id] = computeBBox(points.length ? points : [{lat:d.center.lat,lng:d.center.lng}]);
     });
   }
 
@@ -1697,6 +1994,21 @@
     document.getElementById("mode-btn-gps").addEventListener("click", function(){ setMode("gps"); });
     document.getElementById("mode-btn-sim").addEventListener("click", function(){ setMode("simulate"); });
 
+    // お宝／お店 レイヤートグル
+    document.getElementById("layer-chip-treasure").addEventListener("click", function(){ toggleMapLayer("treasure"); });
+    document.getElementById("layer-chip-shop").addEventListener("click", function(){ toggleMapLayer("shop"); });
+
+    // 加盟店（お店）詳細モーダル
+    document.getElementById("shop-modal-close").addEventListener("click", closeShopModal);
+    document.getElementById("shop-modal").addEventListener("click", function(ev){
+      if(ev.target.id === "shop-modal") closeShopModal(); // 背景タップで閉じる
+    });
+
+    // 「法人・個人店のお客様はこちら」→ 申請フォーム（URLは準備中のプレースホルダ）
+    document.getElementById("btn-shop-application").addEventListener("click", function(){
+      window.open(SHOP_APPLICATION_URL, "_blank", "noopener");
+    });
+
     document.getElementById("sfx-btn-on").addEventListener("click", function(){ setSfx(true); });
     document.getElementById("sfx-btn-off").addEventListener("click", function(){ setSfx(false); });
 
@@ -1713,7 +2025,8 @@
     document.addEventListener("click", function(ev){
       var el = ev.target.closest && ev.target.closest(
         ".nav-btn, .district-tab, .book-subtab, .mode-btn, .teleport-btn, .settings-btn, " +
-        ".shop-buy-btn, .title-select-btn, .title-start-btn, .discover-close-btn"
+        ".shop-buy-btn, .title-select-btn, .title-start-btn, .discover-close-btn, " +
+        ".layer-chip, .shop-modal-close, .coupon-action-btn, #btn-shop-application"
       );
       if(el) sfxTap();
     }, true);
@@ -1739,6 +2052,16 @@
     setInterval(tick, 1000);
   }
 
+  // 加盟店データの読み込み（フェーズA・地域ビジネス連携）。お宝(pois.json)とは独立したデータ・独立したfetchで、
+  // 失敗してもお宝側の機能には一切影響しない（データ分離）。
+  function bootShops(shopData){
+    SHOP_DATA = shopData;
+    if(DATA){
+      initBBoxes(); // お店の座標もbboxに含めるため再計算
+      if(currentScreen === "map") renderMap();
+    }
+  }
+
   // fetchはfile://環境で失敗しうるためインラインデータへフォールバック
   fetch("data/pois.json")
     .then(function(res){ if(!res.ok) throw new Error("http " + res.status); return res.json(); })
@@ -1746,6 +2069,14 @@
     .catch(function(err){
       console.warn("pois.json fetch failed, using inline fallback", err);
       boot(INLINE_POI_DATA);
+    });
+
+  fetch("data/shops.json")
+    .then(function(res){ if(!res.ok) throw new Error("http " + res.status); return res.json(); })
+    .then(function(data){ bootShops(data); })
+    .catch(function(err){
+      console.warn("shops.json fetch failed, using inline fallback", err);
+      bootShops(INLINE_SHOP_DATA);
     });
 
 })();

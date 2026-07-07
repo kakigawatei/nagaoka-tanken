@@ -2,7 +2,7 @@
  * ながおか探検録 - Service Worker
  *
  * キャッシュ戦略：
- *  - index.html / data/pois.json  : network-first（オンライン時は常に最新を取得。オフライン時のみキャッシュへフォールバック）
+ *  - index.html / data/pois.json / data/shops.json : network-first（オンライン時は常に最新を取得。オフライン時のみキャッシュへフォールバック）
  *  - それ以外の同一オリジンGET（画像・manifestなど）: stale-while-revalidate（即キャッシュ返却＋裏で更新）
  *
  * 更新の確実な反映のために：
@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v2";
+var CACHE_VERSION = "v3";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -24,6 +24,7 @@ var PRECACHE_URLS = [
   "index.html",
   "manifest.webmanifest",
   "data/pois.json",
+  "data/shops.json",
   "assets/app_icon_192.png",
   "assets/app_icon_512.png",
   "assets/apple_touch_icon.png",
@@ -114,7 +115,8 @@ function isNetworkFirstRequest(url) {
   return (
     url.pathname.endsWith("/index.html") ||
     url.pathname.endsWith("/") ||
-    url.pathname.endsWith("/data/pois.json")
+    url.pathname.endsWith("/data/pois.json") ||
+    url.pathname.endsWith("/data/shops.json")
   );
 }
 
