@@ -4,7 +4,10 @@
     { "id": "chuo", "name": "長岡（中心部）", "center": { "lat": 37.450403, "lng": 138.852175 }, "unlockLevel": 1 },
     { "id": "settaya", "name": "摂田屋", "center": { "lat": 37.416123, "lng": 138.840705 }, "unlockLevel": 1 },
     { "id": "yamakoshi", "name": "山古志", "center": { "lat": 37.324604, "lng": 138.882782 }, "unlockLevel": 1 },
-    { "id": "teradomari", "name": "寺泊", "center": { "lat": 37.644131, "lng": 138.767471 }, "unlockLevel": 1 }
+    { "id": "teradomari", "name": "寺泊", "center": { "lat": 37.644131, "lng": 138.767471 }, "unlockLevel": 1 },
+    { "id": "tochio", "name": "栃尾", "center": { "lat": 37.472698, "lng": 138.994683 }, "unlockLevel": 1 },
+    { "id": "yoita", "name": "与板", "center": { "lat": 37.537002, "lng": 138.807238 }, "unlockLevel": 1 },
+    { "id": "koshiji", "name": "越路", "center": { "lat": 37.385444, "lng": 138.759087 }, "unlockLevel": 1 }
   ],
   "pois": [
     {
@@ -252,6 +255,63 @@
         "era": "通称「魚のアメ横」",
         "blurb": "長岡市寺泊、日本海沿いの国道402号沿いに鮮魚店・土産物店が軒を連ねる「魚の市場通り」。その賑わいから「魚のアメ横」の愛称で親しまれ、寺泊港に水揚げされた新鮮な魚介類や干物、焼き魚などを求めて多くの観光客が訪れる。営業時間は8時30分から17時までで、年中無休で営業している。",
         "image": "card_teradomari.png"
+      }
+    },
+    {
+      "id": "tochio",
+      "districtId": "tochio",
+      "name": "栃尾 秋葉神社",
+      "lat": 37.472698,
+      "lng": 138.994683,
+      "radius": 80,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "神社・城下町",
+      "treasure": {
+        "title": "栃尾 秋葉神社",
+        "era": "天文20年(1551)上杉謙信ゆかり",
+        "blurb": "上杉謙信（当時は長尾景虎）が旗揚げしたと伝わる栃尾城跡の対岸、秋葉公園内に鎮座する神社。天文20年（1551）、常安寺の守護神として楡原の蔵王堂から遷されたのが始まりと伝わり、火伏せの神「秋葉三尺坊大権現」として篤く信仰されている。栃尾は名物「栃尾あぶらげ」でも知られ、謙信ゆかりの城下町らしい趣を今に伝える。",
+        "image": "card_tochio.png"
+      }
+    },
+    {
+      "id": "yoita",
+      "districtId": "yoita",
+      "name": "与板 都野神社",
+      "lat": 37.537002,
+      "lng": 138.807238,
+      "radius": 80,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "神社・城下町",
+      "treasure": {
+        "title": "与板 都野神社",
+        "era": "延長5年(927)延喜式内社／直江兼続ゆかり",
+        "blurb": "延長5年（927）の『延喜式神名帳』にも記載される、信濃川舟運の要衝・与板の総鎮守。与板城主・直江兼続が九州の宇佐八幡宮から祭神を勧請して以来「八幡宮」とも呼ばれるようになった。直江兼続ゆかりの与板は、兼続が城を構えた城下町として今も歴史の面影を残している。",
+        "image": "card_yoita.png"
+      }
+    },
+    {
+      "id": "hotokusan",
+      "districtId": "koshiji",
+      "name": "宝徳山稲荷大社",
+      "lat": 37.385444,
+      "lng": 138.759087,
+      "radius": 80,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "神社・信仰",
+      "treasure": {
+        "title": "宝徳山稲荷大社",
+        "era": "文政年間(1820頃)現在地に遷営",
+        "blurb": "祭神に天照白菊宝徳稲荷大神など三柱をまつる神社で、創祀は縄文の昔にまで遡ると伝わる。文政年間（1820年頃）、中之岳の銀が峰からこの地・奥之院長者原へ遷営されたとされ、以来全国から年間30万人余りの参拝者を集める信仰の地となっている。長岡市南西、旧越路町飯塚の丘陵地に鎮座する。",
+        "image": "card_hotokusan.png"
       }
     }
   ]
