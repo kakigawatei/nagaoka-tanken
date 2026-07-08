@@ -11,7 +11,13 @@ const ICONS_256 = [
   "ic_home.png", "ic_map.png", "ic_book.png", "ic_shop.png", "ic_settings.png",
   "chest_closed.png", "chest_open.png"
 ];
-const GUIDE_H512 = ["guide_idle.png", "guide_happy.png", "guide_point.png"];
+const GUIDE_H512 = [
+  "guide_idle.png", "guide_happy.png", "guide_point.png",
+  // 衣装（コスプレ）スプライト。本アート差し替え時はassets/original/の同名ファイルを上書きしてから再実行すればよい
+  "guide_idle_isoroku.png", "guide_happy_isoroku.png", "guide_point_isoroku.png",
+  "guide_idle_tsuginosuke.png", "guide_happy_tsuginosuke.png", "guide_point_tsuginosuke.png",
+  "guide_idle_torasaburo.png", "guide_happy_torasaburo.png", "guide_point_torasaburo.png"
+];
 const WIDTH_1024 = ["title_frame.png", "map_chuo.png", "map_settaya.png", "map_yamakoshi.png", "map_teradomari.png", "map_tochio.png", "map_yoita.png", "map_koshiji.png"];
 const CARD_W768 = [
   "card_aore.png", "card_yamamoto.png", "card_kawai.png", "card_kina_saffron.png", "card_yoshinogawa.png",

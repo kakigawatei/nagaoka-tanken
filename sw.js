@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v3";
+var CACHE_VERSION = "v4";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -36,6 +36,16 @@ var PRECACHE_URLS = [
   "assets/guide_idle.png",
   "assets/guide_happy.png",
   "assets/guide_point.png",
+  // 衣装（コスプレ）スプライト
+  "assets/guide_idle_isoroku.png",
+  "assets/guide_happy_isoroku.png",
+  "assets/guide_point_isoroku.png",
+  "assets/guide_idle_tsuginosuke.png",
+  "assets/guide_happy_tsuginosuke.png",
+  "assets/guide_point_tsuginosuke.png",
+  "assets/guide_idle_torasaburo.png",
+  "assets/guide_happy_torasaburo.png",
+  "assets/guide_point_torasaburo.png",
   "assets/chest_closed.png",
   "assets/chest_open.png",
   "assets/ic_home.png",
