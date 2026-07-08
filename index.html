@@ -6,6 +6,20 @@
 <title>ながおか探検録</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2a1f16">
+<script>
+/* 全ブラウザ共通で画面高を合わせる。100dvh/100%はブラウザ(通常/アプリ内/スタンドアロン)で
+   解釈が異なり下部ナビがズレるため、実測の window.innerHeight を --vh に入れ html/body/#app に使う。 */
+(function(){
+  function setVH(){
+    document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', function(){ setTimeout(setVH, 250); });
+  window.addEventListener('pageshow', setVH);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setVH); }
+})();
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,8 +40,10 @@
   }
   *{box-sizing:border-box;}
   html,body{
-    margin:0; padding:0; height:100%;
-    background:var(--paper-dark);  /* 下部ナビと同色。dvhズレで隙間が出てもナビが下端まで繋がって見える */
+    margin:0; padding:0;
+    height:100%;              /* フォールバック */
+    height:var(--vh, 100%);   /* JS実測(innerHeight)。全ブラウザで実表示高さに一致 */
+    background:var(--paper-dark);  /* 下部ナビと同色。万一隙間が出てもナビが下端まで繋がって見える */
     font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
     color:var(--ink);
     -webkit-tap-highlight-color:transparent;
@@ -38,8 +54,8 @@
     max-width:440px;
     width:100%;
     margin:0 auto 0 0;
-    height:100dvh;   /* 対応ブラウザ用フォールバック */
-    height:100%;     /* html/body(=画面全体)に一致させ、下部ナビを画面の最下部に密着させる */
+    height:100dvh;             /* 対応ブラウザ用フォールバック */
+    height:var(--vh, 100dvh);  /* JS実測(innerHeight)で全ブラウザ画面高に一致→ナビを最下部に密着 */
     background:var(--paper);
     position:relative;
     display:flex;
