@@ -42,7 +42,7 @@
   *{box-sizing:border-box;}
   html,body{
     margin:0; padding:0; height:100%;
-    background:#2a2118;
+    background:var(--paper-dark);  /* 下部ナビと同色。dvhズレで隙間が出てもナビが下端まで繋がって見える */
     font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
     color:var(--ink);
     -webkit-tap-highlight-color:transparent;
@@ -265,8 +265,9 @@
 
   /* ---------- Bottom nav ---------- */
   .bottom-nav{
-    position:absolute; bottom:0; left:0; right:0; height:66px; display:flex;
-    padding-bottom:env(safe-area-inset-bottom);  /* ホームインジケータ分を確保 */
+    position:absolute; bottom:0; left:0; right:0; display:flex;
+    height:calc(66px + env(safe-area-inset-bottom));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
+    padding-bottom:env(safe-area-inset-bottom);
     background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
   }
   .nav-btn{
