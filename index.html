@@ -527,6 +527,51 @@
     font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;
   }
   .base-up-btn:disabled{ background:#a9a186; color:#eee; cursor:default; }
+
+  /* ---------- 現地ガチャ ---------- */
+  .gacha-here-btn{
+    display:block; margin:0 16px 12px; width:calc(100% - 32px);
+    background:linear-gradient(135deg,var(--vermillion),#e0603a); color:#fff; border:none;
+    border-radius:12px; padding:13px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
+    box-shadow:0 3px 10px rgba(192,57,43,0.35);
+  }
+  #gacha-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  #gacha-modal.show{ display:flex; }
+  .gacha-modal-card{
+    width:100%; max-width:320px; background:var(--card-bg); border-radius:18px;
+    padding:22px 20px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.45);
+    border:2px solid var(--vermillion); position:relative; animation: shopModalUp .24s ease-out;
+  }
+  .gacha-title{ font-size:18px; font-weight:900; color:var(--vermillion); margin-bottom:2px; }
+  .gacha-spot{ font-size:12px; color:var(--ink-soft); margin-bottom:14px; }
+  .gacha-result{
+    min-height:64px; display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:800; color:var(--ink); line-height:1.5; margin-bottom:16px;
+    background:var(--paper); border-radius:12px; padding:12px;
+  }
+  .gacha-result.pop{ animation: gachaPop .35s ease-out; }
+  @keyframes gachaPop{ 0%{ transform:scale(0.8); opacity:0.3; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+  .gacha-dup{ font-size:12px; color:var(--ink-soft); font-weight:400; }
+  .gacha-spin-btn{
+    width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:12px;
+    padding:13px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit;
+  }
+  .gacha-spin-btn:disabled{ background:#c9a99f; cursor:default; }
+  .gacha-note{ font-size:11.5px; color:var(--ink-soft); margin-top:8px; }
+
+  /* ---------- おみやげコレクション ---------- */
+  .omiyage-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:6px 14px 4px; }
+  .omiyage-cell{
+    background:var(--card-bg); border-radius:12px; padding:12px 6px; text-align:center;
+    box-shadow:var(--shadow); opacity:0.55;
+  }
+  .omiyage-cell.has{ opacity:1; }
+  .omiyage-emoji{ font-size:30px; line-height:1.1; }
+  .omiyage-name{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
+  .omiyage-cell.has .omiyage-name{ color:var(--ink); }
   .shop-modal-close{
     position:absolute; top:8px; right:10px; background:none; border:none; font-size:24px;
     color:var(--ink-soft); cursor:pointer; line-height:1; padding:6px;
@@ -606,6 +651,8 @@
 
     <div class="in-range-banner" id="home-inrange-banner" style="display:none;">この場所であやしい気配…その場にとどまろう</div>
 
+    <button class="gacha-here-btn" id="home-gacha-btn" style="display:none;">🎰 ここでガチャを回す</button>
+
     <div class="level-box">
       <div class="lvl-row"><span>Lv <span id="home-level2">1</span></span><span id="home-xp-label">0 / 50 XP</span></div>
       <div class="xp-bar-outer"><div class="xp-bar-inner" id="home-xp-bar"></div></div>
@@ -661,6 +708,7 @@
       <div class="book-subtab active" data-sub="book">図鑑</div>
       <div class="book-subtab" data-sub="ach">実績</div>
       <div class="book-subtab" data-sub="title">称号</div>
+      <div class="book-subtab" data-sub="omiyage">おみやげ</div>
     </div>
     <div id="book-panel-book">
       <div class="book-progress" id="book-progress">発見数：0 / 0</div>
@@ -672,6 +720,11 @@
     </div>
     <div id="book-panel-title" style="display:none;">
       <div class="title-list" id="title-list"></div>
+    </div>
+    <div id="book-panel-omiyage" style="display:none;">
+      <div class="book-progress" id="omiyage-progress">あつめた数：0 / 0</div>
+      <div class="omiyage-grid" id="omiyage-grid"></div>
+      <div class="settings-note" style="padding:0 14px 14px;">おみやげは、発見済みスポットに再訪して「ガチャ」を回すと手に入ります。</div>
     </div>
   </div>
 
@@ -788,6 +841,18 @@
     </div>
   </div>
 
+  <!-- 現地ガチャ -->
+  <div id="gacha-modal">
+    <div class="gacha-modal-card">
+      <button class="shop-modal-close" id="gacha-close" aria-label="とじる">×</button>
+      <div class="gacha-title">🎰 ここでガチャ</div>
+      <div class="gacha-spot" id="gacha-spot-name"></div>
+      <div class="gacha-result" id="gacha-result">ボタンを押して回そう！</div>
+      <button class="gacha-spin-btn" id="gacha-spin-btn">回す</button>
+      <div class="gacha-note" id="gacha-note"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -857,7 +922,10 @@
       loginBonus: { lastDate: null, day: 0 },
       // 探検隊の拠点（放置コイン採取）（後方互換：欠けていてもdefaultSave()の値で補完される）
       // lastCollect: 最後に回収した時刻(ms)／members: 隊員数(採取速度)／storage: 倉庫Lv(貯蔵上限)
-      base: { lastCollect: Date.now(), members: 1, storage: 1 }
+      base: { lastCollect: Date.now(), members: 1, storage: 1 },
+      // 現地ガチャ（後方互換：欠けていてもdefaultSave()の値で補完される）
+      omiyage: [],                    // 集めたご当地おみやげのid
+      gacha: { lastFreeDate: null }   // 1日1回無料ガチャの管理（最後に無料を回した日）
     };
   }
 
@@ -875,7 +943,9 @@
       redeemedCoupons: parsed.redeemedCoupons || [],
       costumes: Object.assign(d.costumes, parsed.costumes || {}),
       loginBonus: Object.assign(d.loginBonus, parsed.loginBonus || {}),
-      base: Object.assign(d.base, parsed.base || {})
+      base: Object.assign(d.base, parsed.base || {}),
+      omiyage: parsed.omiyage || [],
+      gacha: Object.assign(d.gacha, parsed.gacha || {})
     });
   }
 
@@ -1311,6 +1381,130 @@
     }
   }
 
+  /* ---------- 現地ガチャ ＆ ご当地おみやげコレクション ---------- */
+  // 発見済みスポットに再訪（圏内）すると回せる。1日1回無料、追加はコイン。
+  var GACHA_COST = 100;
+  // ご当地おみやげ（絵文字＋名前ベース）。集めて図鑑「おみやげ」タブでコンプ。
+  var OMIYAGE = [
+    { id:"hanabi",    emoji:"🎆", name:"花火のうちわ" },
+    { id:"koi",       emoji:"🐟", name:"錦鯉の根付" },
+    { id:"jizake",    emoji:"🍶", name:"摂田屋の地酒ボトル" },
+    { id:"abura",     emoji:"🍢", name:"栃尾のあぶらげ" },
+    { id:"komehyo",   emoji:"🌾", name:"米百俵せんべい" },
+    { id:"himono",    emoji:"🐡", name:"寺泊の干物セット" },
+    { id:"kabuto",    emoji:"🗡️", name:"兼続の兜キーホルダー" },
+    { id:"kitsune",   emoji:"🦊", name:"宝徳山のきつね土鈴" },
+    { id:"omamori",   emoji:"⛩️", name:"秋葉神社のお守り" },
+    { id:"hagaki",    emoji:"🏯", name:"長岡城の絵はがき" },
+    { id:"shiori",    emoji:"🌸", name:"悠久山の桜のしおり" },
+    { id:"medal",     emoji:"🧭", name:"探検隊メダル" }
+  ];
+  // 排出テーブル（wは重み）。数値・確率はここで一括調整可。
+  var GACHA_TABLE = [
+    { w:28, type:"coin", min:30,  max:70 },
+    { w:18, type:"coin", min:90,  max:140 },
+    { w:22, type:"omiyage" },
+    { w:12, type:"item", item:"doubleCoinTicket" },
+    { w:10, type:"item", item:"treasureReplayTicket" },
+    { w:6,  type:"coin", min:300, max:300, jackpot:true }
+  ];
+
+  function gachaFreeAvailable(){ return save.gacha.lastFreeDate !== todayStr(); }
+
+  function rollGacha(){
+    var total = 0, i;
+    for(i=0;i<GACHA_TABLE.length;i++) total += GACHA_TABLE[i].w;
+    var r = Math.random() * total, acc = 0, pick = GACHA_TABLE[0];
+    for(i=0;i<GACHA_TABLE.length;i++){ acc += GACHA_TABLE[i].w; if(r < acc){ pick = GACHA_TABLE[i]; break; } }
+    if(pick.type === "coin"){
+      var amt = pick.min === pick.max ? pick.min : (pick.min + Math.floor(Math.random()*(pick.max - pick.min + 1)));
+      return { type:"coin", amount:amt, jackpot:!!pick.jackpot };
+    }
+    if(pick.type === "item"){
+      return { type:"item", item:pick.item, label: pick.item === "doubleCoinTicket" ? "ダブルコイン券" : "お宝再鑑賞券" };
+    }
+    var o = OMIYAGE[Math.floor(Math.random()*OMIYAGE.length)];
+    if(save.omiyage.indexOf(o.id) !== -1){
+      return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:false, consolationCoins:50 };
+    }
+    return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:true };
+  }
+
+  function applyGachaResult(res){
+    if(res.type === "coin"){ save.coins += res.amount; save.totalCoinsEarned += res.amount; }
+    else if(res.type === "item"){ save.inventory[res.item] = (save.inventory[res.item] || 0) + 1; }
+    else if(res.type === "omiyage"){
+      if(res.isNew){ save.omiyage.push(res.id); }
+      else { save.coins += res.consolationCoins; save.totalCoinsEarned += res.consolationCoins; }
+    }
+  }
+
+  function spinGacha(){
+    var free = gachaFreeAvailable();
+    if(!free && save.coins < GACHA_COST){ toast("コインが足りません"); return; }
+    if(free){ save.gacha.lastFreeDate = todayStr(); }
+    else { save.coins -= GACHA_COST; }
+    var res = rollGacha();
+    applyGachaResult(res);
+    persist();
+    if(typeof sfxCoin === "function") sfxCoin();
+    checkAchievements();
+    renderAll();
+    showGachaResultInModal(res);
+    updateGachaSpinBtn();
+  }
+
+  function gachaResultText(res){
+    if(res.type === "coin") return (res.jackpot ? "大当たり！ " : "") + "コイン ＋" + res.amount;
+    if(res.type === "item") return res.label + " ×1";
+    if(res.isNew) return "🎁 新しいおみやげ！<br>" + res.emoji + " " + res.name;
+    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（持っている→コイン＋" + res.consolationCoins + "）</span>";
+  }
+
+  function showGachaResultInModal(res){
+    var el = document.getElementById("gacha-result");
+    el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    el.innerHTML = gachaResultText(res);
+  }
+
+  function updateGachaSpinBtn(){
+    var btn = document.getElementById("gacha-spin-btn");
+    var note = document.getElementById("gacha-note");
+    if(gachaFreeAvailable()){
+      btn.textContent = "無料で回す！"; btn.disabled = false;
+      note.textContent = "今日はまだ無料で回せます";
+    } else {
+      btn.textContent = GACHA_COST + "コインで回す";
+      btn.disabled = save.coins < GACHA_COST;
+      note.textContent = "所持コイン：" + save.coins;
+    }
+  }
+
+  function openGachaModal(poiId){
+    var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
+    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "";
+    document.getElementById("gacha-result").innerHTML = "ボタンを押して回そう！";
+    updateGachaSpinBtn();
+    document.getElementById("gacha-modal").classList.add("show");
+  }
+
+  function renderOmiyage(){
+    var grid = document.getElementById("omiyage-grid");
+    if(!grid) return;
+    var owned = save.omiyage.length;
+    document.getElementById("omiyage-progress").textContent = "あつめた数：" + owned + " / " + OMIYAGE.length;
+    grid.innerHTML = "";
+    OMIYAGE.forEach(function(o){
+      var has = save.omiyage.indexOf(o.id) !== -1;
+      var cell = document.createElement("div");
+      cell.className = "omiyage-cell" + (has ? " has" : "");
+      cell.innerHTML = has
+        ? ("<div class=\"omiyage-emoji\">" + o.emoji + "</div><div class=\"omiyage-name\">" + o.name + "</div>")
+        : ("<div class=\"omiyage-emoji\">？</div><div class=\"omiyage-name\">？？？</div>");
+      grid.appendChild(cell);
+    });
+  }
+
   function attemptDiscovery(poi){
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
@@ -1471,9 +1665,15 @@
     }
 
     var banner = document.getElementById("home-inrange-banner");
+    var gachaBtn = document.getElementById("home-gacha-btn");
 
     if(inRange){
-      banner.style.display = "block";
+      var alreadyFound = save.found.indexOf(inRange.poi.id) !== -1;
+      // 未発見＝「あやしい気配」バナー／発見済み＝再訪でガチャボタン
+      banner.style.display = alreadyFound ? "none" : "block";
+      gachaBtn.style.display = alreadyFound ? "block" : "none";
+      if(alreadyFound) gachaBtn.setAttribute("data-poi", inRange.poi.id);
+      // 滞在で発見（初回）／本日ぶんの再訪コイン（既存挙動は維持）
       if(!dwellCandidate || dwellCandidate.poiId !== inRange.poi.id){
         dwellCandidate = { poiId: inRange.poi.id, since: Date.now() };
       } else if(Date.now() - dwellCandidate.since >= DWELL_MS){
@@ -1482,6 +1682,7 @@
     } else {
       dwellCandidate = null;
       banner.style.display = "none";
+      gachaBtn.style.display = "none";
     }
 
     renderHomeNearest();
@@ -1993,9 +2194,11 @@
     document.getElementById("book-panel-book").style.display = (name === "book") ? "block" : "none";
     document.getElementById("book-panel-ach").style.display = (name === "ach") ? "block" : "none";
     document.getElementById("book-panel-title").style.display = (name === "title") ? "block" : "none";
+    document.getElementById("book-panel-omiyage").style.display = (name === "omiyage") ? "block" : "none";
     if(name === "book") renderBook();
     if(name === "ach") renderAchievements();
     if(name === "title") renderTitlesList();
+    if(name === "omiyage") renderOmiyage();
   }
 
   function renderAchievements(){
@@ -2449,6 +2652,14 @@
     document.getElementById("base-storage-btn").addEventListener("click", upgradeStorage);
     // 拠点の採取量を数秒ごとに更新（ホーム表示中のみ）
     setInterval(function(){ if(currentScreen === "home") renderBaseCard(); }, 5000);
+
+    document.getElementById("home-gacha-btn").addEventListener("click", function(ev){
+      openGachaModal(ev.currentTarget.getAttribute("data-poi"));
+    });
+    document.getElementById("gacha-spin-btn").addEventListener("click", spinGacha);
+    document.getElementById("gacha-close").addEventListener("click", function(){
+      document.getElementById("gacha-modal").classList.remove("show");
+    });
 
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
