@@ -853,6 +853,8 @@
     </div>
   </div>
 
+  <canvas id="fw-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:70;display:none;"></canvas>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -1400,13 +1402,12 @@
     { id:"medal",     emoji:"🧭", name:"探検隊メダル" }
   ];
   // 排出テーブル（wは重み）。数値・確率はここで一括調整可。
+  // ※コインは出さない（回し得を防ぐため）。おみやげ＆アイテム＆レア(券×3)のみ。
   var GACHA_TABLE = [
-    { w:28, type:"coin", min:30,  max:70 },
-    { w:18, type:"coin", min:90,  max:140 },
-    { w:22, type:"omiyage" },
-    { w:12, type:"item", item:"doubleCoinTicket" },
-    { w:10, type:"item", item:"treasureReplayTicket" },
-    { w:6,  type:"coin", min:300, max:300, jackpot:true }
+    { w:45, type:"omiyage" },
+    { w:28, type:"item", item:"doubleCoinTicket" },
+    { w:20, type:"item", item:"treasureReplayTicket" },
+    { w:7,  type:"item", item:"doubleCoinTicket", qty:3, jackpot:true }
   ];
 
   function gachaFreeAvailable(){ return save.gacha.lastFreeDate !== todayStr(); }
@@ -1416,26 +1417,23 @@
     for(i=0;i<GACHA_TABLE.length;i++) total += GACHA_TABLE[i].w;
     var r = Math.random() * total, acc = 0, pick = GACHA_TABLE[0];
     for(i=0;i<GACHA_TABLE.length;i++){ acc += GACHA_TABLE[i].w; if(r < acc){ pick = GACHA_TABLE[i]; break; } }
-    if(pick.type === "coin"){
-      var amt = pick.min === pick.max ? pick.min : (pick.min + Math.floor(Math.random()*(pick.max - pick.min + 1)));
-      return { type:"coin", amount:amt, jackpot:!!pick.jackpot };
-    }
     if(pick.type === "item"){
-      return { type:"item", item:pick.item, label: pick.item === "doubleCoinTicket" ? "ダブルコイン券" : "お宝再鑑賞券" };
+      return { type:"item", item:pick.item, qty:pick.qty || 1, jackpot:!!pick.jackpot,
+        label: pick.item === "doubleCoinTicket" ? "ダブルコイン券" : "お宝再鑑賞券" };
     }
     var o = OMIYAGE[Math.floor(Math.random()*OMIYAGE.length)];
     if(save.omiyage.indexOf(o.id) !== -1){
-      return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:false, consolationCoins:50 };
+      // ダブり→コインではなくアイテムで還元（回し得防止）
+      return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:false, dupItem:"doubleCoinTicket", dupLabel:"ダブルコイン券" };
     }
     return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:true };
   }
 
   function applyGachaResult(res){
-    if(res.type === "coin"){ save.coins += res.amount; save.totalCoinsEarned += res.amount; }
-    else if(res.type === "item"){ save.inventory[res.item] = (save.inventory[res.item] || 0) + 1; }
+    if(res.type === "item"){ save.inventory[res.item] = (save.inventory[res.item] || 0) + (res.qty || 1); }
     else if(res.type === "omiyage"){
       if(res.isNew){ save.omiyage.push(res.id); }
-      else { save.coins += res.consolationCoins; save.totalCoinsEarned += res.consolationCoins; }
+      else { save.inventory[res.dupItem] = (save.inventory[res.dupItem] || 0) + 1; }
     }
   }
 
@@ -1448,17 +1446,18 @@
     applyGachaResult(res);
     persist();
     if(typeof sfxCoin === "function") sfxCoin();
-    checkAchievements();
-    renderAll();
+    // モーダル表示中にホーム全体を再描画すると、ガイド画像のリロードでリフロー→画面がズレるため、
+    // ここではcoin表示と拠点ボタンだけ更新する（おみやげ/所持品は図鑑を開いたとき反映）。
+    var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
+    renderBaseCard();
     showGachaResultInModal(res);
     updateGachaSpinBtn();
   }
 
   function gachaResultText(res){
-    if(res.type === "coin") return (res.jackpot ? "大当たり！ " : "") + "コイン ＋" + res.amount;
-    if(res.type === "item") return res.label + " ×1";
+    if(res.type === "item") return (res.jackpot ? "大当たり！ " : "") + res.label + " ×" + (res.qty || 1);
     if(res.isNew) return "🎁 新しいおみやげ！<br>" + res.emoji + " " + res.name;
-    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（持っている→コイン＋" + res.consolationCoins + "）</span>";
+    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（持っている→" + res.dupLabel + " ×1）</span>";
   }
 
   function showGachaResultInModal(res){
@@ -1503,6 +1502,75 @@
         : ("<div class=\"omiyage-emoji\">？</div><div class=\"omiyage-name\">？？？</div>");
       grid.appendChild(cell);
     });
+  }
+
+  /* ---------- 長岡花火（実績お祝い演出・canvas） ---------- */
+  // 実績解除でお祝いの花火を打ち上げる。tierが高い(難関)ほど数・大きさ・大玉が豪華に。
+  var fwParticles = [], fwPending = 0, fwRunning = false, fwCanvas = null, fwCtx = null;
+
+  function fwEnsure(){
+    if(!fwCanvas){ fwCanvas = document.getElementById("fw-canvas"); if(fwCanvas) fwCtx = fwCanvas.getContext("2d"); }
+    if(!fwCanvas) return false;
+    var app = document.getElementById("app");
+    fwCanvas.width = app.clientWidth; fwCanvas.height = app.clientHeight;
+    return true;
+  }
+
+  function fwBurst(x, y, count, colors, power){
+    for(var i=0;i<count;i++){
+      var ang = Math.random() * Math.PI * 2;
+      var sp = (0.35 + Math.random()) * power;
+      fwParticles.push({ x:x, y:y, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        life:1, decay:0.009 + Math.random()*0.011,
+        color:colors[(Math.random()*colors.length)|0], size:1.4 + Math.random()*1.8 });
+    }
+  }
+
+  function fwLoop(){
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+    fwCtx.globalCompositeOperation = "lighter";
+    var alive = 0;
+    for(var i=fwParticles.length-1;i>=0;i--){
+      var p = fwParticles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.028; p.vx *= 0.99; p.vy *= 0.99; p.life -= p.decay;
+      if(p.life <= 0){ fwParticles.splice(i, 1); continue; }
+      alive++;
+      fwCtx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      fwCtx.fillStyle = p.color;
+      fwCtx.beginPath(); fwCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); fwCtx.fill();
+    }
+    fwCtx.globalAlpha = 1; fwCtx.globalCompositeOperation = "source-over";
+    if(alive > 0 || fwPending > 0){ requestAnimationFrame(fwLoop); }
+    else { fwRunning = false; fwCanvas.style.display = "none"; }
+  }
+
+  function fwStart(){ if(!fwRunning){ fwRunning = true; requestAnimationFrame(fwLoop); } }
+
+  function launchFireworks(tier){
+    if(!fwEnsure()) return;
+    var CFG = {
+      1: { shells:2, count:38, power:2.4, colors:["#ff5a5a","#ffcf4d","#ff8f3a","#fff2b0"] },
+      2: { shells:4, count:60, power:3.0, colors:["#ff5a5a","#ffcf4d","#5ad1ff","#7CFC66","#ff8f3a"] },
+      3: { shells:7, count:88, power:3.5, colors:["#ffd24d","#ff5a5a","#5ad1ff","#7CFC66","#ff8f3a","#c86bff","#fff2b0"] }
+    };
+    var cfg = CFG[tier] || CFG[1];
+    var W = fwCanvas.width, H = fwCanvas.height;
+    fwCanvas.style.display = "block";
+    fwPending += cfg.shells + (tier >= 3 ? 1 : 0);
+    for(var s=0;s<cfg.shells;s++){
+      setTimeout(function(){
+        fwBurst(W*(0.18 + Math.random()*0.64), H*(0.16 + Math.random()*0.34), cfg.count, cfg.colors, cfg.power);
+        fwPending--; fwStart();
+      }, s * 240);
+    }
+    if(tier >= 3){
+      // 正三尺玉：中央の大玉
+      setTimeout(function(){
+        fwBurst(W*0.5, H*0.30, 170, ["#ffd24d","#fff2b0","#ff8f3a","#ff5a5a","#5ad1ff"], cfg.power*1.5);
+        fwPending--; fwStart();
+      }, cfg.shells * 240 + 200);
+    }
+    fwStart();
   }
 
   function attemptDiscovery(poi){
@@ -1734,16 +1802,21 @@
     if(t && t.textContent.indexOf("あっち") === -1) t.textContent = greetingText();
   }
 
+  // 同じsrcの再設定による画像リロード（＝リフロー・画面ズレ）を避け、変化時だけ更新する
+  function setImgSrc(img, src){
+    if(img && img.getAttribute("src") !== src) img.setAttribute("src", src);
+  }
+
   function setGuideMood(mood){
     var img = document.getElementById("home-guide-img");
     var text = document.getElementById("home-guide-text");
     if(mood === "happy"){
-      img.src = guideAssetPath("happy");
+      setImgSrc(img, guideAssetPath("happy"));
     } else if(mood === "point"){
-      img.src = guideAssetPath("point");
+      setImgSrc(img, guideAssetPath("point"));
       text.textContent = "あっちに何かありそうだよ！";
     } else {
-      img.src = guideAssetPath("idle");
+      setImgSrc(img, guideAssetPath("idle"));
       text.textContent = greetingText();
     }
     renderTitleGuide();
@@ -1751,8 +1824,7 @@
 
   // タイトル画面のキャラも、ホームの案内役と同じ着用中衣装を反映する（常にidleポーズ）
   function renderTitleGuide(){
-    var img = document.getElementById("title-guide-img");
-    if(img) img.src = guideAssetPath("idle");
+    setImgSrc(document.getElementById("title-guide-img"), guideAssetPath("idle"));
   }
 
   var toastQueue = [];
@@ -2567,27 +2639,29 @@
     return ids.every(function(id){ return save.found.indexOf(id) !== -1; });
   }
 
+  // tier: 花火の豪華さ（1=通常 / 2=中 / 3=難関の大玉）
   var ACHIEVEMENTS = [
-    { id: "first_discovery", name: "はじめての発見", desc: "はじめてお宝を発見した", check: function(s){ return s.found.length >= 1; } },
-    { id: "chuo_complete", name: "中心部コンプ", desc: "中心部の全スポットを発見した", check: function(){ return isDistrictComplete("chuo"); } },
-    { id: "settaya_complete", name: "摂田屋コンプ", desc: "摂田屋の全スポットを発見した", check: function(){ return isDistrictComplete("settaya"); } },
-    { id: "yamakoshi_complete", name: "山古志コンプ", desc: "山古志の全スポットを発見した", check: function(){ return isDistrictComplete("yamakoshi"); } },
-    { id: "teradomari_complete", name: "寺泊コンプ", desc: "寺泊の全スポットを発見した", check: function(){ return isDistrictComplete("teradomari"); } },
-    { id: "tochio_complete", name: "栃尾コンプ", desc: "栃尾の全スポットを発見した", check: function(){ return isDistrictComplete("tochio"); } },
-    { id: "yoita_complete", name: "与板コンプ", desc: "与板の全スポットを発見した", check: function(){ return isDistrictComplete("yoita"); } },
-    { id: "koshiji_complete", name: "越路コンプ", desc: "越路の全スポットを発見した", check: function(){ return isDistrictComplete("koshiji"); } },
-    { id: "all_complete", name: "全スポット制覇", desc: "すべてのスポットを発見した", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
-    { id: "level5", name: "Lv5到達", desc: "レベル5に到達した", check: function(s){ return s.level >= 5; } },
-    { id: "level10", name: "Lv10到達", desc: "レベル10に到達した", check: function(s){ return s.level >= 10; } },
-    { id: "coins1000", name: "コイン収集家", desc: "累計コインを1000枚獲得した", check: function(s){ return s.totalCoinsEarned >= 1000; } },
-    { id: "first_purchase", name: "はじめてのお買い物", desc: "ショップで何かを購入した", check: function(s){ return !!s.shopPurchasedOnce; } },
-    { id: "streak3", name: "3日連続探検", desc: "3日連続でスポットを発見した", check: function(s){ return s.streak >= 3; } },
-    { id: "streak7", name: "一週間探検家", desc: "7日連続でスポットを発見した", check: function(s){ return s.streak >= 7; } }
+    { id: "first_discovery", name: "はじめての発見", desc: "はじめてお宝を発見した", tier: 1, check: function(s){ return s.found.length >= 1; } },
+    { id: "chuo_complete", name: "中心部コンプ", desc: "中心部の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("chuo"); } },
+    { id: "settaya_complete", name: "摂田屋コンプ", desc: "摂田屋の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("settaya"); } },
+    { id: "yamakoshi_complete", name: "山古志コンプ", desc: "山古志の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("yamakoshi"); } },
+    { id: "teradomari_complete", name: "寺泊コンプ", desc: "寺泊の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("teradomari"); } },
+    { id: "tochio_complete", name: "栃尾コンプ", desc: "栃尾の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("tochio"); } },
+    { id: "yoita_complete", name: "与板コンプ", desc: "与板の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("yoita"); } },
+    { id: "koshiji_complete", name: "越路コンプ", desc: "越路の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("koshiji"); } },
+    { id: "all_complete", name: "全スポット制覇", desc: "すべてのスポットを発見した", tier: 3, check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
+    { id: "level5", name: "Lv5到達", desc: "レベル5に到達した", tier: 2, check: function(s){ return s.level >= 5; } },
+    { id: "level10", name: "Lv10到達", desc: "レベル10に到達した", tier: 3, check: function(s){ return s.level >= 10; } },
+    { id: "coins1000", name: "コイン収集家", desc: "累計コインを1000枚獲得した", tier: 2, check: function(s){ return s.totalCoinsEarned >= 1000; } },
+    { id: "first_purchase", name: "はじめてのお買い物", desc: "ショップで何かを購入した", tier: 1, check: function(s){ return !!s.shopPurchasedOnce; } },
+    { id: "streak3", name: "3日連続探検", desc: "3日連続でスポットを発見した", tier: 2, check: function(s){ return s.streak >= 3; } },
+    { id: "streak7", name: "一週間探検家", desc: "7日連続でスポットを発見した", tier: 3, check: function(s){ return s.streak >= 7; } }
   ];
 
   function checkAchievements(opts){
     var silent = opts && opts.silent;
     var changed = false;
+    var maxTier = 0;
     ACHIEVEMENTS.forEach(function(a){
       if(save.achievements.indexOf(a.id) === -1 && a.check(save)){
         save.achievements.push(a.id);
@@ -2595,10 +2669,13 @@
         if(!silent){
           toast("実績解除：" + a.name, { achievement: true });
           sfxAchievement();
+          if((a.tier || 1) > maxTier) maxTier = a.tier || 1;
         }
       }
     });
     if(changed) persist();
+    // 長岡らしく花火でお祝い（難関実績＝tierが高いほど豪華に。同時解除は最高tierで1回）
+    if(maxTier > 0 && typeof launchFireworks === "function") launchFireworks(maxTier);
   }
 
   /* ============================================================
