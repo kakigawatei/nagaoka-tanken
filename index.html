@@ -560,6 +560,8 @@
   }
   .gacha-result.pop{ animation: gachaPop .35s ease-out; }
   @keyframes gachaPop{ 0%{ transform:scale(0.8); opacity:0.3; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+  .gacha-roll{ font-size:36px; display:inline-block; animation: gachaRollFlip .12s ease-out; }
+  @keyframes gachaRollFlip{ 0%{ transform:translateY(-8px) scale(0.7); opacity:0.3; } 100%{ transform:translateY(0) scale(1); opacity:1; } }
   .gacha-dup{ font-size:12px; color:var(--ink-soft); font-weight:400; }
   .gacha-spin-btn{
     width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:12px;
@@ -1495,7 +1497,32 @@
     }
   }
 
+  var gachaSpinning = false;
+  var GACHA_ROLL_SYMBOLS = ["🎆","🐟","🍶","🍢","🌾","🐡","🗡️","🦊","⛩️","🏯","🌸","🧭","🎁","🎟️"];
+
+  // ガチャの回転演出：結果表示前にシンボルをスロットのように高速切替→だんだん減速して確定。
+  function playGachaAnimation(done){
+    var el = document.getElementById("gacha-result");
+    var btn = document.getElementById("gacha-spin-btn");
+    var note = document.getElementById("gacha-note");
+    gachaSpinning = true;
+    btn.disabled = true; btn.textContent = "回転中…";
+    note.textContent = "";
+    var delay = 55, count = 0;
+    function step(){
+      el.classList.remove("pop");
+      el.innerHTML = "<span class=\"gacha-roll\">" + GACHA_ROLL_SYMBOLS[(Math.random()*GACHA_ROLL_SYMBOLS.length)|0] + "</span>";
+      if(typeof sfxTap === "function") sfxTap();
+      count++;
+      if(count > 12) delay += 22;   // 後半は減速
+      if(delay < 260){ setTimeout(step, delay); }
+      else { gachaSpinning = false; done(); }
+    }
+    step();
+  }
+
   function spinGacha(){
+    if(gachaSpinning) return;   // 回転中は連打防止
     var free = gachaFreeAvailable();
     if(!free && save.coins < GACHA_COST){ toast("コインが足りません"); return; }
     if(free){ save.gacha.lastFreeDate = todayStr(); }
@@ -1503,13 +1530,15 @@
     var res = rollGacha();
     applyGachaResult(res);
     persist();
-    if(typeof sfxCoin === "function") sfxCoin();
     // モーダル表示中にホーム全体を再描画すると、ガイド画像のリロードでリフロー→画面がズレるため、
     // ここではcoin表示と拠点ボタンだけ更新する（おみやげ/所持品は図鑑を開いたとき反映）。
     var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
     renderBaseCard();
-    showGachaResultInModal(res);
-    updateGachaSpinBtn();
+    playGachaAnimation(function(){
+      if(typeof sfxCoin === "function") sfxCoin();
+      showGachaResultInModal(res);
+      updateGachaSpinBtn();
+    });
   }
 
   function gachaResultText(res){
