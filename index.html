@@ -523,8 +523,13 @@
   .login-dot.on{ background:var(--gold); }
   .login-dot.last{ width:16px; height:16px; }
   .login-dot.last.on{ background:var(--vermillion); }
-  .login-reward{ font-size:15px; font-weight:700; color:var(--ink); line-height:1.6; margin-bottom:16px; }
+  .login-reward{ font-size:15px; font-weight:700; color:var(--ink); line-height:1.6; margin-bottom:10px; }
   .login-special{ color:var(--vermillion); font-weight:900; }
+  .login-streak{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
+  .login-milestone{
+    background:linear-gradient(135deg,#fff3cf,#ffe08a); color:#7a4a10; border:2px solid var(--gold);
+    border-radius:12px; padding:10px 12px; font-size:13.5px; font-weight:800; line-height:1.5; margin-bottom:14px;
+  }
   .login-close-btn{
     background:var(--indigo); color:#fff; border:none; border-radius:12px;
     padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
@@ -916,6 +921,8 @@
       <div class="login-day" id="login-day">Day 1 / 7</div>
       <div class="login-dots" id="login-dots"></div>
       <div class="login-reward" id="login-reward"></div>
+      <div class="login-streak" id="login-streak"></div>
+      <div class="login-milestone" id="login-milestone" style="display:none;"></div>
       <button class="login-close-btn" id="login-close-btn">うけとる</button>
     </div>
   </div>
@@ -1017,7 +1024,8 @@
       costumes: { unlocked: [], owned: [], equipped: null },
       // ログインボーナス（後方互換：欠けていてもdefaultSave()の値で補完される）
       // lastDate: 最後に受け取った日(yyyy-mm-dd)／day: 7日周期の現在位置(1..7、0=未受取)
-      loginBonus: { lastDate: null, day: 0 },
+      // streak: 連続ログイン日数／claimedMilestones: 受取済みマイルストーン日数
+      loginBonus: { lastDate: null, day: 0, streak: 0, claimedMilestones: [] },
       // 探検隊の拠点（放置コイン採取）（後方互換：欠けていてもdefaultSave()の値で補完される）
       // lastCollect: 最後に回収した時刻(ms)／members: 隊員数(採取速度)／storage: 倉庫Lv(貯蔵上限)
       base: { lastCollect: Date.now(), members: 1, storage: 1 },
@@ -1343,16 +1351,33 @@
     { coins: 150, doubleCoin: 1 }   // 7日目ボーナス
   ];
 
+  // 連続ログインのマイルストーン（節目ボーナス・生涯1回ずつ）。数値はここで調整可。
+  var LOGIN_MILESTONES = [
+    { days: 10,  coins: 200,  doubleCoin: 1, label: "連続10日" },
+    { days: 14,  coins: 300,  doubleCoin: 1, label: "2週間連続" },
+    { days: 30,  coins: 600,  doubleCoin: 3, label: "1ヶ月連続" },
+    { days: 60,  coins: 1000, doubleCoin: 3, label: "2ヶ月連続" },
+    { days: 100, coins: 2000, doubleCoin: 5, label: "100日連続" }
+  ];
+
+  function checkLoginMilestone(streak){
+    var m = LOGIN_MILESTONES.filter(function(x){ return x.days === streak; })[0];
+    if(!m) return null;
+    if((save.loginBonus.claimedMilestones || []).indexOf(m.days) !== -1) return null;
+    save.loginBonus.claimedMilestones = (save.loginBonus.claimedMilestones || []).concat([m.days]);
+    save.coins += m.coins;
+    save.totalCoinsEarned += m.coins;
+    if(m.doubleCoin) save.inventory.doubleCoinTicket += m.doubleCoin;
+    return m;
+  }
+
   function checkLoginBonus(){
     var today = todayStr();
     if(save.loginBonus.lastDate === today) return;   // 本日分は受け取り済み
-    var newDay;
-    if(save.loginBonus.lastDate === prevDateStr(today)){
-      newDay = (save.loginBonus.day % 7) + 1;         // 連続→次の日（7の次は1に戻る）
-    } else {
-      newDay = 1;                                     // 初回 or 間があいた→Day1から
-    }
+    var consecutive = (save.loginBonus.lastDate === prevDateStr(today));
+    var newDay = consecutive ? (save.loginBonus.day % 7) + 1 : 1;   // 7日周期（7の次は1）
     save.loginBonus.day = newDay;
+    save.loginBonus.streak = consecutive ? (save.loginBonus.streak || 0) + 1 : 1;  // 連続日数
     save.loginBonus.lastDate = today;
     var reward = LOGIN_REWARDS[newDay - 1];
     save.coins += reward.coins;
@@ -1362,14 +1387,15 @@
       save.inventory.doubleCoinTicket += reward.doubleCoin;
       extra = "＋ ダブルコイン券 ×" + reward.doubleCoin;
     }
+    var milestone = checkLoginMilestone(save.loginBonus.streak);   // 節目ボーナス
     persist();
     checkAchievements();
     renderAll();
-    showLoginBonusModal(newDay, reward.coins, extra);
+    showLoginBonusModal(newDay, reward.coins, extra, save.loginBonus.streak, milestone);
     if(typeof sfxCoin === "function") sfxCoin();
   }
 
-  function showLoginBonusModal(day, coins, extra){
+  function showLoginBonusModal(day, coins, extra, streak, milestone){
     document.getElementById("login-day").textContent = "Day " + day + " / 7";
     var html = "コイン ＋" + coins;
     if(extra) html += "<br>" + extra;
@@ -1381,6 +1407,21 @@
       dots += "<span class=\"login-dot" + (i <= day ? " on" : "") + (i === 7 ? " last" : "") + "\"></span>";
     }
     document.getElementById("login-dots").innerHTML = dots;
+    // 連続ログイン日数＋次の節目
+    var streakEl = document.getElementById("login-streak");
+    var nextM = LOGIN_MILESTONES.filter(function(x){ return x.days > (streak || 0); })[0];
+    var streakTxt = "🔥 連続 " + (streak || 1) + " 日ログイン中";
+    if(nextM) streakTxt += "（あと" + (nextM.days - streak) + "日で" + nextM.label + "）";
+    streakEl.textContent = streakTxt;
+    // 節目ボーナス
+    var mEl = document.getElementById("login-milestone");
+    if(milestone){
+      mEl.style.display = "block";
+      mEl.innerHTML = "🎉 " + milestone.label + "達成！<br>ボーナス コイン＋" + milestone.coins +
+        (milestone.doubleCoin ? "／ダブルコイン券×" + milestone.doubleCoin : "");
+    } else {
+      mEl.style.display = "none";
+    }
     document.getElementById("login-modal").classList.add("show");
   }
 
@@ -1557,9 +1598,8 @@
     document.getElementById("gacha-result").innerHTML = "";
     prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
     cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
-    // ①ドーム回転＋本体ゆれ
-    dome.style.animation = "none"; void dome.offsetWidth;
-    dome.style.animation = "gachaDomeSpin 1.5s cubic-bezier(.15,.6,.25,1) forwards";
+    // ①本体をクランキング（ゆらす）。※カプセルは回さない。ハンドルだけの回転は専用素材が届いたら差し替え予定
+    dome.style.animation = "none";
     stage.classList.add("shaking");
     if(typeof sfxTap === "function") sfxTap();
     setTimeout(function(){
