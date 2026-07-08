@@ -581,6 +581,19 @@
   @keyframes gachaPop{ 0%{ transform:scale(0.8); opacity:0.3; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
   .gacha-roll{ font-size:36px; display:inline-block; animation: gachaRollFlip .12s ease-out; }
   @keyframes gachaRollFlip{ 0%{ transform:translateY(-8px) scale(0.7); opacity:0.3; } 100%{ transform:translateY(0) scale(1); opacity:1; } }
+  /* ガチャマシン演出 */
+  .gacha-stage{ position:relative; width:172px; margin:2px auto 8px; }
+  .g-machine{ width:100%; display:block; position:relative; z-index:2; }
+  .g-dome{ position:absolute; left:50%; top:26.5%; width:78%; transform:translate(-50%,-50%); z-index:1; }
+  .gacha-stage.shaking .g-machine{ animation: gachaShake .5s ease-in-out infinite; }
+  @keyframes gachaShake{ 0%,100%{ transform:rotate(-1.3deg); } 50%{ transform:rotate(1.3deg); } }
+  @keyframes gachaDomeSpin{ 0%{ transform:translate(-50%,-50%) rotate(0deg); } 100%{ transform:translate(-50%,-50%) rotate(1080deg); } }
+  .g-capsule{ position:absolute; left:31%; top:80%; width:20%; z-index:3; display:none; transform:translate(-50%,-50%); }
+  .g-capsule.drop{ animation: capDrop .6s cubic-bezier(.3,1.35,.5,1) forwards; }
+  @keyframes capDrop{ 0%{ top:56%; opacity:0; } 25%{ opacity:1; } 70%{ top:82%; } 85%{ top:78%; } 100%{ top:81%; } }
+  .g-prize{ position:absolute; left:31%; top:80%; z-index:4; font-size:36px; display:none; transform:translate(-50%,-50%); filter:drop-shadow(0 2px 5px rgba(0,0,0,.4)); }
+  .g-prize.pop{ animation: prizePop .55s ease-out forwards; }
+  @keyframes prizePop{ 0%{ transform:translate(-50%,10%) scale(0.2); opacity:0; } 55%{ transform:translate(-50%,-95%) scale(1.4); opacity:1; } 100%{ transform:translate(-50%,-115%) scale(1.15); opacity:1; } }
   .gacha-dup{ font-size:12px; color:var(--ink-soft); font-weight:400; }
   .gacha-spin-btn{
     width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:12px;
@@ -913,6 +926,12 @@
       <button class="shop-modal-close" id="gacha-close" aria-label="とじる">×</button>
       <div class="gacha-title">🎰 ここでガチャ</div>
       <div class="gacha-spot" id="gacha-spot-name"></div>
+      <div class="gacha-stage" id="gacha-stage">
+        <img class="g-dome" id="g-dome" src="assets/gacha_dome.png" alt="">
+        <img class="g-machine" src="assets/gacha_machine.png" alt="ガチャ">
+        <img class="g-capsule" id="g-capsule" src="assets/gacha_capsule.png" alt="">
+        <div class="g-prize" id="g-prize"></div>
+      </div>
       <div class="gacha-result" id="gacha-result">ボタンを押して回そう！</div>
       <button class="gacha-spin-btn" id="gacha-spin-btn">回す</button>
       <div class="gacha-note" id="gacha-note"></div>
@@ -1518,27 +1537,46 @@
   }
 
   var gachaSpinning = false;
-  var GACHA_ROLL_SYMBOLS = ["🎆","🐟","🍶","🍢","🌾","🐡","🗡️","🦊","⛩️","🏯","🌸","🧭","🎁","🎟️"];
 
-  // ガチャの回転演出：結果表示前にシンボルをスロットのように高速切替→だんだん減速して確定。
-  function playGachaAnimation(done){
-    var el = document.getElementById("gacha-result");
+  function gachaPrizeEmoji(res){
+    if(res.type === "omiyage") return res.emoji;
+    if(res.type === "item") return "🎟️";
+    return "🎁";
+  }
+
+  // ガチャマシン演出：ドームがぐるんと回る→カプセルが出てバウンド→開いて景品ドーン。
+  function playGachaAnimation(res, done){
+    var stage = document.getElementById("gacha-stage");
+    var dome = document.getElementById("g-dome");
+    var cap = document.getElementById("g-capsule");
+    var prize = document.getElementById("g-prize");
     var btn = document.getElementById("gacha-spin-btn");
     var note = document.getElementById("gacha-note");
     gachaSpinning = true;
-    btn.disabled = true; btn.textContent = "回転中…";
-    note.textContent = "";
-    var delay = 55, count = 0;
-    function step(){
-      el.classList.remove("pop");
-      el.innerHTML = "<span class=\"gacha-roll\">" + GACHA_ROLL_SYMBOLS[(Math.random()*GACHA_ROLL_SYMBOLS.length)|0] + "</span>";
-      if(typeof sfxTap === "function") sfxTap();
-      count++;
-      if(count > 12) delay += 22;   // 後半は減速
-      if(delay < 260){ setTimeout(step, delay); }
-      else { gachaSpinning = false; done(); }
-    }
-    step();
+    btn.disabled = true; btn.textContent = "回転中…"; note.textContent = "";
+    document.getElementById("gacha-result").innerHTML = "";
+    prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
+    cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
+    // ①ドーム回転＋本体ゆれ
+    dome.style.animation = "none"; void dome.offsetWidth;
+    dome.style.animation = "gachaDomeSpin 1.5s cubic-bezier(.15,.6,.25,1) forwards";
+    stage.classList.add("shaking");
+    if(typeof sfxTap === "function") sfxTap();
+    setTimeout(function(){
+      stage.classList.remove("shaking");
+      // ②カプセルが出てバウンド
+      cap.style.display = "block"; void cap.offsetWidth; cap.classList.add("drop");
+      if(typeof sfxCoin === "function") sfxCoin();
+      setTimeout(function(){
+        // ③カプセルが開いて景品ドーン
+        cap.src = "assets/gacha_capsule_open.png";
+        prize.textContent = gachaPrizeEmoji(res);
+        prize.style.display = "block"; void prize.offsetWidth; prize.classList.add("pop");
+        if(typeof sfxDiscoveryFanfare === "function") sfxDiscoveryFanfare();
+        gachaSpinning = false;
+        done();
+      }, 680);
+    }, 1550);
   }
 
   function spinGacha(){
@@ -1554,8 +1592,7 @@
     // ここではcoin表示と拠点ボタンだけ更新する（おみやげ/所持品は図鑑を開いたとき反映）。
     var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
     renderBaseCard();
-    playGachaAnimation(function(){
-      if(typeof sfxCoin === "function") sfxCoin();
+    playGachaAnimation(res, function(){
       showGachaResultInModal(res);
       updateGachaSpinBtn();
     });
@@ -1589,7 +1626,11 @@
   function openGachaModal(poiId){
     var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
     document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "";
-    document.getElementById("gacha-result").innerHTML = "ボタンを押して回そう！";
+    document.getElementById("gacha-result").innerHTML = "回すとカプセルが出てくるよ！";
+    // ステージを初期状態に戻す
+    var cap = document.getElementById("g-capsule"); cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
+    var prize = document.getElementById("g-prize"); prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
+    document.getElementById("g-dome").style.animation = "none";
     updateGachaSpinBtn();
     document.getElementById("gacha-modal").classList.add("show");
   }
