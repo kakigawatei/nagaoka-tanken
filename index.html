@@ -504,6 +504,29 @@
     background:var(--indigo); color:#fff; border:none; border-radius:12px;
     padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
   }
+
+  /* ---------- 探検隊の拠点 カード ---------- */
+  .base-card{
+    background:var(--card-bg); border-radius:14px; margin:4px 16px 12px; padding:14px 16px;
+    box-shadow:var(--shadow);
+  }
+  .base-head{ font-size:15px; font-weight:900; color:var(--ink); }
+  .base-sub{ font-size:11.5px; color:var(--ink-soft); margin:2px 0 10px; }
+  .base-accrued-line{ font-size:13.5px; color:var(--ink); margin-bottom:8px; }
+  .base-accrued-line b{ color:var(--gold); font-size:16px; }
+  .base-collect-btn{
+    width:100%; background:var(--gold); color:#4a3423; border:none; border-radius:10px;
+    padding:11px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:12px;
+  }
+  .base-collect-btn:disabled{ background:#d8cba6; color:#9a8b68; cursor:default; }
+  .base-up-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; }
+  .base-up-info{ font-size:12.5px; color:var(--ink-soft); }
+  .base-up-info b{ color:var(--ink); }
+  .base-up-btn{
+    background:var(--indigo); color:#fff; border:none; border-radius:9px; padding:8px 14px;
+    font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  .base-up-btn:disabled{ background:#a9a186; color:#eee; cursor:default; }
   .shop-modal-close{
     position:absolute; top:8px; right:10px; background:none; border:none; font-size:24px;
     color:var(--ink-soft); cursor:pointer; line-height:1; padding:6px;
@@ -597,6 +620,21 @@
           <div class="dist" id="home-nearest-dist">-</div>
           <span class="badge" id="home-nearest-badge">未発見</span>
         </div>
+      </div>
+    </div>
+
+    <div class="base-card">
+      <div class="base-head">🏕️ 探検隊の拠点</div>
+      <div class="base-sub">留守の間も隊員がコインを集めてくれます</div>
+      <div class="base-accrued-line">たまっているコイン：<b id="base-accrued">0</b> / <span id="base-cap">0</span></div>
+      <button class="base-collect-btn" id="base-collect-btn">回収する</button>
+      <div class="base-up-row">
+        <div class="base-up-info">隊員 <b id="base-members">1</b>人（採取 +<span id="base-rate">15</span>/時）</div>
+        <button class="base-up-btn" id="base-hire-btn">雇う（150）</button>
+      </div>
+      <div class="base-up-row">
+        <div class="base-up-info">倉庫 Lv<b id="base-storage">1</b>（貯蔵 <span id="base-caphours">4</span>時間）</div>
+        <button class="base-up-btn" id="base-storage-btn">拡張（200）</button>
       </div>
     </div>
   </div>
@@ -816,7 +854,10 @@
       costumes: { unlocked: [], owned: [], equipped: null },
       // ログインボーナス（後方互換：欠けていてもdefaultSave()の値で補完される）
       // lastDate: 最後に受け取った日(yyyy-mm-dd)／day: 7日周期の現在位置(1..7、0=未受取)
-      loginBonus: { lastDate: null, day: 0 }
+      loginBonus: { lastDate: null, day: 0 },
+      // 探検隊の拠点（放置コイン採取）（後方互換：欠けていてもdefaultSave()の値で補完される）
+      // lastCollect: 最後に回収した時刻(ms)／members: 隊員数(採取速度)／storage: 倉庫Lv(貯蔵上限)
+      base: { lastCollect: Date.now(), members: 1, storage: 1 }
     };
   }
 
@@ -833,7 +874,8 @@
       achievements: parsed.achievements || [],
       redeemedCoupons: parsed.redeemedCoupons || [],
       costumes: Object.assign(d.costumes, parsed.costumes || {}),
-      loginBonus: Object.assign(d.loginBonus, parsed.loginBonus || {})
+      loginBonus: Object.assign(d.loginBonus, parsed.loginBonus || {}),
+      base: Object.assign(d.base, parsed.base || {})
     });
   }
 
@@ -1169,6 +1211,106 @@
     document.getElementById("login-modal").classList.add("show");
   }
 
+  /* ---------- 探検隊の拠点（放置コイン採取） ---------- */
+  // 隊員が留守中もコインを自動採取。時間で貯まり上限あり→「回収」でゲット。
+  // 数値はここで一括調整可能。
+  var BASE_RATE_PER_MEMBER = 15;  // 隊員1人あたりの採取（コイン/時）
+  var BASE_CAP_HOURS_BASE = 4;    // 倉庫Lv1の貯蔵時間
+  var BASE_CAP_HOURS_STEP = 2;    // 倉庫Lvごとに増える貯蔵時間
+  var BASE_MAX_MEMBERS = 10;
+  var BASE_MAX_STORAGE = 8;
+
+  function baseRatePerHour(){ return BASE_RATE_PER_MEMBER * save.base.members; }
+  function baseCapHours(){ return BASE_CAP_HOURS_BASE + (save.base.storage - 1) * BASE_CAP_HOURS_STEP; }
+  function baseCapCoins(){ return Math.round(baseRatePerHour() * baseCapHours()); }
+  function baseHireCost(){ return 150 * save.base.members; }
+  function baseStorageCost(){ return 200 * save.base.storage; }
+
+  // 現在たまっているコイン（上限でカンスト）
+  function baseAccrued(){
+    var elapsedH = (Date.now() - (save.base.lastCollect || Date.now())) / 3600000;
+    if(elapsedH < 0) elapsedH = 0;
+    return Math.min(Math.floor(baseRatePerHour() * elapsedH), baseCapCoins());
+  }
+
+  // 強化の前に、現在の採取分をコインに入れて時刻をリセット（レート変更で損得が出ないように）
+  function bankAccrued(){
+    var amt = baseAccrued();
+    if(amt > 0){ save.coins += amt; save.totalCoinsEarned += amt; }
+    save.base.lastCollect = Date.now();
+    return amt;
+  }
+
+  function collectBase(){
+    var amt = baseAccrued();
+    if(amt <= 0) return;
+    save.coins += amt;
+    save.totalCoinsEarned += amt;
+    save.base.lastCollect = Date.now();
+    persist();
+    if(typeof sfxCoin === "function") sfxCoin();
+    checkAchievements();
+    renderAll();
+    toast("拠点から " + amt + " コイン回収！");
+  }
+
+  function hireMember(){
+    if(save.base.members >= BASE_MAX_MEMBERS){ toast("隊員は最大です"); return; }
+    var cost = baseHireCost();
+    if(save.coins < cost){ toast("コインが足りません"); return; }
+    bankAccrued();
+    save.coins -= cost;
+    save.base.members += 1;
+    persist();
+    if(typeof sfxPurchase === "function") sfxPurchase();
+    renderAll();
+  }
+
+  function upgradeStorage(){
+    if(save.base.storage >= BASE_MAX_STORAGE){ toast("倉庫は最大です"); return; }
+    var cost = baseStorageCost();
+    if(save.coins < cost){ toast("コインが足りません"); return; }
+    bankAccrued();
+    save.coins -= cost;
+    save.base.storage += 1;
+    persist();
+    if(typeof sfxPurchase === "function") sfxPurchase();
+    renderAll();
+  }
+
+  function renderBaseCard(){
+    if(!document.getElementById("base-accrued")) return;
+    var accrued = baseAccrued();
+    var cap = baseCapCoins();
+    document.getElementById("base-accrued").textContent = accrued;
+    document.getElementById("base-cap").textContent = cap;
+    document.getElementById("base-members").textContent = save.base.members;
+    document.getElementById("base-rate").textContent = baseRatePerHour();
+    document.getElementById("base-storage").textContent = save.base.storage;
+    document.getElementById("base-caphours").textContent = baseCapHours();
+
+    var collectBtn = document.getElementById("base-collect-btn");
+    collectBtn.disabled = accrued <= 0;
+    collectBtn.textContent = accrued > 0 ? ("回収する（" + accrued + "）") : "回収する";
+
+    var hireBtn = document.getElementById("base-hire-btn");
+    var storageBtn = document.getElementById("base-storage-btn");
+    if(save.base.members >= BASE_MAX_MEMBERS){
+      hireBtn.textContent = "隊員MAX"; hireBtn.disabled = true;
+    } else {
+      var hc = baseHireCost();
+      hireBtn.textContent = "雇う（" + hc + "）";
+      hireBtn.disabled = save.coins < hc;
+    }
+    if(save.base.storage >= BASE_MAX_STORAGE){
+      storageBtn.textContent = "倉庫MAX"; storageBtn.disabled = true;
+    } else {
+      var sc = baseStorageCost();
+      storageBtn.textContent = "拡張（" + sc + "）";
+      storageBtn.disabled = save.coins < sc;
+    }
+  }
+
   function attemptDiscovery(poi){
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
@@ -1448,6 +1590,7 @@
     document.getElementById("home-title-badge").textContent = "称号：" + getSelectedTitleName();
     setGuideMood("idle");
     renderHomeNearest();
+    renderBaseCard();
   }
 
   function distanceBucket(d){
@@ -2300,6 +2443,12 @@
     document.getElementById("login-close-btn").addEventListener("click", function(){
       document.getElementById("login-modal").classList.remove("show");
     });
+
+    document.getElementById("base-collect-btn").addEventListener("click", collectBase);
+    document.getElementById("base-hire-btn").addEventListener("click", hireMember);
+    document.getElementById("base-storage-btn").addEventListener("click", upgradeStorage);
+    // 拠点の採取量を数秒ごとに更新（ホーム表示中のみ）
+    setInterval(function(){ if(currentScreen === "home") renderBaseCard(); }, 5000);
 
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
