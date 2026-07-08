@@ -578,6 +578,28 @@
   .omiyage-emoji{ font-size:30px; line-height:1.1; }
   .omiyage-name{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
   .omiyage-cell.has .omiyage-name{ color:var(--ink); }
+  .omiyage-count{ font-size:11px; font-weight:800; color:var(--gold); margin-top:2px; }
+
+  /* ---------- ワープ ---------- */
+  .warp-card{ border:2px solid var(--indigo); }
+  #warp-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  #warp-modal.show{ display:flex; }
+  #warp-modal .shop-modal-card{ max-height:80%; }
+  .warp-title{ font-size:16px; font-weight:900; color:var(--ink); text-align:center; }
+  .warp-sub{ font-size:12px; color:var(--ink-soft); text-align:center; margin:2px 0 12px; }
+  .warp-list{ display:flex; flex-direction:column; gap:6px; }
+  .warp-item{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--paper-dark); border:none; border-radius:10px; padding:11px 14px;
+    font-size:13px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; text-align:left;
+    box-shadow: inset 0 0 0 1px #d8c497;
+  }
+  .warp-item:disabled{ opacity:0.5; cursor:default; }
+  .warp-item-badge{ font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--card-bg); border-radius:999px; padding:2px 8px; white-space:nowrap; }
+  .warp-item-badge.found{ color:#5a8a4a; }
   .shop-modal-close{
     position:absolute; top:8px; right:10px; background:none; border:none; font-size:24px;
     color:var(--ink-soft); cursor:pointer; line-height:1; padding:6px;
@@ -743,6 +765,11 @@
       <div class="book-subtab" data-shopsub="costume">衣装だんす</div>
     </div>
     <div id="shop-panel-item">
+      <div class="shop-card warp-card">
+        <div class="shop-name">🧭 ワープ（遠くのスポットへ）</div>
+        <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。</div>
+        <button class="shop-buy-btn" id="warp-open-btn">ワープ先を選ぶ（<img src="assets/coin.png" class="inline-coin" alt="coin">1000）</button>
+      </div>
       <div class="shop-grid" id="shop-grid"></div>
     </div>
     <div id="shop-panel-costume" style="display:none;">
@@ -870,6 +897,16 @@
     </div>
   </div>
 
+  <!-- ワープ先ピッカー -->
+  <div id="warp-modal">
+    <div class="shop-modal-card">
+      <button class="shop-modal-close" id="warp-close" aria-label="とじる">×</button>
+      <div class="warp-title">🧭 ワープ先を選ぶ</div>
+      <div class="warp-sub">1000コインで、その場所へワープして訪れます</div>
+      <div class="warp-list" id="warp-list"></div>
+    </div>
+  </div>
+
   <canvas id="fw-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:70;display:none;"></canvas>
 
   <div class="toast" id="toast"></div>
@@ -944,7 +981,7 @@
       // lastCollect: 最後に回収した時刻(ms)／members: 隊員数(採取速度)／storage: 倉庫Lv(貯蔵上限)
       base: { lastCollect: Date.now(), members: 1, storage: 1 },
       // 現地ガチャ（後方互換：欠けていてもdefaultSave()の値で補完される）
-      omiyage: [],                    // 集めたご当地おみやげのid
+      omiyage: {},                    // 集めたご当地おみやげ { id: 個数 }（ダブりは個数が増える）
       gacha: { lastFreeDate: null }   // 1日1回無料ガチャの管理（最後に無料を回した日）
     };
   }
@@ -964,7 +1001,12 @@
       costumes: Object.assign(d.costumes, parsed.costumes || {}),
       loginBonus: Object.assign(d.loginBonus, parsed.loginBonus || {}),
       base: Object.assign(d.base, parsed.base || {}),
-      omiyage: parsed.omiyage || [],
+      omiyage: (function(){
+        // 旧セーブ（配列）は {id:個数} に変換して後方互換
+        var po = parsed.omiyage;
+        if(Array.isArray(po)){ var m = {}; po.forEach(function(id){ m[id] = (m[id] || 0) + 1; }); return m; }
+        return po || {};
+      })(),
       gacha: Object.assign(d.gacha, parsed.gacha || {})
     });
   }
@@ -1440,18 +1482,16 @@
         label: pick.item === "doubleCoinTicket" ? "ダブルコイン券" : "お宝再鑑賞券" };
     }
     var o = OMIYAGE[Math.floor(Math.random()*OMIYAGE.length)];
-    if(save.omiyage.indexOf(o.id) !== -1){
-      // ダブり→コインではなくアイテムで還元（回し得防止）
-      return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:false, dupItem:"doubleCoinTicket", dupLabel:"ダブルコイン券" };
-    }
-    return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew:true };
+    var have = (save.omiyage[o.id] || 0) > 0;
+    return { type:"omiyage", id:o.id, name:o.name, emoji:o.emoji, isNew: !have };
   }
 
   function applyGachaResult(res){
     if(res.type === "item"){ save.inventory[res.item] = (save.inventory[res.item] || 0) + (res.qty || 1); }
     else if(res.type === "omiyage"){
-      if(res.isNew){ save.omiyage.push(res.id); }
-      else { save.inventory[res.dupItem] = (save.inventory[res.dupItem] || 0) + 1; }
+      // ダブりは個数を増やす（カウントアップ）
+      save.omiyage[res.id] = (save.omiyage[res.id] || 0) + 1;
+      res.count = save.omiyage[res.id];
     }
   }
 
@@ -1475,7 +1515,7 @@
   function gachaResultText(res){
     if(res.type === "item") return (res.jackpot ? "大当たり！ " : "") + res.label + " ×" + (res.qty || 1);
     if(res.isNew) return "🎁 新しいおみやげ！<br>" + res.emoji + " " + res.name;
-    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（持っている→" + res.dupLabel + " ×1）</span>";
+    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（×" + res.count + "になった！）</span>";
   }
 
   function showGachaResultInModal(res){
@@ -1508,15 +1548,16 @@
   function renderOmiyage(){
     var grid = document.getElementById("omiyage-grid");
     if(!grid) return;
-    var owned = save.omiyage.length;
+    var owned = Object.keys(save.omiyage).filter(function(k){ return save.omiyage[k] > 0; }).length;
     document.getElementById("omiyage-progress").textContent = "あつめた数：" + owned + " / " + OMIYAGE.length;
     grid.innerHTML = "";
     OMIYAGE.forEach(function(o){
-      var has = save.omiyage.indexOf(o.id) !== -1;
+      var cnt = save.omiyage[o.id] || 0;
+      var has = cnt > 0;
       var cell = document.createElement("div");
       cell.className = "omiyage-cell" + (has ? " has" : "");
       cell.innerHTML = has
-        ? ("<div class=\"omiyage-emoji\">" + o.emoji + "</div><div class=\"omiyage-name\">" + o.name + "</div>")
+        ? ("<div class=\"omiyage-emoji\">" + o.emoji + "</div><div class=\"omiyage-name\">" + o.name + "</div><div class=\"omiyage-count\">×" + cnt + "</div>")
         : ("<div class=\"omiyage-emoji\">？</div><div class=\"omiyage-name\">？？？</div>");
       grid.appendChild(cell);
     });
@@ -1802,10 +1843,20 @@
 
   // 衣装（コスプレ）システム：着用中の衣装idに応じて、案内役スプライトのパスを差し替える。
   // 例）idle + isoroku 着用中 → assets/guide_idle_isoroku.png／衣装なし → assets/guide_idle.png
+  // アバター専用の衣装イラストが存在する組み合わせ（idleのみ）。新しく届いたらここに追加。
+  var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"] };
+
   function guideAssetPath(mood){
     // 衣装（コスプレ）が最優先。未装備なら選択中のアバター（boy1=既存＝サフィックス無し）。
     var costume = save.costumes && save.costumes.equipped;
-    if(costume) return "assets/guide_" + mood + "_" + costume + ".png";
+    if(costume){
+      var av = save.avatar || "boy1";
+      // アバター専用の衣装絵があればそれを（idleのみ用意。happy/pointは画面上ほぼ出ないため既存版で代用）
+      if(av !== "boy1" && mood === "idle" && AVATAR_COSTUMES[costume] && AVATAR_COSTUMES[costume].indexOf(av) !== -1){
+        return "assets/guide_idle_" + av + "_" + costume + ".png";
+      }
+      return "assets/guide_" + mood + "_" + costume + ".png";
+    }
     var avatar = (save.avatar && save.avatar !== "boy1") ? ("_" + save.avatar) : "";
     return "assets/guide_" + mood + avatar + ".png";
   }
@@ -2509,6 +2560,8 @@
 
   function renderShop(){
     document.getElementById("shop-coins").textContent = save.coins;
+    var warpBtn = document.getElementById("warp-open-btn");
+    if(warpBtn) warpBtn.disabled = save.coins < WARP_COST;
     var grid = document.getElementById("shop-grid");
     grid.innerHTML = "";
     SHOP_ITEMS.forEach(function(item){
@@ -2533,6 +2586,51 @@
     Array.prototype.slice.call(grid.querySelectorAll(".shop-buy-btn[data-item]")).forEach(function(btn){
       btn.addEventListener("click", function(){ buyItem(btn.getAttribute("data-item")); });
     });
+  }
+
+  /* ---------- ワープ（1000コインで遠くのスポットへ） ---------- */
+  var WARP_COST = 1000;
+
+  function openWarpModal(){
+    renderWarpList();
+    document.getElementById("warp-modal").classList.add("show");
+  }
+
+  function renderWarpList(){
+    var list = document.getElementById("warp-list");
+    list.innerHTML = "";
+    if(!DATA) return;
+    DATA.pois.forEach(function(poi){
+      var districtName = (DATA.districts.filter(function(d){ return d.id === poi.districtId; })[0] || {}).name || "";
+      var found = save.found.indexOf(poi.id) !== -1;
+      var btn = document.createElement("button");
+      btn.className = "warp-item";
+      btn.disabled = save.coins < WARP_COST;
+      btn.innerHTML = "<span class=\"warp-item-name\">" + districtName + "：" + poi.name + "</span>" +
+        "<span class=\"warp-item-badge" + (found ? " found" : "") + "\">" + (found ? "発見済み" : "未発見") + "</span>";
+      btn.addEventListener("click", function(){ doWarp(poi.id); });
+      list.appendChild(btn);
+    });
+  }
+
+  function doWarp(poiId){
+    if(save.coins < WARP_COST){ toast("コインが足りません"); return; }
+    var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
+    if(!poi) return;
+    save.coins -= WARP_COST;
+    save.shopPurchasedOnce = true;
+    // 仮想現在地をその場所へ（sim中は現在地も更新）＋その場所を「訪れる」
+    currentPos = { lat: poi.lat, lng: poi.lng };
+    if(save.settings.mode === "simulate"){ save.settings.simLat = poi.lat; save.settings.simLng = poi.lng; }
+    currentDistrict = poi.districtId;
+    dwellCandidate = null;
+    persist();
+    if(typeof sfxPurchase === "function") sfxPurchase();
+    document.getElementById("warp-modal").classList.remove("show");
+    showScreen("home");
+    toast(poi.name + " へワープ！");
+    attemptDiscovery(poi);   // 初回なら発見、発見済みなら本日ぶんの再訪。以後ホームでガチャも可能
+    renderAll();
   }
 
   /* ============================================================
@@ -2770,6 +2868,11 @@
     document.getElementById("gacha-spin-btn").addEventListener("click", spinGacha);
     document.getElementById("gacha-close").addEventListener("click", function(){
       document.getElementById("gacha-modal").classList.remove("show");
+    });
+
+    document.getElementById("warp-open-btn").addEventListener("click", openWarpModal);
+    document.getElementById("warp-close").addEventListener("click", function(){
+      document.getElementById("warp-modal").classList.remove("show");
     });
 
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
