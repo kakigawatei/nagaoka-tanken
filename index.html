@@ -109,7 +109,8 @@
   /* ---------- Top bar ---------- */
   .topbar{
     display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px; background:var(--paper-dark); border-bottom:2px solid #cbb98a;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;  /* ノッチ/ステータスバー分を上に確保（スタンドアロン起動時の重なり防止） */
+    background:var(--paper-dark); border-bottom:2px solid #cbb98a;
     position:sticky; top:0; z-index:5;
   }
   .topbar h1{ font-size:16px; margin:0; color:var(--ink); }
