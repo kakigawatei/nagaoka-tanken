@@ -244,6 +244,12 @@
     box-shadow: inset 0 0 0 1px #d8c497;
   }
   .settings-section h2{ font-size:13px; margin:0 0 10px; color:var(--ink-soft); }
+  .name-input{
+    width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px;
+    border:2px solid #d8c497; border-radius:10px; background:var(--card-bg); color:var(--ink);
+    font-family:inherit; outline:none;
+  }
+  .name-input:focus{ border-color:var(--indigo); }
   .mode-toggle{ display:flex; gap:8px; margin-bottom:10px; }
   .mode-btn{
     flex:1; padding:10px; text-align:center; border-radius:10px; font-weight:700; font-size:13px;
@@ -627,6 +633,12 @@
     <div class="topbar"><h1>設定</h1><div></div></div>
 
     <div class="settings-section">
+      <h2>たんけん者の名前</h2>
+      <input type="text" id="player-name-input" class="name-input" maxlength="12" placeholder="なまえを入力（例：たろう）">
+      <div class="settings-note">ここで決めた名前で、ホーム画面のキャラが「こんにちは、〇〇さん！」と話しかけます。</div>
+    </div>
+
+    <div class="settings-section">
       <h2>効果音</h2>
       <div class="mode-toggle">
         <div class="mode-btn" id="sfx-btn-on">ON</div>
@@ -738,6 +750,7 @@
 
   function defaultSave(){
     return {
+      playerName: "",   // 主人公（たんけん者）の名前。ホームでキャラが呼びかける
       coins: 0,
       level: 1,
       xp: 0,
@@ -1272,6 +1285,18 @@
     return "assets/guide_" + mood + suffix + ".png";
   }
 
+  // ホームのキャラのセリフ（idle時）。名前が設定されていれば呼びかける。
+  function greetingText(){
+    return save.playerName
+      ? ("こんにちは、" + save.playerName + "さん！今日はどこへ探検に行こう？")
+      : "今日はどこへ探検に行こうか！";
+  }
+  // 名前変更などの後、point表示中でなければホームの挨拶を更新する
+  function updateHomeGreeting(){
+    var t = document.getElementById("home-guide-text");
+    if(t && t.textContent.indexOf("あっち") === -1) t.textContent = greetingText();
+  }
+
   function setGuideMood(mood){
     var img = document.getElementById("home-guide-img");
     var text = document.getElementById("home-guide-text");
@@ -1282,7 +1307,7 @@
       text.textContent = "あっちに何かありそうだよ！";
     } else {
       img.src = guideAssetPath("idle");
-      text.textContent = "今日はどこへ探検に行こうか！";
+      text.textContent = greetingText();
     }
     renderTitleGuide();
   }
@@ -1801,6 +1826,9 @@
     document.getElementById("mode-btn-gps").classList.toggle("active", save.settings.mode === "gps");
     document.getElementById("mode-btn-sim").classList.toggle("active", save.settings.mode === "simulate");
 
+    var nameInput = document.getElementById("player-name-input");
+    if(nameInput && nameInput.value !== (save.playerName || "")) nameInput.value = save.playerName || "";
+
     var posLine = document.getElementById("sim-pos-line");
     if(save.settings.simLat != null){
       posLine.textContent = "現在の仮想現在地：緯度 " + save.settings.simLat.toFixed(5) + " / 経度 " + save.settings.simLng.toFixed(5);
@@ -2188,6 +2216,12 @@
 
     document.getElementById("mode-btn-gps").addEventListener("click", function(){ setMode("gps"); });
     document.getElementById("mode-btn-sim").addEventListener("click", function(){ setMode("simulate"); });
+
+    document.getElementById("player-name-input").addEventListener("input", function(ev){
+      save.playerName = (ev.target.value || "").slice(0, 12);
+      persist();
+      updateHomeGreeting();
+    });
 
     // お宝／お店 レイヤートグル
     document.getElementById("layer-chip-treasure").addEventListener("click", function(){ toggleMapLayer("treasure"); });
