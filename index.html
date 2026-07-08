@@ -479,6 +479,31 @@
     0%{ transform:translateY(24px); opacity:0; }
     100%{ transform:translateY(0); opacity:1; }
   }
+
+  /* ---------- ログインボーナス モーダル ---------- */
+  #login-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  #login-modal.show{ display:flex; }
+  .login-modal-card{
+    width:100%; max-width:320px; background:var(--card-bg); border-radius:18px;
+    padding:22px 20px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.45);
+    border:2px solid var(--gold); animation: shopModalUp .24s ease-out;
+  }
+  .login-title{ font-size:18px; font-weight:900; color:var(--vermillion); margin-bottom:6px; }
+  .login-day{ font-size:13px; color:var(--ink-soft); margin-bottom:10px; }
+  .login-dots{ display:flex; gap:6px; justify-content:center; margin-bottom:14px; }
+  .login-dot{ width:14px; height:14px; border-radius:50%; background:#e0d2ac; box-shadow: inset 0 0 0 1px #cbb98a; }
+  .login-dot.on{ background:var(--gold); }
+  .login-dot.last{ width:16px; height:16px; }
+  .login-dot.last.on{ background:var(--vermillion); }
+  .login-reward{ font-size:15px; font-weight:700; color:var(--ink); line-height:1.6; margin-bottom:16px; }
+  .login-special{ color:var(--vermillion); font-weight:900; }
+  .login-close-btn{
+    background:var(--indigo); color:#fff; border:none; border-radius:12px;
+    padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
   .shop-modal-close{
     position:absolute; top:8px; right:10px; background:none; border:none; font-size:24px;
     color:var(--ink-soft); cursor:pointer; line-height:1; padding:6px;
@@ -714,6 +739,17 @@
     </div>
   </div>
 
+  <!-- ログインボーナス -->
+  <div id="login-modal">
+    <div class="login-modal-card">
+      <div class="login-title">ログインボーナス！</div>
+      <div class="login-day" id="login-day">Day 1 / 7</div>
+      <div class="login-dots" id="login-dots"></div>
+      <div class="login-reward" id="login-reward"></div>
+      <button class="login-close-btn" id="login-close-btn">うけとる</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -777,7 +813,10 @@
       redeemedCoupons: [],
       // コスプレ（衣装）システム（後方互換：欠けていてもdefaultSave()の値で補完される）
       // unlocked: 現地発見で解放済みの衣装id／owned: コインで購入済みの衣装id／equipped: 現在着用中の衣装id（null=衣装なし）
-      costumes: { unlocked: [], owned: [], equipped: null }
+      costumes: { unlocked: [], owned: [], equipped: null },
+      // ログインボーナス（後方互換：欠けていてもdefaultSave()の値で補完される）
+      // lastDate: 最後に受け取った日(yyyy-mm-dd)／day: 7日周期の現在位置(1..7、0=未受取)
+      loginBonus: { lastDate: null, day: 0 }
     };
   }
 
@@ -793,7 +832,8 @@
       found: parsed.found || [],
       achievements: parsed.achievements || [],
       redeemedCoupons: parsed.redeemedCoupons || [],
-      costumes: Object.assign(d.costumes, parsed.costumes || {})
+      costumes: Object.assign(d.costumes, parsed.costumes || {}),
+      loginBonus: Object.assign(d.loginBonus, parsed.loginBonus || {})
     });
   }
 
@@ -1073,6 +1113,60 @@
       return true;
     }
     return false;
+  }
+
+  /* ---------- ログインボーナス（毎日開くだけで報酬・7日周期） ---------- */
+  // 7日周期。連続ログインで日数が進み、7日目は特別（大コイン＋ダブルコイン券）。
+  // 1日でも空くとDay1に戻る。数値はここで一括調整可能。
+  var LOGIN_REWARDS = [
+    { coins: 30 },
+    { coins: 40 },
+    { coins: 50 },
+    { coins: 60 },
+    { coins: 80 },
+    { coins: 100 },
+    { coins: 150, doubleCoin: 1 }   // 7日目ボーナス
+  ];
+
+  function checkLoginBonus(){
+    var today = todayStr();
+    if(save.loginBonus.lastDate === today) return;   // 本日分は受け取り済み
+    var newDay;
+    if(save.loginBonus.lastDate === prevDateStr(today)){
+      newDay = (save.loginBonus.day % 7) + 1;         // 連続→次の日（7の次は1に戻る）
+    } else {
+      newDay = 1;                                     // 初回 or 間があいた→Day1から
+    }
+    save.loginBonus.day = newDay;
+    save.loginBonus.lastDate = today;
+    var reward = LOGIN_REWARDS[newDay - 1];
+    save.coins += reward.coins;
+    save.totalCoinsEarned += reward.coins;
+    var extra = "";
+    if(reward.doubleCoin){
+      save.inventory.doubleCoinTicket += reward.doubleCoin;
+      extra = "＋ ダブルコイン券 ×" + reward.doubleCoin;
+    }
+    persist();
+    checkAchievements();
+    renderAll();
+    showLoginBonusModal(newDay, reward.coins, extra);
+    if(typeof sfxCoin === "function") sfxCoin();
+  }
+
+  function showLoginBonusModal(day, coins, extra){
+    document.getElementById("login-day").textContent = "Day " + day + " / 7";
+    var html = "コイン ＋" + coins;
+    if(extra) html += "<br>" + extra;
+    if(day === 7) html += "<br><span class=\"login-special\">7日達成ボーナス！</span>";
+    document.getElementById("login-reward").innerHTML = html;
+    // 7日周期のドット表示
+    var dots = "";
+    for(var i = 1; i <= 7; i++){
+      dots += "<span class=\"login-dot" + (i <= day ? " on" : "") + (i === 7 ? " last" : "") + "\"></span>";
+    }
+    document.getElementById("login-dots").innerHTML = dots;
+    document.getElementById("login-modal").classList.add("show");
   }
 
   function attemptDiscovery(poi){
@@ -2200,6 +2294,11 @@
       showScreen("home");
       document.getElementById("bottom-nav").style.display = "flex";
       applyMode();
+      checkLoginBonus();   // 開いた日にまだ受け取っていなければログインボーナスを表示
+    });
+
+    document.getElementById("login-close-btn").addEventListener("click", function(){
+      document.getElementById("login-modal").classList.remove("show");
     });
 
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
