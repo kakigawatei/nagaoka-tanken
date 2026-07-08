@@ -6,6 +6,21 @@
 <title>ながおか探検録</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2a1f16">
+<script>
+/* iOS Safari等でdvhが実表示とズレて下部ナビの下に余白が出るのを防ぐ。
+   実測の表示高さ(visualViewport優先)を --app-h に入れ、#appの高さに使う。 */
+(function(){
+  function setAppH(){
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty('--app-h', Math.round(h) + 'px');
+  }
+  setAppH();
+  window.addEventListener('resize', setAppH);
+  window.addEventListener('orientationchange', function(){ setTimeout(setAppH, 250); });
+  window.addEventListener('pageshow', setAppH);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setAppH); }
+})();
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,8 +53,9 @@
     max-width:440px;
     width:100%;
     margin:0 auto 0 0;
-    height:100vh;      /* フォールバック */
-    height:100dvh;     /* 画面高で固定（min-heightだと伸びて二重スクロールになる） */
+    height:100vh;                 /* フォールバック */
+    height:100dvh;                /* 対応ブラウザ用 */
+    height:var(--app-h, 100dvh);  /* JSで実測した表示高さ（iOS Safariのdvhズレ＝ナビ下の余白対策） */
     background:var(--paper);
     position:relative;
     display:flex;
@@ -50,7 +66,7 @@
   img{ -webkit-user-drag:none; user-select:none; max-width:100%; }
 
   /* ---------- Screens ---------- */
-  .screen{ display:none; flex:1; min-height:0; flex-direction:column; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; -webkit-overflow-scrolling:touch; padding-bottom:78px; }
+  .screen{ display:none; flex:1; min-height:0; flex-direction:column; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; -webkit-overflow-scrolling:touch; padding-bottom:calc(78px + env(safe-area-inset-bottom)); }
   .screen.active{ display:flex; }
 
   /* ---------- Title ---------- */
@@ -250,6 +266,7 @@
   /* ---------- Bottom nav ---------- */
   .bottom-nav{
     position:absolute; bottom:0; left:0; right:0; height:66px; display:flex;
+    padding-bottom:env(safe-area-inset-bottom);  /* ホームインジケータ分を確保 */
     background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
   }
   .nav-btn{
