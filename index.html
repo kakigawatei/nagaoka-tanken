@@ -229,6 +229,25 @@
   .book-card .info{ padding:8px 10px 10px; }
   .book-card .title{ font-size:12.5px; font-weight:700; line-height:1.3; margin-bottom:2px; }
   .book-card .era{ font-size:10.5px; color:var(--ink-soft); }
+  /* 図鑑グレード（おみやげ収集で枠がアップ）＋訪問回数で★ */
+  .thumb-wrap{ position:relative; overflow:hidden; }
+  .card-stars{ position:absolute; top:4px; right:5px; color:#ffd24d; font-size:12px; letter-spacing:-1px; text-shadow:0 1px 2px rgba(0,0,0,0.55); }
+  .book-card.grade-1{ box-shadow:0 0 0 2px #c88a4a, var(--shadow); }
+  .book-card.grade-2{ box-shadow:0 0 0 2px #a9adb8, var(--shadow); }
+  .book-card.grade-3{ box-shadow:0 0 0 2px #e8c65a, 0 0 12px rgba(233,198,90,0.55); }
+  .book-card.grade-3 .thumb-wrap::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg, transparent 42%, rgba(255,255,255,0.55) 50%, transparent 58%);
+    background-size:220% 100%; animation: gradeShine 2.6s linear infinite;
+  }
+  @keyframes gradeShine{ 0%{ background-position:130% 0; } 100%{ background-position:-130% 0; } }
+  .book-grade-line{ margin:6px 14px 0; font-size:12px; color:var(--ink-soft); }
+  .book-grade-line b{ color:var(--vermillion); font-size:14px; }
+  .grade-badge{ display:inline-block; padding:1px 9px; border-radius:999px; font-weight:800; font-size:11px; margin:0 3px; }
+  .grade-badge.grade-0{ background:#e0d2ac; color:var(--ink-soft); }
+  .grade-badge.grade-1{ background:#c88a4a; color:#fff; }
+  .grade-badge.grade-2{ background:#a9adb8; color:#fff; }
+  .grade-badge.grade-3{ background:linear-gradient(135deg,#e8c65a,#c9a227); color:#5a4416; }
   .book-detail{
     margin:0 14px 14px; background:var(--card-bg); border-radius:12px; padding:14px; box-shadow:var(--shadow);
   }
@@ -742,6 +761,7 @@
     </div>
     <div id="book-panel-book">
       <div class="book-progress" id="book-progress">発見数：0 / 0</div>
+      <div class="book-grade-line" id="book-grade-line"></div>
       <div class="book-grid" id="book-grid"></div>
       <div class="book-detail" id="book-detail" style="display:none;"></div>
     </div>
@@ -2310,19 +2330,54 @@
   /* ============================================================
    * 11. UI: 図鑑
    * ========================================================== */
+  /* ---------- 図鑑カードのグレードアップ ---------- */
+  // おみやげ収集数で図鑑全体のグレード（枠）が上がり、各スポットの訪問回数で★が付く。
+  var OMIYAGE_GRADE_THRESHOLDS = [4, 8, 12];   // この数を集めるとグレード1/2/3
+  var GRADE_NAMES = ["ノーマル", "ブロンズ", "シルバー", "ゴールド"];
+  var VISIT_STAR_THRESHOLDS = [3, 7, 15];      // その場所の訪問回数で★1/2/3
+
+  function omiyageCount(){
+    return Object.keys(save.omiyage).filter(function(k){ return save.omiyage[k] > 0; }).length;
+  }
+  function bookGrade(){
+    var c = omiyageCount(), g = 0;
+    for(var i=0;i<OMIYAGE_GRADE_THRESHOLDS.length;i++){ if(c >= OMIYAGE_GRADE_THRESHOLDS[i]) g = i+1; }
+    return g;
+  }
+  function visitStars(poiId){
+    var v = save.visits[poiId]; var c = v ? v.count : 0; var s = 0;
+    for(var i=0;i<VISIT_STAR_THRESHOLDS.length;i++){ if(c >= VISIT_STAR_THRESHOLDS[i]) s = i+1; }
+    return s;
+  }
+
   function renderBook(){
     document.getElementById("book-detail").style.display = "none";
     var grid = document.getElementById("book-grid");
     grid.innerHTML = "";
     document.getElementById("book-progress").textContent = "発見数：" + save.found.length + " / " + DATA.pois.length;
 
+    var g = bookGrade(), oc = omiyageCount();
+    var gradeLine = document.getElementById("book-grade-line");
+    var badge = '<span class="grade-badge grade-' + g + '">' + GRADE_NAMES[g] + '</span>';
+    if(g >= 3){
+      gradeLine.innerHTML = "図鑑グレード：" + badge + " コンプ達成！最高グレード✨";
+    } else {
+      var need = OMIYAGE_GRADE_THRESHOLDS[g] - oc;
+      gradeLine.innerHTML = "図鑑グレード：" + badge + " あと <b>" + need + "</b> 個のおみやげで" + GRADE_NAMES[g+1] + "へ";
+    }
+
     DATA.pois.forEach(function(poi){
       var found = save.found.indexOf(poi.id) !== -1;
       var card = document.createElement("div");
-      card.className = "book-card" + (found ? " found" : "");
+      card.className = "book-card" + (found ? " found" : "") + (found && g > 0 ? " grade-" + g : "");
       if(found){
+        var stars = visitStars(poi.id);
+        var starHtml = stars > 0 ? '<div class="card-stars">' + new Array(stars+1).join("★") + '</div>' : '';
         card.innerHTML =
-          '<img class="thumb" src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
+          '<div class="thumb-wrap">' +
+            '<img class="thumb" src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
+            starHtml +
+          '</div>' +
           '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
       } else {
         card.innerHTML =
