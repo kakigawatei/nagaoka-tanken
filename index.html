@@ -1022,7 +1022,7 @@
       level: 1,
       xp: 0,
       found: [],
-      visits: {},     // poiId -> { count, lastDate }
+      visits: {},     // poiId -> { count, lastDate, lastAt }（lastAt=最後に訪問した時刻ms。再訪は前回から2時間でカウント）
       streak: 0,
       inventory: {    // Phase3: purchasable upgrades / consumables
         radarBoost: false,
@@ -1784,16 +1784,19 @@
     fwStart();
   }
 
+  // 再訪カウントのクールダウン：前回の訪問からこの時間が経つと「次の1回」としてカウント（コイン再訪報酬も）。
+  var REVISIT_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2時間
+
   function attemptDiscovery(poi){
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
-    var dailyBonus = registerDailyActivity(dateStr);
-    var bonusCoins = dailyBonus ? dailyBonus.total : 0;
 
     if(save.found.indexOf(poi.id) === -1){
       // 初回発見
+      var dailyBonus = registerDailyActivity(dateStr);
+      var bonusCoins = dailyBonus ? dailyBonus.total : 0;
       save.found.push(poi.id);
-      save.visits[poi.id] = { count: 1, lastDate: dateStr };
+      save.visits[poi.id] = { count: 1, lastDate: dateStr, lastAt: Date.now() };
       var coinsFirst = poi.coinsFirst;
       var doubled = consumeDoubleCoin();
       if(doubled) coinsFirst *= 2;
@@ -1805,24 +1808,28 @@
       checkAchievements();
       checkCostumeUnlock(poi.id);
       renderAll();
-    } else if(!visit || visit.lastDate !== dateStr){
-      // 再訪（本日未取得）
+    } else {
+      // 再訪：前回の訪問から2時間以上あいたら「次の1回」としてカウント（同じ場所の連打を防ぐ）
+      var now = Date.now();
+      var lastAt = visit ? (visit.lastAt || 0) : 0;
+      if(now - lastAt < REVISIT_COOLDOWN_MS) return; // クールダウン中はアイドル（何もしない）
+      var dailyBonus2 = registerDailyActivity(dateStr);
+      var bonusCoins2 = dailyBonus2 ? dailyBonus2.total : 0;
       var count = (visit ? visit.count : 0) + 1;
       var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
       var doubled2 = consumeDoubleCoin();
       if(doubled2) repeatCoins *= 2;
-      save.coins += repeatCoins + bonusCoins;
-      save.totalCoinsEarned += repeatCoins + bonusCoins;
-      save.visits[poi.id] = { count: count, lastDate: dateStr };
+      save.coins += repeatCoins + bonusCoins2;
+      save.totalCoinsEarned += repeatCoins + bonusCoins2;
+      save.visits[poi.id] = { count: count, lastDate: dateStr, lastAt: now };
       persist();
-      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: doubled2, bonus: dailyBonus });
+      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: doubled2, bonus: dailyBonus2 });
       checkAchievements();
       if(hasDeluxe(poi) && count === DELUXE_VISIT_THRESHOLD){
         setTimeout(function(){ toast("🎴 " + poi.treasure.title + " のカードが豪華版になった！"); }, 1600);
       }
       renderAll();
     }
-    // 本日すでに取得済みなら何もしない（アイドル）
   }
 
   function showDiscoveryOverlay(poi, opts){
@@ -1955,7 +1962,7 @@
       banner.style.display = alreadyFound ? "none" : "block";
       gachaBtn.style.display = alreadyFound ? "block" : "none";
       if(alreadyFound) gachaBtn.setAttribute("data-poi", inRange.poi.id);
-      // 滞在で発見（初回）／本日ぶんの再訪コイン（既存挙動は維持）
+      // 滞在で発見（初回）／再訪（前回訪問から2時間経過でカウント＆再訪コイン）
       if(!dwellCandidate || dwellCandidate.poiId !== inRange.poi.id){
         dwellCandidate = { poiId: inRange.poi.id, since: Date.now() };
       } else if(Date.now() - dwellCandidate.since >= DWELL_MS){
@@ -2458,8 +2465,8 @@
 
   // 豪華版カード：そのスポットを何回か訪れると、カードが豪華版イラストに昇格する（再訪のごほうび）。
   var DELUXE_VISIT_THRESHOLD = 3;   // この訪問回数で豪華版に昇格（1回目＝初回発見）
-  // 豪華版イラストがあるスポット（阪之上 sakanoue は未作成＝通常版のまま）
-  var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1 };
+  // 豪華版イラストがあるスポット（全17スポット対応）
+  var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1, sakanoue:1 };
   function visitCountOf(poiId){ var v = save.visits[poiId]; return v ? v.count : 0; }
   function hasDeluxe(poi){ return !!DELUXE_CARDS[poi.id]; }
   function deluxeUnlocked(poi){ return hasDeluxe(poi) && visitCountOf(poi.id) >= DELUXE_VISIT_THRESHOLD; }
@@ -2839,7 +2846,7 @@
     document.getElementById("warp-modal").classList.remove("show");
     showScreen("home");
     toast(poi.name + " へワープ！");
-    attemptDiscovery(poi);   // 初回なら発見、発見済みなら本日ぶんの再訪。以後ホームでガチャも可能
+    attemptDiscovery(poi);   // 初回なら発見、発見済みなら再訪（前回から2時間でカウント）。以後ホームでガチャも可能
     renderAll();
   }
 
