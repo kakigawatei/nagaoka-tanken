@@ -589,6 +589,13 @@
   /* ガチャマシン演出（ハンドル回転） */
   .gacha-stage{ position:relative; width:180px; margin:2px auto 8px; }
   .g-machine{ width:100%; display:block; position:relative; z-index:1; }
+  /* ドーム内のカプセル在庫（ガラスの奥に見える） */
+  .g-fill{ position:absolute; left:0; top:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+  .g-fill .cap{ position:absolute; border-radius:50%;
+    box-shadow: inset -2px -3px 4px rgba(0,0,0,.28), inset 2px 2px 3px rgba(255,255,255,.55);
+  }
+  .gacha-stage.cranking .g-fill{ animation: fillJiggle .17s ease-in-out infinite; }
+  @keyframes fillJiggle{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-1.5px); } }
   .g-handle{ position:absolute; left:0; top:0; width:100%; z-index:2;
     --hdx:-26%; --hdy:20%; --hrest:180deg;
     transform-origin:80% 45%;
@@ -940,6 +947,7 @@
       <div class="gacha-title">🎰 ここでガチャ</div>
       <div class="gacha-spot" id="gacha-spot-name"></div>
       <div class="gacha-stage" id="gacha-stage">
+        <div class="g-fill" id="g-fill" aria-hidden="true"></div>
         <img class="g-machine" src="assets/gacha_body.png" alt="ガチャ">
         <img class="g-handle" id="g-handle" src="assets/gacha_handle.png" alt="">
         <img class="g-capsule" id="g-capsule" src="assets/gacha_capsule.png" alt="">
@@ -1668,11 +1676,41 @@
     }
   }
 
+  // ドームにカラフルなカプセル在庫を敷き詰める（ガラスの奥＝z-index0。ステージは固定180x370px）。
+  function fillGachaDome(){
+    var fill = document.getElementById("g-fill");
+    if(!fill || fill.dataset.filled) return;
+    var colors = ["#e8534e","#ef8f3c","#f3c53d","#63bb6b","#3f93d8","#8f6fd0","#e56fa8","#37b6a8"];
+    var cx = 90, cy = 104, R = 70;   // ドーム中心と半径（px）
+    var s = 19;                      // 充填間隔
+    var html = "";
+    for(var row = 0, y = cy - R; y <= cy + R; y += s * 0.9, row++){
+      var xoff = (row % 2) ? s / 2 : 0;
+      for(var x = cx - R + xoff; x <= cx + R; x += s){
+        var dx = x - cx, dy = y - cy;
+        if(dx * dx + dy * dy > (R - 9) * (R - 9)) continue;
+        var size = 17 + Math.round(Math.random() * 4);
+        var jx = x + (Math.random() * 2 - 1) * 2;
+        var jy = y + (Math.random() * 2 - 1) * 2;
+        var c = colors[(Math.random() * colors.length) | 0];
+        var rot = (Math.random() * 60 - 30) | 0;
+        html += '<span class="cap" style="width:' + size + 'px;height:' + size + 'px;left:' +
+          (jx - size / 2).toFixed(1) + 'px;top:' + (jy - size / 2).toFixed(1) + 'px;' +
+          'background:radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 14%, transparent 42%), ' +
+          'linear-gradient(180deg, ' + c + ' 0 50%, rgba(255,255,255,.82) 50% 100%);' +
+          'transform:rotate(' + rot + 'deg);"></span>';
+      }
+    }
+    fill.innerHTML = html;
+    fill.dataset.filled = "1";
+  }
+
   function openGachaModal(poiId){
     var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
     document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "";
     document.getElementById("gacha-result").innerHTML = "回すとカプセルが出てくるよ！";
     // ステージを初期状態に戻す
+    fillGachaDome();
     var cap = document.getElementById("g-capsule"); cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
     var prize = document.getElementById("g-prize"); prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
     document.getElementById("gacha-stage").classList.remove("cranking");
