@@ -248,6 +248,18 @@
   .grade-badge.grade-1{ background:#c88a4a; color:#fff; }
   .grade-badge.grade-2{ background:#a9adb8; color:#fff; }
   .grade-badge.grade-3{ background:linear-gradient(135deg,#e8c65a,#c9a227); color:#5a4416; }
+  /* 豪華版カード（再訪ごほうび） */
+  .deluxe-badge{ position:absolute; top:6px; left:6px; z-index:2;
+    background:linear-gradient(135deg,#e8c65a,#c9a227); color:#5a4416;
+    font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px;
+    box-shadow:0 1px 3px rgba(0,0,0,.35); letter-spacing:.3px;
+  }
+  .deluxe-note{ margin-top:8px; font-size:12.5px; font-weight:800;
+    color:#b07d16; background:linear-gradient(135deg,#fdf3d2,#f6e3a8);
+    display:inline-block; padding:4px 12px; border-radius:999px;
+  }
+  .deluxe-hint{ margin-top:8px; font-size:12px; color:var(--ink-soft); }
+  .deluxe-hint b{ color:var(--vermillion); font-size:14px; }
   .book-detail{
     margin:0 14px 14px; background:var(--card-bg); border-radius:12px; padding:14px; box-shadow:var(--shadow);
   }
@@ -1805,6 +1817,9 @@
       persist();
       showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: doubled2, bonus: dailyBonus });
       checkAchievements();
+      if(hasDeluxe(poi) && count === DELUXE_VISIT_THRESHOLD){
+        setTimeout(function(){ toast("🎴 " + poi.treasure.title + " のカードが豪華版になった！"); }, 1600);
+      }
       renderAll();
     }
     // 本日すでに取得済みなら何もしない（アイドル）
@@ -2441,6 +2456,18 @@
     return s;
   }
 
+  // 豪華版カード：そのスポットを何回か訪れると、カードが豪華版イラストに昇格する（再訪のごほうび）。
+  var DELUXE_VISIT_THRESHOLD = 3;   // この訪問回数で豪華版に昇格（1回目＝初回発見）
+  // 豪華版イラストがあるスポット（阪之上 sakanoue は未作成＝通常版のまま）
+  var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1 };
+  function visitCountOf(poiId){ var v = save.visits[poiId]; return v ? v.count : 0; }
+  function hasDeluxe(poi){ return !!DELUXE_CARDS[poi.id]; }
+  function deluxeUnlocked(poi){ return hasDeluxe(poi) && visitCountOf(poi.id) >= DELUXE_VISIT_THRESHOLD; }
+  function cardImageFor(poi){
+    var img = poi.treasure.image;
+    return deluxeUnlocked(poi) ? img.replace(/\.png$/, "_deluxe.png") : img;
+  }
+
   function renderBook(){
     document.getElementById("book-detail").style.display = "none";
     var grid = document.getElementById("book-grid");
@@ -2464,10 +2491,11 @@
       if(found){
         var stars = visitStars(poi.id);
         var starHtml = stars > 0 ? '<div class="card-stars">' + new Array(stars+1).join("★") + '</div>' : '';
+        var deluxeBadge = deluxeUnlocked(poi) ? '<div class="deluxe-badge">✦豪華版</div>' : '';
         card.innerHTML =
           '<div class="thumb-wrap">' +
-            '<img class="thumb" src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
-            starHtml +
+            '<img class="thumb" src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
+            starHtml + deluxeBadge +
           '</div>' +
           '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
       } else {
@@ -2485,10 +2513,17 @@
     detail.style.display = "block";
     if(found){
       var replayCount = save.inventory.treasureReplayTicket || 0;
+      var deluxeInfo = "";
+      if(deluxeUnlocked(poi)){
+        deluxeInfo = '<div class="deluxe-note">✦ 豪華版カード（何度も訪れたごほうび）</div>';
+      } else if(hasDeluxe(poi)){
+        deluxeInfo = '<div class="deluxe-hint">あと <b>' + (DELUXE_VISIT_THRESHOLD - visitCountOf(poi.id)) + '</b> 回訪れると豪華版に昇格！</div>';
+      }
       detail.innerHTML =
-        '<img src="assets/' + poi.treasure.image + '" alt="' + poi.treasure.title + '">' +
+        '<img src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
         '<h3>' + poi.treasure.title + '</h3>' +
         '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
+        deluxeInfo +
         '<p>' + poi.treasure.blurb + '</p>' +
         (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">お宝再鑑賞（所持：' + replayCount + '）</button>' : '');
       var replayBtn = document.getElementById("btn-replay-treasure");
