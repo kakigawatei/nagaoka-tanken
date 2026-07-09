@@ -2006,7 +2006,7 @@
   // 衣装（コスプレ）システム：着用中の衣装idに応じて、案内役スプライトのパスを差し替える。
   // 例）idle + isoroku 着用中 → assets/guide_idle_isoroku.png／衣装なし → assets/guide_idle.png
   // アバター専用の衣装イラストが存在する組み合わせ（idleのみ）。新しく届いたらここに追加。
-  var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"], tsuginosuke: ["boy2", "girl2"], torasaburo: ["boy2", "girl1", "girl2"] };
+  var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"], tsuginosuke: ["boy2", "girl1", "girl2"], torasaburo: ["boy2", "girl1", "girl2"] };
 
   function guideAssetPath(mood){
     // 衣装（コスプレ）が最優先。未装備なら選択中のアバター（boy1=既存＝サフィックス無し）。
