@@ -893,7 +893,7 @@
     <div class="settings-section">
       <h2>加盟店の方へ</h2>
       <button class="settings-btn" id="btn-shop-application">法人・個人店のお客様はこちら</button>
-      <div class="settings-note">押すと申請フォームが開きます。※申請フォームは準備中です。</div>
+      <div class="settings-note">押すと申請フォームが開きます。お店の掲載・特典・写真などをご記入ください。</div>
     </div>
 
     <div class="settings-section">
@@ -1000,7 +1000,7 @@
    *   ・申請フォームURLはまだ未定のためプレースホルダ。
    *     TODO: masaさんの本番Googleフォーム（またはTally等）のURLに差し替える
    * ========================================================== */
-  var SHOP_APPLICATION_URL = "https://forms.gle/REPLACE_ME"; // TODO: masaさんの本番フォームURLに差し替え
+  var SHOP_APPLICATION_URL = "https://tally.so/r/GxyO8L"; // 加盟店 申請フォーム（Tally）
   var DEFAULT_SHOP_RADIUS = 120; // radiusが未指定の加盟店に使う既定の圏内判定半径（m）
 
   var INLINE_SHOP_DATA = {"_note":"フェーズA・地域ビジネス連携（docs/BUSINESS_PLATFORM.md）のデモ用データ。「東京油そば 柿川亭」はmasaさんの実店舗（長岡市南町1-10-16／国土地理院アドレスマッチングで座標取得、2026-07時点）。もう1件はフェーズA動作確認用のダミー加盟店で実在の店舗ではない。クーポンのstaffPINは全店共通で\"1234\"（デモ用固定値。本番運用では店舗ごとに変更すること）。","shops":[{"id":"kakigawatei","name":"東京油そば 柿川亭","category":"飲食店（油そば専門店）","districtId":"chuo","lat":37.44397,"lng":138.849243,"radius":100,"address":"新潟県長岡市南町1-10-16","offer":{"title":"探検者限定！トッピング1品無料","desc":"「ながおか探検録」を見せてくれた探検者に、お好きなトッピングを1つ無料でプレゼント！"},"coupon":{"id":"topping_free","title":"トッピング1つ無料券","terms":"お一人様1回限り。他のクーポン・割引との併用不可。店内飲食時のみ有効。","staffPIN":"1234"},"links":{"web":"https://kakigawatei.com/","tel":""}},{"id":"demo_settaya_zakka","name":"摂田屋のれん市場（デモ店舗）","category":"雑貨・お土産（サンプル）","districtId":"settaya","lat":37.4155,"lng":138.842,"radius":80,"address":"（デモ用の架空データです・実在の店舗ではありません）","offer":{"title":"来店記念スタンプ","desc":"来店の記念にオリジナルスタンプを1つ押します（デモ用サンプル特典）。"},"coupon":{"id":"demo_stamp","title":"記念スタンプ引換券（デモ）","terms":"これはフェーズAの動作確認用サンプルデータです。実在の店舗ではありません。","staffPIN":"1234"},"links":{"web":"","tel":""}}]};
