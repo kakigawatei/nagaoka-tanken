@@ -1,0 +1,8 @@
+{
+  "appId": "com.nagaokatanken.app",
+  "appName": "ながおか探検録",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "always"
+  }
+}

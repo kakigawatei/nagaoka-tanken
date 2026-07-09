@@ -1,2 +1,8 @@
 node_modules/
 assets/original/
+
+# Capacitor（ネイティブ生成物・ビルド成果物。Pages配信に含めない）
+www/
+ios/
+android/
+.DS_Store
