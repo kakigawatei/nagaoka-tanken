@@ -993,7 +993,7 @@
     <div class="settings-section">
       <h2>このアプリについて</h2>
       <div class="settings-note">
-        位置情報は端末内だけで処理し、外部には送信しません。進捗はブラウザのlocalStorageに保存されます。<br>
+        位置情報や進捗は基本的に端末内（localStorage）で処理・保存します。お宝カードの通し番号や友達紹介の機能では、端末ごとに自動発行される匿名IDと、発見したスポットのID・日時のみを外部（Firebase）へ送信します。氏名などの個人情報は送信しません。<br>
         現在：中心部・摂田屋・山古志・寺泊・栃尾・与板・越路・蓬平の8地区、40スポット対応。ショップ・実績・称号・デイリーストリーク・衣装だんすに対応。<br>
         マップには「お宝」に加えて地域の加盟店（お店）ピンも表示されます（フェーズA・デモ実装）。お店の近くではクーポンの利用も試せます。<br>
         ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
@@ -1213,6 +1213,7 @@
   }
 
   var save = loadSave();
+  coerceSaveTypes();   // 起動時にも主要フィールドの型をそろえる（壊れたセーブ対策）
 
   function mergeSave(d, parsed){
     // 欠けているフィールドはdefaultSave()の値で補完し、既存セーブを壊さない
@@ -1255,6 +1256,30 @@
 
   function persist(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(save));
+  }
+
+  // 不正importや壊れたセーブに備え、主要フィールドの型を最低限そろえる（数値の文字列連結や
+  // innerHTMLへの想定外注入を防ぐ）。数値でなければ0（levelは1）に、配列でなければ空配列に。
+  function coerceSaveTypes(){
+    function num(v, dflt){ v = Number(v); return isFinite(v) ? v : dflt; }
+    save.coins = Math.max(0, Math.floor(num(save.coins, 0)));
+    save.level = Math.max(1, Math.floor(num(save.level, 1)));
+    save.xp = Math.max(0, Math.floor(num(save.xp, 0)));
+    save.totalCoinsEarned = Math.max(0, Math.floor(num(save.totalCoinsEarned, 0)));
+    save.streak = Math.max(0, Math.floor(num(save.streak, 0)));
+    if(!save.inventory || typeof save.inventory !== "object") save.inventory = defaultSave().inventory;
+    save.inventory.doubleCoinTicket = Math.max(0, Math.floor(num(save.inventory.doubleCoinTicket, 0)));
+    save.inventory.treasureReplayTicket = Math.max(0, Math.floor(num(save.inventory.treasureReplayTicket, 0)));
+    if(save.base){
+      save.base.members = Math.max(1, Math.floor(num(save.base.members, 1)));
+      save.base.storage = Math.max(1, Math.floor(num(save.base.storage, 1)));
+      save.base.lastCollect = num(save.base.lastCollect, Date.now());
+    }
+    if(save.referral) save.referral.count = Math.max(0, Math.floor(num(save.referral.count, 0)));
+    if(!Array.isArray(save.found)) save.found = [];
+    if(!Array.isArray(save.achievements)) save.achievements = [];
+    if(!Array.isArray(save.serialQueue)) save.serialQueue = [];
+    if(!save.visits || typeof save.visits !== "object") save.visits = {};
   }
 
   function todayStr(){
@@ -1430,6 +1455,8 @@
   var dwellCandidate = null; // {poiId, since}
   var DWELL_MS = 3000;
   var POSITION_BUFFER_SIZE = 5;
+  var geoError = null;        // 直近の位置情報エラー（1=許可なし/2=取得不可/3=タイムアウト）。取得成功でクリア
+  var geoErrorToastShown = false;
 
   function averagePositions(buf){
     var sLat=0, sLng=0;
@@ -1441,9 +1468,18 @@
     positionBuffer.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, t: Date.now() });
     if(positionBuffer.length > POSITION_BUFFER_SIZE) positionBuffer.shift();
     currentPos = averagePositions(positionBuffer);
+    geoError = null; geoErrorToastShown = false;
   }
   function onGeoError(err){
     console.warn("geolocation error", err);
+    geoError = (err && err.code) ? err.code : 2;
+    if(!geoErrorToastShown){
+      toast(geoError === 1
+        ? "位置情報が許可されていません。端末の設定でこのアプリの位置情報をオンにしてください。"
+        : "現在地を取得できませんでした。屋外や電波の良い場所でお試しください。");
+      geoErrorToastShown = true;
+    }
+    if(typeof renderHomeNearest === "function" && currentScreen === "home") renderHomeNearest();
   }
 
   function startGeo(){
@@ -1774,7 +1810,7 @@
 
   // 紹介人数のマイルストーン（称号）。ACHIEVEMENTS/TITLESからも参照。
   var REFERRAL_MILESTONES = [
-    { n: 1,  title: "なかま思い" },
+    { n: 1,  title: "はじめての紹介" },
     { n: 3,  title: "紹介上手" },
     { n: 5,  title: "長岡アンバサダー" },
     { n: 10, title: "長岡の顔" }
@@ -1810,7 +1846,7 @@
     if(next){
       var c = save.referral.count || 0;
       var nm = REFERRAL_MILESTONES.filter(function(m){ return m.n > c; })[0];
-      next.textContent = nm ? ("あと " + (nm.n - c) + " 人で称号「" + nm.title + "」！") : "全マイルストーン達成！ありがとう🎉";
+      next.textContent = nm ? ("あと " + (nm.n - c) + " 人で実績「" + nm.title + "」！") : "全マイルストーン達成！ありがとう🎉";
     }
   }
 
@@ -2427,7 +2463,7 @@
       var bonusCoins2 = dailyBonus2 ? dailyBonus2.total : 0;
       var count = (visit ? visit.count : 0) + 1;
       var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
-      var doubled2 = consumeDoubleCoin();
+      var doubled2 = false;   // ダブルコイン券は「初回発見」時のみ消費（再訪では使わない）
       if(doubled2) repeatCoins *= 2;
       save.coins += repeatCoins + bonusCoins2;
       save.totalCoinsEarned += repeatCoins + bonusCoins2;
@@ -2763,8 +2799,13 @@
     var compassImg = document.getElementById("home-compass-img");
 
     if(!currentPos || !DATA){
-      nameEl.textContent = (save.settings.mode === "gps") ? "現在地を取得中…" : "仮想現在地が未設定です";
-      distEl.textContent = "設定画面からテレポートしてみよう";
+      if(save.settings.mode === "gps" && geoError){
+        nameEl.textContent = (geoError === 1) ? "位置情報がオフです" : "現在地を取得できません";
+        distEl.textContent = (geoError === 1) ? "端末の設定で位置情報を許可してね" : "屋外や電波の良い場所で再度お試しを";
+      } else {
+        nameEl.textContent = (save.settings.mode === "gps") ? "現在地を取得中…" : "仮想現在地が未設定です";
+        distEl.textContent = (save.settings.mode === "gps") ? "位置情報を許可すると探検を始められます" : "設定画面からテレポートしてみよう";
+      }
       badgeEl.style.display = "none";
       return;
     }
@@ -2890,7 +2931,14 @@
     if(existing) existing.remove();
     if(!currentPos) return;
     var bbox = BBOX[currentDistrict];
-    // 現在地がこの地区のbbox範囲内にある場合のみ表示（大まかな範囲チェック）
+    if(!bbox) return;
+    // 現在地がこの地区のbbox範囲内にある場合のみ表示（範囲外の地区タブでは隅に張り付かせない）
+    // 少しだけ余白(marginを許容)を持たせて、境界付近は表示する
+    var mLat = (bbox.latMax - bbox.latMin) * 0.05, mLng = (bbox.lngMax - bbox.lngMin) * 0.05;
+    if(currentPos.lat < bbox.latMin - mLat || currentPos.lat > bbox.latMax + mLat ||
+       currentPos.lng < bbox.lngMin - mLng || currentPos.lng > bbox.lngMax + mLng){
+      return; // この地区の範囲外なので現在地マーカーは出さない
+    }
     var pos = project(currentPos.lat, currentPos.lng, bbox);
     var marker = document.createElement("div");
     marker.className = "you-are-here";
@@ -3029,7 +3077,7 @@
       } else {
         var distText = dist != null
           ? ('現在地から約' + (dist < 1000 ? Math.round(dist) + 'm' : (dist/1000).toFixed(1) + 'km'))
-          : '現在地が取得できません（設定でシミュレーションを使うと確認できます）';
+          : '現在地が取得できません（位置情報を許可してお試しください）';
         html += '<div class="coupon-range-note">お店の近くに来ると使えるようになります（' + distText + '）</div>';
         html += '<button class="coupon-action-btn" disabled>クーポンを使う</button>';
       }
@@ -3367,8 +3415,11 @@
         var parsed = JSON.parse(e.target.result);
         var d = defaultSave();
         save = mergeSave(d, parsed);
+        coerceSaveTypes();       // 数値/配列などを最低限サニタイズ（不正importでの破綻・注入を防ぐ）
+        enforceLocationMode();   // import経由で非開発ユーザーがシミュレーションに入るのを防ぐ
         persist();
         applyMode();
+        applyDevVisibility();
         renderAll();
         toast("データを読み込みました");
       }catch(err){
@@ -3500,6 +3551,17 @@
     if(save.coins < WARP_COST){ toast("コインが足りません"); return; }
     var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
     if(!poi) return;
+    // 空振り防止：発見済みかつ再訪クールダウン中はワープしても何も起きないので課金しない
+    if(save.found.indexOf(poi.id) !== -1){
+      var v = save.visits[poi.id];
+      var since = Date.now() - (v ? (v.lastAt || 0) : 0);
+      if(since < REVISIT_COOLDOWN_MS){
+        var leftMin = Math.ceil((REVISIT_COOLDOWN_MS - since) / 60000);
+        var leftTxt = leftMin >= 60 ? ("約" + Math.ceil(leftMin/60) + "時間") : ("約" + leftMin + "分");
+        toast(poi.name + " は再訪まで" + leftTxt + "。今ワープしても何も起きないのでコインは消費していません");
+        return;
+      }
+    }
     save.coins -= WARP_COST;
     save.shopPurchasedOnce = true;
     // 仮想現在地をその場所へ（sim中は現在地も更新）＋その場所を「訪れる」
