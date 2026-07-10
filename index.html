@@ -1022,6 +1022,13 @@
 
   var DISTRICT_MAP_IMG = { chuo:"assets/map_chuo.png", settaya:"assets/map_settaya.png", yamakoshi:"assets/map_yamakoshi.png", teradomari:"assets/map_teradomari.png", tochio:"assets/map_tochio.png", yoita:"assets/map_yoita.png", koshiji:"assets/map_koshiji.png" };
 
+  // 実地形に忠実な地図（map_<id>.png）の実際の地理範囲。ここに範囲があればピン投影はcomputeBBoxでなくこの確定値を使う。
+  // 地図画像は北が上・範囲いっぱいで描かれている前提（四隅の緯度経度＝画像の四隅）。docs/MAP_REALISM.md 参照。
+  var MAP_GEO = {
+    chuo:    { latMin:37.42289, latMax:37.45836, lngMin:138.83618, lngMax:138.88792 },
+    settaya: { latMin:37.40623, latMax:37.42292, lngMin:138.83410, lngMax:138.85700 }
+  };
+
   /* ============================================================
    * 0b. 地域ビジネス連携フェーズA（docs/BUSINESS_PLATFORM.md）
    *   ・加盟店データ（お宝ピンとは別レイヤー）／fetch失敗時のインラインフォールバック
@@ -3161,7 +3168,8 @@
       // 加盟店（お店）ピンも同じ地図上に投影するため、bbox計算にお店の座標も含める（既存のcomputeBBox/projectをそのまま流用）
       var shops = (SHOP_DATA && SHOP_DATA.shops) ? SHOP_DATA.shops.filter(function(s){ return s.districtId === d.id; }) : [];
       var points = pois.concat(shops);
-      BBOX[d.id] = computeBBox(points.length ? points : [{lat:d.center.lat,lng:d.center.lng}]);
+      // 実地形マップの確定範囲があればそれを使う（ピンが本物の場所に乗る）。無ければ従来通りPOIから自動計算。
+      BBOX[d.id] = MAP_GEO[d.id] ? MAP_GEO[d.id] : computeBBox(points.length ? points : [{lat:d.center.lat,lng:d.center.lng}]);
     });
   }
 
