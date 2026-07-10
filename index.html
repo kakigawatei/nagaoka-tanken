@@ -254,6 +254,15 @@
     font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px;
     box-shadow:0 1px 3px rgba(0,0,0,.35); letter-spacing:.3px;
   }
+  .serial-badge{ position:absolute; bottom:5px; left:5px; z-index:2;
+    background:linear-gradient(135deg,#2c3e63,#43608f); color:#fff;
+    font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px;
+    box-shadow:0 1px 3px rgba(0,0,0,.4); letter-spacing:.2px;
+  }
+  .serial-note{ margin-top:8px; font-size:12.5px; font-weight:800;
+    color:#fff; background:linear-gradient(135deg,#2c3e63,#43608f);
+    display:inline-block; padding:4px 12px; border-radius:999px;
+  }
   .deluxe-note{ margin-top:8px; font-size:12.5px; font-weight:800;
     color:#b07d16; background:linear-gradient(135deg,#fdf3d2,#f6e3a8);
     display:inline-block; padding:4px 12px; border-radius:999px;
@@ -404,6 +413,13 @@
     display:flex; align-items:center; gap:6px; color:var(--ink);
   }
   .reward-pill img{ width:18px; height:18px; }
+  .discover-serial{
+    background:linear-gradient(135deg,#c9a227,#e9cf6a); color:#3a2a12; border-radius:12px;
+    padding:8px 16px; font-weight:800; font-size:14px; margin-bottom:14px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+  .discover-serial.pending{ background:#efe7d4; color:#8a7a5a; font-weight:700; }
+  .discover-serial b{ font-size:18px; }
   .discover-close-btn{
     background:var(--gold); color:#3a2a12; border:none; border-radius:999px; padding:10px 30px;
     font-weight:900; font-size:14px;
@@ -744,7 +760,7 @@
   <!-- HOME -->
   <div class="screen" id="screen-home">
     <div class="topbar">
-      <h1>ながおか探検録</h1>
+      <h1 id="home-title">ながおか探検録</h1>
       <div class="stat-row">
         <div class="stat-pill"><img src="assets/coin.png" alt="coin"><span id="home-coins">0</span></div>
         <div class="stat-pill">Lv <span id="home-level">1</span></div>
@@ -857,7 +873,7 @@
     <div id="shop-panel-item">
       <div class="shop-card warp-card">
         <div class="shop-name">🧭 ワープ（遠くのスポットへ）</div>
-        <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。</div>
+        <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。※ワープで手に入れたお宝カードには通し番号（発見順）は付きません。現地で発見したカードだけに番号が付きます。</div>
         <button class="shop-buy-btn" id="warp-open-btn">ワープ先を選ぶ（<img src="assets/coin.png" class="inline-coin" alt="coin">1000）</button>
       </div>
       <div class="shop-grid" id="shop-grid"></div>
@@ -897,15 +913,15 @@
       <div class="settings-note">発見・レベルアップ・実績解除・お買い物などのタイミングで短い効果音を鳴らします。</div>
     </div>
 
-    <div class="settings-section">
-      <h2>位置情報モード</h2>
+    <div class="settings-section dev-only" id="settings-locmode" style="display:none;">
+      <h2>位置情報モード（開発用）</h2>
       <div class="mode-toggle">
         <div class="mode-btn" id="mode-btn-gps">実GPS</div>
         <div class="mode-btn" id="mode-btn-sim">シミュレーション</div>
       </div>
       <div class="sim-pos-line" id="sim-pos-line">現在の仮想現在地：未設定</div>
       <div class="teleport-list" id="teleport-list"></div>
-      <div class="settings-note">シミュレーション中は「マップ」画面をタップすると、その場所に仮想現在地を置けます。実地に行かなくても発見のテストができます。</div>
+      <div class="settings-note">開発モード専用。シミュレーション中は「マップ」画面をタップすると、その場所に仮想現在地を置けます。実地に行かなくても発見のテストができます。通常のプレイでは実GPSのみ・現地に行って発見します。</div>
     </div>
 
     <div class="settings-section">
@@ -953,6 +969,7 @@
     <div class="discover-title" id="discover-title">発見！</div>
     <div class="discover-sub" id="discover-sub"></div>
     <div class="discover-rewards" id="discover-rewards"></div>
+    <div class="discover-serial" id="discover-serial" style="display:none;"></div>
     <button class="discover-close-btn" id="discover-close-btn">とじる</button>
   </div>
 
@@ -1001,7 +1018,7 @@
     <div class="shop-modal-card">
       <button class="shop-modal-close" id="warp-close" aria-label="とじる">×</button>
       <div class="warp-title">🧭 ワープ先を選ぶ</div>
-      <div class="warp-sub">1000コインで、その場所へワープして訪れます</div>
+      <div class="warp-sub">1000コインで、その場所へワープして訪れます（通し番号は付きません）</div>
       <div class="warp-list" id="warp-list"></div>
     </div>
   </div>
@@ -1094,6 +1111,11 @@
       // 現地ガチャ（後方互換：欠けていてもdefaultSave()の値で補完される）
       omiyage: {},                    // 集めたご当地おみやげ { id: 個数 }（ダブりは個数が増える）
       gacha: { lastFreeDate: null },  // 1日1回無料ガチャの管理（最後に無料を回した日）
+      // お宝カードのシリアルナンバー（Firebase採番。後方互換：欠けていてもdefaultSave()の値で補完される）
+      // serials: poiId -> { no: 通し番号, at: ISO日時 }（採番済み）
+      // serialQueue: 採番待ちのpoiId配列（オフライン発見や採番失敗時にここへ積み、オンライン時に確定）
+      serials: {},
+      serialQueue: [],
       // 花火館（後方互換：欠けていてもdefaultSave()の値で補完される）
       // unlocked: 手に入れた花火id { id: true }（実績達成で順番に解放）
       fireworks: { unlocked: {} }
@@ -1366,6 +1388,144 @@
     save.settings.simLng = lng;
     currentPos = { lat: lat, lng: lng };
     persist();
+  }
+
+  /* ============================================================
+   * 5b. お宝カードのシリアルナンバー（Firebase REST・匿名認証）
+   * ------------------------------------------------------------
+   * 全ユーザー共通の「発見順カウンター」をFirestoreのatomic increment
+   * で採番する。公式SDKは使わずREST(fetch)のみ＝軽量・SWキャッシュを汚さない。
+   *   - 匿名認証(Identity Toolkit)で端末ごとの安定IDを発行（ログイン不要）
+   *   - Firestore :commit の increment transform で count+1 → 返り値が通し番号
+   *   - コインワープで得たカードは対象外（viaWarp時は採番しない）
+   *   - オフライン発見は save.serialQueue に積み、オンライン復帰時に確定
+   * ★セットアップ：下の FIREBASE_CONFIG に apiKey と projectId を入れるだけ。
+   *   空のままならこの機能は自動的に無効（アプリは従来どおり動作）。
+   *   手順は docs/SERIAL_NUMBERS.md を参照。
+   * ========================================================== */
+  var FIREBASE_CONFIG = (window.NAGAOKA_FIREBASE) || {
+    apiKey:    "",   // ← Firebaseの「ウェブAPIキー」を貼り付け
+    projectId: ""    // ← Firebaseの「プロジェクトID」を貼り付け
+  };
+
+  function fbEnabled(){ return !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId); }
+
+  var FB_LS_UID = "nagaoka_fb_uid";
+  var FB_LS_REFRESH = "nagaoka_fb_refresh";
+  var fbIdToken = null;   // メモリ内キャッシュ（保存はしない）
+  var fbIdTokenExp = 0;   // idTokenの失効時刻(ms)
+
+  function fbSignUpAnon(){
+    return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ returnSecureToken: true })
+    }).then(function(r){ if(!r.ok) throw new Error("signUp " + r.status); return r.json(); })
+      .then(function(d){
+        try {
+          localStorage.setItem(FB_LS_UID, d.localId);
+          localStorage.setItem(FB_LS_REFRESH, d.refreshToken);
+        } catch(e){}
+        fbIdToken = d.idToken;
+        fbIdTokenExp = Date.now() + (parseInt(d.expiresIn, 10) - 60) * 1000;
+        return fbIdToken;
+      });
+  }
+
+  function fbRefresh(refreshToken){
+    return fetch("https://securetoken.googleapis.com/v1/token?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(refreshToken)
+    }).then(function(r){ if(!r.ok) throw new Error("refresh " + r.status); return r.json(); })
+      .then(function(d){
+        try {
+          localStorage.setItem(FB_LS_UID, d.user_id);
+          localStorage.setItem(FB_LS_REFRESH, d.refresh_token);
+        } catch(e){}
+        fbIdToken = d.id_token;
+        fbIdTokenExp = Date.now() + (parseInt(d.expires_in, 10) - 60) * 1000;
+        return fbIdToken;
+      });
+  }
+
+  // 有効な idToken を返す（必要なら発行／更新する）。ログインUIは一切出さない。
+  function fbAuth(){
+    if(fbIdToken && Date.now() < fbIdTokenExp) return Promise.resolve(fbIdToken);
+    var refresh = null;
+    try { refresh = localStorage.getItem(FB_LS_REFRESH); } catch(e){}
+    if(refresh) return fbRefresh(refresh).catch(function(){ return fbSignUpAnon(); });
+    return fbSignUpAnon();
+  }
+
+  // cards/{cardId}.count を atomic +1 し、その結果（＝通し番号）を返す。
+  function fbAssignSerial(cardId){
+    var docPath = "projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents/cards/" + cardId;
+    var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents:commit";
+    return fbAuth().then(function(idToken){
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({
+          writes: [{
+            transform: {
+              document: docPath,
+              fieldTransforms: [{ fieldPath: "count", increment: { integerValue: "1" } }]
+            }
+          }]
+        })
+      });
+    }).then(function(r){ if(!r.ok) throw new Error("commit " + r.status); return r.json(); })
+      .then(function(d){
+        var results = d.writeResults && d.writeResults[0] && d.writeResults[0].transformResults;
+        var v = results && results[0] && results[0].integerValue;
+        var n = parseInt(v, 10);
+        if(!n || n < 1) throw new Error("bad serial");
+        return n;
+      });
+  }
+
+  var serialProcessing = false;
+
+  // 初回発見時に呼ぶ。採番待ちに積み、可能ならすぐ採番を試みる。
+  function enqueueSerial(poiId){
+    if(!fbEnabled()) return;
+    if(save.serials[poiId]) return;                 // 既に採番済み
+    if(save.serialQueue.indexOf(poiId) === -1){
+      save.serialQueue.push(poiId);
+      persist();
+    }
+    processSerialQueue();
+  }
+
+  // 採番待ちキューを1件ずつ確定する（オフライン時は残して後で再試行）。
+  function processSerialQueue(){
+    if(!fbEnabled() || serialProcessing) return;
+    if(!save.serialQueue || save.serialQueue.length === 0) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    serialProcessing = true;
+    var poiId = save.serialQueue[0];
+    fbAssignSerial(poiId).then(function(no){
+      save.serials[poiId] = { no: no, at: new Date().toISOString() };
+      var i = save.serialQueue.indexOf(poiId);
+      if(i !== -1) save.serialQueue.splice(i, 1);
+      persist();
+      onSerialAssigned(poiId, no);
+      serialProcessing = false;
+      if(save.serialQueue.length > 0) processSerialQueue();
+    }).catch(function(err){
+      console.warn("[serial] assign failed（後で再試行）", err);
+      serialProcessing = false;
+    });
+  }
+
+  // 採番完了時：発見モーダルが該当カードを表示中なら「◯番目」を反映する。
+  function onSerialAssigned(poiId, no){
+    var el = document.getElementById("discover-serial");
+    if(el && el.getAttribute("data-poi") === poiId){
+      el.classList.remove("pending");
+      el.innerHTML = "🏅 あなたは <b>" + no + "</b> 番目の発見者！";
+    }
   }
 
   /* ============================================================
@@ -1893,7 +2053,9 @@
   // 再訪カウントのクールダウン：前回の訪問からこの時間が経つと「次の1回」としてカウント（コイン再訪報酬も）。
   var REVISIT_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2時間
 
-  function attemptDiscovery(poi){
+  function attemptDiscovery(poi, opts){
+    opts = opts || {};
+    var viaWarp = !!opts.viaWarp;   // コインワープ経由の発見は通し番号（シリアル）の対象外
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
 
@@ -1910,10 +2072,14 @@
       save.totalCoinsEarned += coinsFirst + bonusCoins;
       var leveled = addXp(poi.xp);
       persist();
-      showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled, doubled: doubled, bonus: dailyBonus });
+      var serialEligible = fbEnabled() && !viaWarp;   // コインワープは通し番号を付けない
+      showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled, doubled: doubled, bonus: dailyBonus,
+        serialNo: (save.serials[poi.id] ? save.serials[poi.id].no : null),
+        serialPending: serialEligible && !save.serials[poi.id] });
       checkAchievements();
       checkCostumeUnlock(poi.id);
       renderAll();
+      if(serialEligible) enqueueSerial(poi.id);   // 発見モーダル表示後に採番（完了したら「◯番目」を反映）
     } else {
       // 再訪：前回の訪問から2時間以上あいたら「次の1回」としてカウント（同じ場所の連打を防ぐ）
       var now = Date.now();
@@ -1967,6 +2133,27 @@
       }
     }
     rewards.innerHTML = rewardHtml;
+
+    // お宝カードの通し番号（シリアル）：確定なら「◯番目」、採番中ならプレースホルダ、対象外なら非表示
+    var serialEl = document.getElementById("discover-serial");
+    if(serialEl){
+      if(opts.serialNo){
+        serialEl.style.display = "";
+        serialEl.classList.remove("pending");
+        serialEl.removeAttribute("data-poi");
+        serialEl.innerHTML = "🏅 あなたは <b>" + opts.serialNo + "</b> 番目の発見者！";
+      } else if(opts.serialPending){
+        serialEl.style.display = "";
+        serialEl.classList.add("pending");
+        serialEl.setAttribute("data-poi", poi.id);
+        serialEl.innerHTML = "🏅 発見順を採番中…";
+      } else {
+        serialEl.style.display = "none";
+        serialEl.classList.remove("pending");
+        serialEl.removeAttribute("data-poi");
+        serialEl.innerHTML = "";
+      }
+    }
 
     setGuideMood("happy");
     overlay.classList.add("show");
@@ -2605,10 +2792,11 @@
         var stars = visitStars(poi.id);
         var starHtml = stars > 0 ? '<div class="card-stars">' + new Array(stars+1).join("★") + '</div>' : '';
         var deluxeBadge = deluxeUnlocked(poi) ? '<div class="deluxe-badge">✦豪華版</div>' : '';
+        var serialBadge = (save.serials[poi.id]) ? '<div class="serial-badge">No.' + save.serials[poi.id].no + '</div>' : '';
         card.innerHTML =
           '<div class="thumb-wrap">' +
             '<img class="thumb" src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
-            starHtml + deluxeBadge +
+            starHtml + deluxeBadge + serialBadge +
           '</div>' +
           '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
       } else {
@@ -2632,10 +2820,14 @@
       } else if(hasDeluxe(poi)){
         deluxeInfo = '<div class="deluxe-hint">あと <b>' + (DELUXE_VISIT_THRESHOLD - visitCountOf(poi.id)) + '</b> 回訪れると豪華版に昇格！</div>';
       }
+      var serialInfo = (save.serials[poi.id])
+        ? '<div class="serial-note">🏅 あなたは ' + save.serials[poi.id].no + ' 番目の発見者</div>'
+        : '';
       detail.innerHTML =
         '<img src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
         '<h3>' + poi.treasure.title + '</h3>' +
         '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
+        serialInfo +
         deluxeInfo +
         '<p>' + poi.treasure.blurb + '</p>' +
         (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">お宝再鑑賞（所持：' + replayCount + '）</button>' : '');
@@ -2776,7 +2968,35 @@
     });
   }
 
+  /* ---------- 開発モード（シミュレーションを一般ユーザーから隠す） ----------
+   * 通常のプレイでは実GPSのみ＝必ず現地に行って発見する。シミュレーション（マップタップで
+   * 仮想現在地）は端末ローカルの「開発モード」でだけ使える。ホームのタイトルを7回タップで切替。
+   * dev状態は localStorage（端末ごと）に保持し、セーブ／エクスポートには含めない。 */
+  var DEV_LS_KEY = "nagaoka_dev";
+  function isDevMode(){
+    try { return localStorage.getItem(DEV_LS_KEY) === "1"; } catch(e){ return false; }
+  }
+  function setDevMode(on){
+    try { localStorage.setItem(DEV_LS_KEY, on ? "1" : "0"); } catch(e){}
+    if(!on && save.settings.mode === "simulate"){ setMode("gps"); }
+    applyDevVisibility();
+  }
+  function applyDevVisibility(){
+    var dev = isDevMode();
+    document.querySelectorAll(".dev-only").forEach(function(el){
+      el.style.display = dev ? "" : "none";
+    });
+  }
+  // 非開発ユーザーが（旧セーブ等で）simulateのままにならないよう、起動時に実GPSへ戻す。
+  function enforceLocationMode(){
+    if(!isDevMode() && save.settings.mode === "simulate"){
+      save.settings.mode = "gps";
+      persist();
+    }
+  }
+
   function setMode(mode){
+    if(mode === "simulate" && !isDevMode()) return;  // 一般ユーザーはシミュレーション不可（現地必須）
     save.settings.mode = mode;
     persist();
     applyMode();
@@ -2954,7 +3174,7 @@
     document.getElementById("warp-modal").classList.remove("show");
     showScreen("home");
     toast(poi.name + " へワープ！");
-    attemptDiscovery(poi);   // 初回なら発見、発見済みなら再訪（前回から2時間でカウント）。以後ホームでガチャも可能
+    attemptDiscovery(poi, { viaWarp: true });   // コインワープ：発見/再訪は可能だが通し番号（シリアル）は付けない
     renderAll();
   }
 
@@ -3186,6 +3406,25 @@
       checkLoginBonus();   // 開いた日にまだ受け取っていなければログインボーナスを表示
     });
 
+    // 隠し開発モード切替：ホームタイトルを3秒以内に7回タップでON/OFF
+    (function(){
+      var homeTitle = document.getElementById("home-title");
+      if(!homeTitle) return;
+      var taps = 0, timer = null;
+      homeTitle.addEventListener("click", function(){
+        taps++;
+        clearTimeout(timer);
+        timer = setTimeout(function(){ taps = 0; }, 3000);
+        if(taps >= 7){
+          taps = 0;
+          var next = !isDevMode();
+          setDevMode(next);
+          renderSettings();
+          toast(next ? "開発モードON（設定に位置情報モードが出ます）" : "開発モードOFF");
+        }
+      });
+    })();
+
     document.getElementById("login-close-btn").addEventListener("click", function(){
       document.getElementById("login-modal").classList.remove("show");
     });
@@ -3286,10 +3525,15 @@
     DATA = data;
     initBBoxes();
     wireEvents();
+    enforceLocationMode();   // 一般ユーザーは実GPSに固定（開発モードのみシミュレーション可）
+    applyDevVisibility();     // 開発用UI（位置情報モード）の表示/非表示
     applyMode();
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     renderHomeFull();
     setInterval(tick, 1000);
+    // シリアル採番：起動時に未確定分を処理＋オンライン復帰時にも再試行（オフライン発見のフォロー）
+    processSerialQueue();
+    window.addEventListener("online", processSerialQueue);
   }
 
   // 加盟店データの読み込み（フェーズA・地域ビジネス連携）。お宝(pois.json)とは独立したデータ・独立したfetchで、

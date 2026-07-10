@@ -51,7 +51,78 @@ campaigns/{id}         : { cardId, limit, start, end }  // 限定企画（任意
 - **フェーズ3**：不正対策（サーバーGPS検証）＋任意アカウント連携（機種変で引き継ぎ）。
 
 ## 確認したいこと（masaさん）
-- Firebaseバックエンド導入OK？（Googleアカウントで作成・無料枠から）
-- v1は匿名（ログイン無し）で進めてOK？
-- シリアルは「全カード」に付ける？それとも最初は「特別／限定カードだけ」？
-- v1の不正対策は「ゆるく（信頼ベース）」で始めてOK？（限定企画を本格化する時に厳密化）
+- Firebaseバックエンド導入OK？（Googleアカウントで作成・無料枠から）→ **GO（2026-07-10）**
+- v1は匿名（ログイン無し）で進めてOK？→ **OK（匿名認証で実装）**
+- シリアルは「全カード」に付ける？それとも最初は「特別／限定カードだけ」？→ **v1は全カード。ただしコインワープ発見は対象外**
+- v1の不正対策は「ゆるく（信頼ベース）」で始めてOK？→ **OK（ゆるく。限定企画を本格化する時に厳密化）**
+
+---
+
+# 実装メモ（フェーズ1・2026-07-10 実装）
+
+## 実装したこと（index.html / 完全クライアント＋Firebase REST）
+- **軽量REST方式**：公式SDKは使わず `fetch` だけで実装（SWキャッシュを汚さない・PWA/Capacitorそのまま）。
+- **匿名認証**：Identity Toolkit REST（`accounts:signUp` → `token`更新）。端末IDは localStorage 保存、
+  セーブ(JSON)・エクスポートには含めない（＝端末ローカルの identity）。
+- **採番**：Firestore `:commit` の increment transform で `cards/{poiId}.count` を +1 →
+  返ってきた値（transformResults）がそのまま通し番号。**重複しない・レース安全**。
+- **表示**：発見モーダルに「🏅 あなたは◯番目の発見者！」／図鑑カードに「No.◯」バッジ・詳細に帯。
+- **コインワープは対象外**：`attemptDiscovery(poi, {viaWarp:true})` で採番しない。ショップ/ワープUIにも明記。
+- **オフライン対応**：オフライン発見は `save.serialQueue` に積み、起動時＋`online`イベントで自動確定。
+- **設定が空なら自動無効**：`FIREBASE_CONFIG` が空ならシリアル機能はOFF（アプリは従来どおり動作）。
+
+## シミュレーション（開発モード化）
+- ワープ完全廃止＝「必ず現地に行く」の原則に合わせ、シミュレーション（マップタップで仮想現在地）を
+  **一般ユーザーから非表示**にした。
+- **隠し開発モード**：ホーム画面のタイトル「ながおか探検録」を **3秒以内に7回タップ** でON/OFF。
+  ON時のみ設定に「位置情報モード（開発用）」が出現し、シミュレーション＆テレポートが使える。
+  dev状態は localStorage（端末ごと）。※masaさんのテスト端末も、更新後は一度この7回タップでONにしてね
+  （それまでは実GPS固定になります）。
+
+---
+
+# セットアップ手順（masaさん向け・所要5〜10分）
+
+既存の Firebase プロジェクト **`kakigawatei-franchise`** をそのまま流用でOK（`cards` コレクションを
+使うだけなので既存データとは混ざりません）。
+
+### ① 匿名認証を有効化
+1. Firebaseコンソール → 左メニュー **Authentication** → 「始める」
+2. 「Sign-in method」タブ → **匿名（Anonymous）** を選んで **有効化** → 保存
+
+### ② Firestore Database を作成（未作成なら）
+1. 左メニュー **Firestore Database** → 「データベースの作成」
+2. ロケーションは **asia-northeast1（東京）** 推奨 → 本番モードで開始（ルールは③で入れる）
+
+### ③ セキュリティルールを追記（既存ルールは消さず“足す”）
+「ルール」タブで、`match /databases/{database}/documents {` の中に以下を**追記**：
+```
+    // ながおか探検録：お宝カードの発見順カウンター
+    match /cards/{cardId} {
+      allow read: if true;              // 誰でも現在の獲得数は見られる
+      allow write: if request.auth != null;  // 匿名ログイン済みユーザーのみ採番可（v1ゆるめ）
+    }
+```
+（フェーズ3で increment のみ許可＋GPS検証＋レート制限に厳格化予定。今は「ゆるく」でOK。）
+
+### ④ 2つの値を index.html に貼る
+1. Firebaseコンソール → 歯車 **プロジェクトの設定** → 「全般」
+   - **プロジェクトID**：`kakigawatei-franchise`
+   - **ウェブ API キー**：`AIza...` の文字列（画面に表示。ウェブアプリ未登録なら「アプリを追加→ウェブ」で1つ作ると出ます）
+2. `index.html` 内を **`FIREBASE_CONFIG`** で検索し、次のように埋める：
+```
+  var FIREBASE_CONFIG = (window.NAGAOKA_FIREBASE) || {
+    apiKey:    "AIza...ここにウェブAPIキー...",
+    projectId: "kakigawatei-franchise"
+  };
+```
+3. 保存 → デプロイ（GitHub Pages は push、iOSは `node build-www.js` → `npx cap sync ios`）。
+
+### 動作確認
+- 未発見スポットを**実GPSで現地発見**（or 開発モードのシミュレーションでテスト）すると、
+  発見モーダルに「🏅 あなたは◯番目の発見者！」が出る。図鑑にも「No.◯」。
+- **コインワープ**で入手したカードには番号が付かないこと。
+- Firestoreコンソールの `cards` コレクションに `{poiId}: {count: N}` が増えていく。
+
+### コスト
+- Spark（無料枠）で十分（Firestore 読み書き 各5万/日）。個人利用規模ならまず無料枠内。（限定企画を本格化する時に厳密化）
