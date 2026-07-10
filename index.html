@@ -640,6 +640,28 @@
   .omiyage-name{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
   .omiyage-cell.has .omiyage-name{ color:var(--ink); }
   .omiyage-count{ font-size:11px; font-weight:800; color:var(--gold); margin-top:2px; }
+  /* 花火館 */
+  .fw-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:6px 14px 4px; }
+  .fw-cell{ background:var(--card-bg); border-radius:12px; padding:8px 6px 10px; text-align:center; box-shadow:var(--shadow); opacity:0.55; }
+  .fw-cell.has{ opacity:1; cursor:pointer; }
+  .fw-cell.has:active{ transform:scale(0.96); }
+  .fw-thumb{ width:100%; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:#1c130c; border-radius:8px; overflow:hidden; }
+  .fw-thumb img{ width:100%; height:100%; object-fit:contain; }
+  .fw-thumb.locked{ color:var(--ink-soft); font-size:26px; background:var(--paper-dark); }
+  .fw-name{ font-size:11px; margin-top:6px; color:var(--ink-soft); }
+  .fw-cell.has .fw-name{ color:var(--ink); font-weight:700; }
+  /* 花火の打ち上げ演出（画像バースト） */
+  #fw-show{ position:absolute; inset:0; pointer-events:none; z-index:71; overflow:hidden; }
+  .fw-show-img{ position:absolute; left:50%; top:34%; width:80%; max-width:440px;
+    transform:translate(-50%,-50%) scale(.12); opacity:0;
+    filter:drop-shadow(0 0 20px rgba(255,205,90,.55));
+    animation:fwShow 2.2s ease-out forwards; }
+  @keyframes fwShow{
+    0%{ opacity:0; transform:translate(-50%,-30%) scale(.10); }
+    16%{ opacity:1; transform:translate(-50%,-50%) scale(.92); }
+    68%{ opacity:1; transform:translate(-50%,-50%) scale(1.02); }
+    100%{ opacity:0; transform:translate(-50%,-52%) scale(1.14); }
+  }
 
   /* ---------- ワープ ---------- */
   .warp-card{ border:2px solid var(--indigo); }
@@ -798,6 +820,7 @@
       <div class="book-subtab" data-sub="ach">実績</div>
       <div class="book-subtab" data-sub="title">称号</div>
       <div class="book-subtab" data-sub="omiyage">おみやげ</div>
+      <div class="book-subtab" data-sub="fw">花火館</div>
     </div>
     <div id="book-panel-book">
       <div class="book-progress" id="book-progress">発見数：0 / 0</div>
@@ -815,6 +838,11 @@
       <div class="book-progress" id="omiyage-progress">あつめた数：0 / 0</div>
       <div class="omiyage-grid" id="omiyage-grid"></div>
       <div class="settings-note" style="padding:0 14px 14px;">おみやげは、発見済みスポットに再訪して「ガチャ」を回すと手に入ります。</div>
+    </div>
+    <div id="book-panel-fw" style="display:none;">
+      <div class="book-progress" id="fw-progress">あつめた花火：0 / 6</div>
+      <div class="fw-grid" id="fw-grid"></div>
+      <div class="settings-note" style="padding:0 14px 14px;">実績を達成すると花火が増えます。タップでもう一度打ち上げ！🎆</div>
     </div>
   </div>
 
@@ -1054,7 +1082,10 @@
       base: { lastCollect: Date.now(), members: 1, storage: 1 },
       // 現地ガチャ（後方互換：欠けていてもdefaultSave()の値で補完される）
       omiyage: {},                    // 集めたご当地おみやげ { id: 個数 }（ダブりは個数が増える）
-      gacha: { lastFreeDate: null }   // 1日1回無料ガチャの管理（最後に無料を回した日）
+      gacha: { lastFreeDate: null },  // 1日1回無料ガチャの管理（最後に無料を回した日）
+      // 花火館（後方互換：欠けていてもdefaultSave()の値で補完される）
+      // unlocked: 手に入れた花火id { id: true }（実績達成で順番に解放）
+      fireworks: { unlocked: {} }
     };
   }
 
@@ -1079,7 +1110,8 @@
         if(Array.isArray(po)){ var m = {}; po.forEach(function(id){ m[id] = (m[id] || 0) + 1; }); return m; }
         return po || {};
       })(),
-      gacha: Object.assign(d.gacha, parsed.gacha || {})
+      gacha: Object.assign(d.gacha, parsed.gacha || {}),
+      fireworks: { unlocked: Object.assign({}, (parsed.fireworks && parsed.fireworks.unlocked) || {}) }
     });
   }
 
@@ -1715,6 +1747,28 @@
     });
   }
 
+  function renderFireworks(){
+    var grid = document.getElementById("fw-grid");
+    if(!grid) return;
+    document.getElementById("fw-progress").textContent = "あつめた花火：" + fwUnlockedCount() + " / " + FIREWORKS.length;
+    grid.innerHTML = "";
+    FIREWORKS.forEach(function(f){
+      var has = !!save.fireworks.unlocked[f.id];
+      var cell = document.createElement("div");
+      cell.className = "fw-cell" + (has ? " has" : "");
+      cell.innerHTML = has
+        ? ("<div class=\"fw-thumb\"><img src=\"" + f.img + "\" alt=\"" + f.name + "\"></div><div class=\"fw-name\">" + f.name + "</div>")
+        : ("<div class=\"fw-thumb locked\">？</div><div class=\"fw-name\">？？？</div>");
+      if(has){
+        cell.addEventListener("click", function(){
+          playFireworkShow(f.id);
+          if(typeof launchFireworks === "function") launchFireworks(2);
+        });
+      }
+      grid.appendChild(cell);
+    });
+  }
+
   /* ---------- 長岡花火（実績お祝い演出・canvas） ---------- */
   // 実績解除でお祝いの花火を打ち上げる。tierが高い(難関)ほど数・大きさ・大玉が豪華に。
   var fwParticles = [], fwPending = 0, fwRunning = false, fwCanvas = null, fwCtx = null;
@@ -1782,6 +1836,47 @@
       }, cfg.shells * 240 + 200);
     }
     fwStart();
+  }
+
+  /* ---------- 花火館（集めた花火のコレクション＆再生） ---------- */
+  // 実績を達成するたびに、下の順番で花火が1つずつ解放される（達成数と同じ数だけ解放）。
+  var FIREWORKS = [
+    { id:"kiku",      name:"菊",           img:"assets/fw_kiku.png",      blurb:"まん丸に開く定番の大輪。" },
+    { id:"botan",     name:"牡丹",         img:"assets/fw_botan.png",     blurb:"光の玉が密に詰まった彩りの花火。" },
+    { id:"yanagi",    name:"柳",           img:"assets/fw_yanagi.png",    blurb:"金の光が枝垂れる、しだれ柳。" },
+    { id:"starmine",  name:"スターマイン", img:"assets/fw_starmine.png",  blurb:"小花火が連なる賑やかな一斉打ち。" },
+    { id:"shakudama", name:"正三尺玉",     img:"assets/fw_shakudama.png", blurb:"長岡名物の特大花火。" },
+    { id:"phoenix",   name:"フェニックス", img:"assets/fw_phoenix.png",   blurb:"復興を願う、不死鳥の花火。" }
+  ];
+  var FW_ORDER = FIREWORKS.map(function(f){ return f.id; });
+  function fwById(id){ for(var i=0;i<FIREWORKS.length;i++){ if(FIREWORKS[i].id === id) return FIREWORKS[i]; } return null; }
+  function fwUnlockedCount(){ return FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id]; }).length; }
+  function grandestUnlockedFw(){ var g=null; for(var i=0;i<FW_ORDER.length;i++){ if(save.fireworks.unlocked[FW_ORDER[i]]) g = FW_ORDER[i]; } return g; }
+
+  // 実績の達成数に合わせて花火を順番に解放。新しく解放したidの配列を返す。
+  function syncFireworksUnlock(silent){
+    var target = Math.min(FW_ORDER.length, save.achievements.length);
+    var newly = [];
+    for(var i=0;i<target;i++){
+      var id = FW_ORDER[i];
+      if(!save.fireworks.unlocked[id]){ save.fireworks.unlocked[id] = true; newly.push(id); }
+    }
+    if(newly.length && !silent){
+      newly.forEach(function(id){ var f = fwById(id); if(f) toast("花火「" + f.name + "」を手に入れた！", { achievement: true }); });
+    }
+    return newly;
+  }
+
+  // 花火の画像を大きく打ち上げる演出（実績お祝い＆花火館の再生で使用）
+  function playFireworkShow(id){
+    var f = fwById(id); if(!f) return;
+    var app = document.getElementById("app"); if(!app) return;
+    var layer = document.getElementById("fw-show");
+    if(!layer){ layer = document.createElement("div"); layer.id = "fw-show"; app.appendChild(layer); }
+    var img = document.createElement("img");
+    img.className = "fw-show-img"; img.src = f.img; img.alt = f.name;
+    img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
+    layer.appendChild(img);
   }
 
   // 再訪カウントのクールダウン：前回の訪問からこの時間が経つと「次の1回」としてカウント（コイン再訪報酬も）。
@@ -2565,10 +2660,12 @@
     document.getElementById("book-panel-ach").style.display = (name === "ach") ? "block" : "none";
     document.getElementById("book-panel-title").style.display = (name === "title") ? "block" : "none";
     document.getElementById("book-panel-omiyage").style.display = (name === "omiyage") ? "block" : "none";
+    document.getElementById("book-panel-fw").style.display = (name === "fw") ? "block" : "none";
     if(name === "book") renderBook();
     if(name === "ach") renderAchievements();
     if(name === "title") renderTitlesList();
     if(name === "omiyage") renderOmiyage();
+    if(name === "fw") renderFireworks();
   }
 
   function renderAchievements(){
@@ -3022,9 +3119,16 @@
         }
       }
     });
-    if(changed) persist();
+    // 実績の達成数に合わせて花火館の花火を解放（新規解放は手に入れたトースト付き。既存セーブへの遡及も兼ねる）
+    var newlyFw = syncFireworksUnlock(silent);
+    if(changed || newlyFw.length) persist();
     // 長岡らしく花火でお祝い（難関実績＝tierが高いほど豪華に。同時解除は最高tierで1回）
     if(maxTier > 0 && typeof launchFireworks === "function") launchFireworks(maxTier);
+    // 手持ちの花火の中でいちばん豪華なもの（新規解放があればそれ）を画像で大きく打ち上げる
+    if(!silent && maxTier > 0){
+      var showId = newlyFw.length ? newlyFw[newlyFw.length - 1] : grandestUnlockedFw();
+      if(showId) playFireworkShow(showId);
+    }
   }
 
   /* ============================================================
