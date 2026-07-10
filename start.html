@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ながおか探検録｜あそび方をえらぶ</title>
+<meta name="description" content="ながおか探検録の始め方。iPhoneはApp Store、Android・パソコンはブラウザで遊べます。">
+<style>
+  :root{
+    --paper:#f1e6c9; --paper-dark:#e3d3ab; --ink:#4a3423; --ink-soft:#7a5c3e;
+    --gold:#c9a227; --vermilion:#b23b2e; --green:#3f6b4a; --line:#cbb98a;
+    color-scheme: light;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; padding:32px 20px 40px;
+    font-family:-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 50% 18%, rgba(201,162,39,.16), rgba(201,162,39,0) 55%),
+      linear-gradient(180deg,#efe3c2,#e6d5ac);
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .wrap{ width:100%; max-width:440px; }
+  .compass{ font-size:38px; line-height:1; margin-bottom:6px; }
+  h1{ font-size:30px; margin:2px 0 6px; letter-spacing:.04em;
+      text-shadow:0 1px 0 rgba(255,255,255,.4); }
+  .sub{ font-size:14px; color:var(--ink-soft); margin:0 0 26px; }
+  .card{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:22px 18px; box-shadow:0 8px 24px rgba(74,52,35,.18); margin-bottom:16px;
+  }
+  .lead{ font-size:15px; font-weight:700; margin:0 0 16px; }
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; padding:16px 14px; margin:10px 0; border-radius:14px;
+    font-size:16px; font-weight:800; text-decoration:none; border:2px solid transparent;
+    transition:transform .05s ease;
+  }
+  .btn:active{ transform:scale(.98); }
+  .btn-ios{ background:var(--ink); color:#fff8e8; }
+  .btn-web{ background:#fff; color:var(--ink); border-color:var(--ink-soft); }
+  .btn .emo{ font-size:20px; }
+  .btn .small{ display:block; font-size:11px; font-weight:600; opacity:.8; margin-top:2px; }
+  .note{ font-size:12px; color:var(--ink-soft); margin:14px 4px 0; line-height:1.6; }
+  .badge-soon{ display:inline-block; background:var(--vermilion); color:#fff;
+    font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+  .foot{ font-size:11px; color:var(--ink-soft); margin-top:22px; }
+  .foot a{ color:var(--vermilion); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="compass">🧭</div>
+    <h1>ながおか探検録</h1>
+    <p class="sub">長岡を歩いて、まちのお宝を見つけよう</p>
+
+    <div class="card">
+      <p class="lead">あそび方をえらんでね</p>
+
+      <a class="btn btn-ios" id="btn-ios" href="./">
+        <span class="emo">📱</span>
+        <span>iPhone・iPadの方<span class="small" id="ios-small">App Storeでダウンロード</span></span>
+      </a>
+
+      <a class="btn btn-web" href="./">
+        <span class="emo">🌐</span>
+        <span>Android・パソコンの方<span class="small">ブラウザで今すぐ遊ぶ（無料）</span></span>
+      </a>
+
+      <p class="note" id="hint">どちらも無料です。iPhoneの方はApp Store、それ以外の方はブラウザでそのまま遊べます。</p>
+    </div>
+
+    <p class="foot">© ながおか探検録製作委員会</p>
+  </div>
+
+<script>
+  // App Storeに公開されたら true にする（QRの行き先はこのページなので、印刷し直し不要でiOSがApp Storeに繋がる）
+  var APPSTORE_LIVE = false;
+  var APPSTORE_URL = "https://apps.apple.com/jp/app/id6789187613";
+  var WEB_URL = "./"; // このサイトのゲーム本体（同ディレクトリの index.html）
+
+  var ua = navigator.userAgent || "";
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var iosBtn = document.getElementById("btn-ios");
+  var iosSmall = document.getElementById("ios-small");
+  var hint = document.getElementById("hint");
+
+  if(APPSTORE_LIVE){
+    iosBtn.href = APPSTORE_URL;
+  } else {
+    // 公開前：iPhoneの方も当面はブラウザ版で遊べるように案内
+    iosBtn.href = WEB_URL;
+    iosSmall.innerHTML = 'いまはブラウザで遊べます<span class="badge-soon">App Store版 近日公開</span>';
+    hint.textContent = "App Store版は現在準備中です。公開までは、iPhoneの方もブラウザでそのまま遊べます（無料）。";
+  }
+</script>
+</body>
+</html>
