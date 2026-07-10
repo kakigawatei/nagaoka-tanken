@@ -3096,8 +3096,8 @@
 
   // 豪華版カード：そのスポットを何回か訪れると、カードが豪華版イラストに昇格する（再訪のごほうび）。
   var DELUXE_VISIT_THRESHOLD = 3;   // この訪問回数で豪華版に昇格（1回目＝初回発見）
-  // 豪華版イラストがあるスポット（全17スポット対応）
-  var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1, sakanoue:1, toushijou:1, nakayama:1, kogomo:1, tanesuhara:1, koryu:1, hakusan:1, shomyoji:1, jukanen:1, suizoku:1, kaisui:1 };
+  // 豪華版イラストがあるスポット（全40スポット対応）
+  var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1, sakanoue:1, toushijou:1, nakayama:1, kogomo:1, tanesuhara:1, koryu:1, hakusan:1, shomyoji:1, jukanen:1, suizoku:1, kaisui:1, kanetsugu_museum:1, yoita_castle:1, moto_yoita:1, rakuzanen:1, tochio_castle:1, akiba_okunoin:1, tochio_aburage:1, gangi_tochio:1, momijien:1, asahi_shuzo:1, shoraikaku:1, yomogihira_onsen:1, koryu_okumiya:1 };
   function visitCountOf(poiId){ var v = save.visits[poiId]; return v ? v.count : 0; }
   function hasDeluxe(poi){ return !!DELUXE_CARDS[poi.id]; }
   function deluxeUnlocked(poi){ return hasDeluxe(poi) && visitCountOf(poi.id) >= DELUXE_VISIT_THRESHOLD; }
