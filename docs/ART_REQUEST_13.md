@@ -35,10 +35,19 @@
    断崖の中腹に鎮座する朱塗りの社殿へ続く長い石段。商売繁盛のパワースポット。
    のぼり旗、山深い蓬平温泉の谷。荘厳で少し神秘的なトーン。
 
+## 豪華版（deluxe）も必要（計10枚）
+既存17スポットと同様、新5スポットも「3回訪問で豪華版に昇格」に対応させるため、
+各スポットの**豪華版カード**も必要。通常版と同じ場所・構図を、夜＋長岡花火＋光で
+豪華に描いたご褒美仕様。ファイル名は末尾 `_deluxe`：
+- card_toushijou_deluxe.png / card_nakayama_deluxe.png / card_kogomo_deluxe.png /
+  card_tanesuhara_deluxe.png / card_koryu_deluxe.png
+
 ## 差し替え手順（届いたら私が実施）
-1. Drive「13_地図（更新用）」or 指定フォルダから curl でDL
-2. 768×1152 に軽量化、原本は `assets/original/` に保管
+1. Drive「13」or card_delivery（Codex保存先）から curl でDL
+2. 通常版・豪華版とも 768×1152 に軽量化、原本は `assets/original/` に保管
 3. `data/pois.json` と index.html インラインの該当POIの `treasure.image` を
    `treasure.png` → `card_○○.png` に変更
-4. sw.js の CACHE_VERSION を上げてプリキャッシュに5枚追加
-5. ヘッドレス確認 → 公開
+4. **豪華版：index.html の `DELUXE_CARDS` に新5スポットのidを追加**
+   （toushijou/nakayama/kogomo/tanesuhara/koryu）→3回訪問で昇格するようになる
+5. sw.js の CACHE_VERSION を上げてプリキャッシュに通常5＋豪華5を追加
+6. ヘッドレス確認（通常表示＋visits.count=3で豪華版昇格）→ 公開
