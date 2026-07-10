@@ -563,6 +563,12 @@
     border-radius:10px; padding:10px 14px; white-space:nowrap;
   }
   .referral-hint{ font-size:11px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
+  .referral-share-row{ display:flex; gap:8px; margin-top:10px; }
+  .referral-share-btn{
+    flex:1; border:none; cursor:pointer; border-radius:10px; padding:10px 12px; font-weight:800; font-size:13px;
+    background:var(--indigo); color:#fff;
+  }
+  .referral-share-btn.line{ background:#06c755; color:#fff; }
   .referral-enter-row{ display:flex; gap:8px; align-items:center; }
   #referral-input{
     flex:1; font-size:18px; font-weight:800; letter-spacing:2px; text-align:center; text-transform:uppercase;
@@ -1039,6 +1045,10 @@
           <button class="referral-copy-btn" id="referral-copy">コピー</button>
         </div>
         <div class="referral-hint">友達に教えてね。友達がこのコードを入力して、現地で最初のカードを取ると成立します。</div>
+        <div class="referral-share-row">
+          <button class="referral-share-btn line" id="referral-share-line">LINEで送る</button>
+          <button class="referral-share-btn" id="referral-share">ほかで共有</button>
+        </div>
       </div>
 
       <div class="referral-section" id="referral-enter-section">
@@ -1811,6 +1821,44 @@
       ensureMyRefCode().then(function(){ renderReferralModal(); }).catch(function(e){ console.warn("[referral] code", e); });
       fbCountReferrals().then(function(){ checkAchievements(); renderReferralModal(); }).catch(function(e){ console.warn("[referral] count", e); });
     }
+  }
+
+  // 共有リンクのベースURL。実Web(github.io等)ならそのURL、アプリ内(capacitor/localhost)なら公開URLに固定。
+  function appShareBase(){
+    try {
+      var h = location.hostname || "";
+      if(/^https?:/.test(location.protocol) && h.indexOf(".") !== -1 && h.indexOf("localhost") === -1){
+        return location.origin + location.pathname.replace(/[^/]*$/, "");
+      }
+    } catch(e){}
+    return "https://kakigawatei.github.io/nagaoka-tanken/";
+  }
+
+  function buildReferralShareText(){
+    var code = save.referral.myCode || "";
+    var url = appShareBase() + "?ref=" + encodeURIComponent(code);
+    return "🗺️ ながおか探検録で一緒に長岡を探検しよう！\n私の紹介コード【" + code + "】を入力すると特典コインがもらえるよ🎁\n▼アプリはこちら\n" + url;
+  }
+
+  // 友達紹介の共有（LINE / ネイティブ共有シート）。コード未発行なら発行を待ってから。
+  function shareReferral(via){
+    var go = function(){
+      var text = buildReferralShareText();
+      if(via === "line"){
+        window.open("https://line.me/R/msg/text/?" + encodeURIComponent(text), "_blank");
+        return;
+      }
+      if(navigator.share){
+        navigator.share({ text: text }).catch(function(){});
+      } else if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ toast("紹介メッセージをコピーしました"); });
+      } else {
+        window.open("https://line.me/R/msg/text/?" + encodeURIComponent(text), "_blank");
+      }
+    };
+    if(save.referral.myCode){ go(); }
+    else if(fbEnabled()){ toast("コードを準備中…"); ensureMyRefCode().then(function(){ renderReferralModal(); go(); }).catch(function(){ toast("コードの準備に失敗しました"); }); }
+    else { toast("いまは共有できません"); }
   }
 
   /* ============================================================
@@ -3766,6 +3814,10 @@
         renderAll();
       });
     });
+    var referralShareLine = document.getElementById("referral-share-line");
+    if(referralShareLine) referralShareLine.addEventListener("click", function(){ shareReferral("line"); });
+    var referralShare = document.getElementById("referral-share");
+    if(referralShare) referralShare.addEventListener("click", function(){ shareReferral("native"); });
 
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
@@ -3853,6 +3905,14 @@
     // 友達紹介：Firebase有効時のみホームに導線ボタンを出す
     var refBtn = document.getElementById("referral-open-btn");
     if(refBtn && fbEnabled()) refBtn.style.display = "";
+
+    // 招待リンク（?ref=コード）で開いた新規プレイヤーは、その紹介コードを自動登録
+    try {
+      var refParam = new URLSearchParams(location.search).get("ref");
+      if(refParam && fbEnabled() && save.found.length === 0 && !save.referral.enteredCode && !save.referral.credited){
+        enterReferralCode(refParam);
+      }
+    } catch(e){}
 
     // シリアル採番／友達紹介成立：起動時に未確定分を処理＋オンライン復帰時にも再試行
     processSerialQueue();
