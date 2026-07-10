@@ -533,6 +533,48 @@
     100%{ transform:translateY(0); opacity:1; }
   }
 
+  /* ---------- 友達紹介 ---------- */
+  .referral-home-btn{
+    display:block; width:100%; margin:4px 0 2px; padding:11px 14px; border:none; cursor:pointer;
+    background:linear-gradient(135deg,#c9a227,#e9cf6a); color:#3a2a12; font-weight:900; font-size:14px;
+    border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  }
+  #referral-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  #referral-modal.show{ display:flex; }
+  .referral-card{
+    width:100%; max-height:88%; overflow-y:auto; background:var(--card-bg);
+    border-radius:18px 18px 0 0; padding:20px 18px 26px; box-shadow:0 -4px 20px rgba(0,0,0,0.4);
+    position:relative; animation: shopModalUp .22s ease-out;
+  }
+  .referral-title{ font-size:18px; font-weight:900; color:var(--ink); text-align:center; }
+  .referral-lead{ font-size:12.5px; color:var(--ink-soft); text-align:center; margin:6px 0 14px; line-height:1.5; }
+  .referral-section{ background:#fbf4e2; border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .referral-label{ font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:8px; }
+  .referral-code-row{ display:flex; gap:8px; align-items:center; }
+  .referral-code{
+    flex:1; font-size:22px; font-weight:900; letter-spacing:3px; color:var(--indigo);
+    background:#fff; border:2px dashed var(--gold); border-radius:10px; padding:8px 10px; text-align:center;
+  }
+  .referral-copy-btn, .referral-enter-btn{
+    border:none; cursor:pointer; background:var(--gold); color:#3a2a12; font-weight:800; font-size:13px;
+    border-radius:10px; padding:10px 14px; white-space:nowrap;
+  }
+  .referral-hint{ font-size:11px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
+  .referral-enter-row{ display:flex; gap:8px; align-items:center; }
+  #referral-input{
+    flex:1; font-size:18px; font-weight:800; letter-spacing:2px; text-align:center; text-transform:uppercase;
+    border:2px solid #d8c9a2; border-radius:10px; padding:9px 10px; background:#fff; color:var(--ink); min-width:0;
+  }
+  .referral-status{ font-size:12px; margin-top:8px; line-height:1.5; }
+  .referral-status.ok{ color:#5a8a4a; font-weight:800; }
+  .referral-status.pending{ color:#b07d16; font-weight:800; }
+  .referral-count-line{ font-size:14px; font-weight:800; color:var(--ink); }
+  .referral-count-line b{ font-size:20px; color:var(--vermillion); }
+  .referral-next{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
+
   /* ---------- ログインボーナス モーダル ---------- */
   #login-modal{
     position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
@@ -785,6 +827,8 @@
       <div class="xp-bar-outer"><div class="xp-bar-inner" id="home-xp-bar"></div></div>
     </div>
 
+    <button class="referral-home-btn" id="referral-open-btn" style="display:none;">🎁 友達をさそう（紹介コード）</button>
+
     <div class="nearest-card">
       <h2>最寄りのスポット</h2>
       <div class="nearest-main">
@@ -981,6 +1025,38 @@
     </div>
   </div>
 
+  <!-- 友達紹介モーダル -->
+  <div id="referral-modal">
+    <div class="referral-card">
+      <button class="shop-modal-close" id="referral-close" aria-label="とじる">×</button>
+      <div class="referral-title">🎁 友達をさそう</div>
+      <div class="referral-lead">友達を紹介すると、友達は<b>ボーナスコイン</b>、あなたは<b>紹介人数</b>が増えて称号がもらえます。</div>
+
+      <div class="referral-section">
+        <div class="referral-label">あなたの紹介コード</div>
+        <div class="referral-code-row">
+          <div class="referral-code" id="referral-mycode">…</div>
+          <button class="referral-copy-btn" id="referral-copy">コピー</button>
+        </div>
+        <div class="referral-hint">友達に教えてね。友達がこのコードを入力して、現地で最初のカードを取ると成立します。</div>
+      </div>
+
+      <div class="referral-section" id="referral-enter-section">
+        <div class="referral-label">友達のコードを入力（はじめての人だけ）</div>
+        <div class="referral-enter-row">
+          <input type="text" id="referral-input" maxlength="6" placeholder="例：AB3K7P" autocapitalize="characters" autocomplete="off">
+          <button class="referral-enter-btn" id="referral-enter">登録</button>
+        </div>
+        <div class="referral-status" id="referral-status"></div>
+      </div>
+
+      <div class="referral-section">
+        <div class="referral-count-line">あなたの紹介人数：<b id="referral-count">-</b> 人</div>
+        <div class="referral-next" id="referral-next"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ログインボーナス -->
   <div id="login-modal">
     <div class="login-modal-card">
@@ -1116,6 +1192,10 @@
       // serialQueue: 採番待ちのpoiId配列（オフライン発見や採番失敗時にここへ積み、オンライン時に確定）
       serials: {},
       serialQueue: [],
+      // 友達紹介（Firebase連携。後方互換：欠けていてもdefaultSave()の値で補完される）
+      // myCode:自分の紹介コード／enteredCode:入力した友達コード／referrerUid:紹介者uid
+      // milestoneReached:実GPSで初カード取得済み／credited:成立して特典受領済み／count:自分の紹介人数(集計キャッシュ)
+      referral: { myCode: null, enteredCode: null, referrerUid: null, milestoneReached: false, credited: false, count: 0 },
       // 花火館（後方互換：欠けていてもdefaultSave()の値で補完される）
       // unlocked: 手に入れた花火id { id: true }（実績達成で順番に解放）
       fireworks: { unlocked: {} }
@@ -1144,6 +1224,7 @@
         return po || {};
       })(),
       gacha: Object.assign(d.gacha, parsed.gacha || {}),
+      referral: Object.assign(d.referral, parsed.referral || {}),
       fireworks: { unlocked: Object.assign({}, (parsed.fireworks && parsed.fireworks.unlocked) || {}) }
     });
   }
@@ -1525,6 +1606,210 @@
     if(el && el.getAttribute("data-poi") === poiId){
       el.classList.remove("pending");
       el.innerHTML = "🏅 あなたは <b>" + no + "</b> 番目の発見者！";
+    }
+  }
+
+  /* ============================================================
+   * 5c. 友達紹介（紹介コード・Firebase連携）
+   * ------------------------------------------------------------
+   * 紹介コードを発行→友達が入力→その友達が実GPSで初カードを取ったら「成立」。
+   * 成立で被紹介者にボーナスコイン＋紹介者のカウント+1（＝referralsに1件記録）。
+   * 人数は referrals(referrerUid==自分) の件数を集計クエリで数える（数字を盛れない）。
+   * 詳細は docs/REFERRAL.md。fbEnabled()（シリアルと同じ設定）が有効な時だけ動く。
+   * ========================================================== */
+  var REFERRAL_BONUS = 150;   // 紹介成立時に被紹介者がもらうボーナスコイン
+  var REFERRAL_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 紛らわしい O/0/I/1/L を除外
+  var referralProcessing = false;
+
+  function fbFsUrl(path){ return "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents" + path; }
+  function fbDocName(rel){ return "projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents/" + rel; }
+  function fbMyUid(){ try { return localStorage.getItem(FB_LS_UID); } catch(e){ return null; } }
+
+  // 作成専用コミット（既存なら失敗＝FAILED_PRECONDITION 400）。fields は Firestore REST 形式。
+  function fbCreateDoc(rel, fields){
+    return fbAuth().then(function(idToken){
+      return fetch("https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents:commit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({ writes: [{
+          update: { name: fbDocName(rel), fields: fields },
+          currentDocument: { exists: false }
+        }] })
+      });
+    });
+  }
+
+  function randomRefCode(len){
+    var s = "";
+    for(var i=0;i<len;i++){ s += REFERRAL_CODE_CHARS.charAt(Math.floor(Math.random()*REFERRAL_CODE_CHARS.length)); }
+    return s;
+  }
+
+  // 自分の紹介コードを用意（無ければ生成して refcodes に登録）。resolve(code)。
+  function ensureMyRefCode(){
+    if(save.referral.myCode) return Promise.resolve(save.referral.myCode);
+    if(!fbEnabled()) return Promise.reject(new Error("fb disabled"));
+    var attempt = 0;
+    function tryOnce(){
+      attempt++;
+      var code = randomRefCode(6);
+      return fbAuth().then(function(){
+        var uid = fbMyUid();
+        return fbCreateDoc("refcodes/" + code, {
+          uid: { stringValue: uid },
+          at: { timestampValue: new Date().toISOString() }
+        });
+      }).then(function(r){
+        if(r.status === 200){ save.referral.myCode = code; persist(); return code; }
+        if((r.status === 400 || r.status === 409) && attempt < 5) return tryOnce(); // コード衝突→別コードで再試行
+        throw new Error("refcode create " + r.status);
+      });
+    }
+    return tryOnce();
+  }
+
+  // コードからuidを引く。null=見つからない。
+  function fbResolveCode(code){
+    return fbAuth().then(function(idToken){
+      return fetch(fbFsUrl("/refcodes/" + encodeURIComponent(code)), { headers: { "Authorization": "Bearer " + idToken } });
+    }).then(function(r){
+      if(r.status === 404) return null;
+      if(!r.ok) throw new Error("resolve " + r.status);
+      return r.json();
+    }).then(function(d){
+      return (d && d.fields && d.fields.uid && d.fields.uid.stringValue) || null;
+    });
+  }
+
+  // 友達のコードを登録（成立前の保留）。新規プレイヤー(found 0)のみ。resolve(true/false)。
+  function enterReferralCode(code){
+    code = (code || "").trim().toUpperCase();
+    if(!fbEnabled()){ toast("いまは紹介コードを使えません"); return Promise.resolve(false); }
+    if(save.found.length > 0){ toast("すでに探検を始めているため紹介コードは使えません"); return Promise.resolve(false); }
+    if(save.referral.enteredCode || save.referral.credited){ toast("すでに紹介コードを登録済みです"); return Promise.resolve(false); }
+    if(!code){ return Promise.resolve(false); }
+    if(save.referral.myCode && code === save.referral.myCode){ toast("自分のコードは使えません"); return Promise.resolve(false); }
+    return fbResolveCode(code).then(function(uid){
+      if(!uid){ toast("そのコードは見つかりませんでした"); return false; }
+      if(uid === fbMyUid()){ toast("自分のコードは使えません"); return false; }
+      save.referral.enteredCode = code;
+      save.referral.referrerUid = uid;
+      persist();
+      toast("紹介コードを登録！最初のカードを取ると特典がもらえます🎁", { achievement: true });
+      return true;
+    }).catch(function(err){ console.warn("[referral] enter failed", err); toast("通信エラー。あとでもう一度試してね"); return false; });
+  }
+
+  // 成立処理：被紹介者が実GPS初カード済みなら referrals を作り、ボーナス付与。
+  function processReferral(){
+    if(!fbEnabled() || referralProcessing) return;
+    var r = save.referral;
+    if(!r.enteredCode || r.credited || !r.milestoneReached) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    referralProcessing = true;
+    var uid = fbMyUid();
+    fbCreateDoc("referrals/" + uid, {
+      referrerUid: { stringValue: r.referrerUid },
+      code: { stringValue: r.enteredCode },
+      at: { timestampValue: new Date().toISOString() }
+    }).then(function(resp){
+      // 200=新規成立／400・409=既に存在（成立済み扱い＝冪等）
+      if(resp.status === 200 || resp.status === 400 || resp.status === 409){
+        if(!save.referral.credited){
+          save.referral.credited = true;
+          save.coins += REFERRAL_BONUS;
+          save.totalCoinsEarned += REFERRAL_BONUS;
+          persist();
+          toast("紹介ボーナス！コイン +" + REFERRAL_BONUS + " 🎁", { achievement: true });
+          if(typeof sfxCoin === "function") sfxCoin();
+          renderAll();
+        }
+        referralProcessing = false;
+      } else {
+        // 403(ルール未設定)など：保留のまま。次回online/発見で再試行。
+        console.warn("[referral] credit unexpected status", resp.status);
+        referralProcessing = false;
+      }
+    }).catch(function(err){ console.warn("[referral] credit failed（後で再試行）", err); referralProcessing = false; });
+  }
+
+  // 自分の紹介人数を集計して取得（表示用）。resolve(count)。
+  function fbCountReferrals(){
+    var uid = fbMyUid();
+    if(!uid || !fbEnabled()) return Promise.resolve(save.referral.count || 0);
+    return fbAuth().then(function(idToken){
+      return fetch("https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents:runAggregationQuery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({ structuredAggregationQuery: {
+          structuredQuery: {
+            from: [{ collectionId: "referrals" }],
+            where: { fieldFilter: { field: { fieldPath: "referrerUid" }, op: "EQUAL", value: { stringValue: uid } } }
+          },
+          aggregations: [{ alias: "c", count: {} }]
+        } })
+      });
+    }).then(function(r){ if(!r.ok) throw new Error("count " + r.status); return r.json(); })
+      .then(function(arr){
+        var n = 0;
+        (arr || []).forEach(function(row){
+          var v = row.result && row.result.aggregateFields && row.result.aggregateFields.c && row.result.aggregateFields.c.integerValue;
+          if(v != null) n = parseInt(v, 10) || 0;
+        });
+        save.referral.count = n;
+        persist();
+        return n;
+      });
+  }
+
+  // 紹介人数のマイルストーン（称号）。ACHIEVEMENTS/TITLESからも参照。
+  var REFERRAL_MILESTONES = [
+    { n: 1,  title: "なかま思い" },
+    { n: 3,  title: "紹介上手" },
+    { n: 5,  title: "長岡アンバサダー" },
+    { n: 10, title: "長岡の顔" }
+  ];
+
+  function renderReferralModal(){
+    var codeEl = document.getElementById("referral-mycode");
+    if(codeEl) codeEl.textContent = save.referral.myCode || "…";
+    var status = document.getElementById("referral-status");
+    var input = document.getElementById("referral-input");
+    var enterBtn = document.getElementById("referral-enter");
+    var canEnter = (save.found.length === 0) && !save.referral.enteredCode && !save.referral.credited;
+    if(save.referral.credited){
+      if(status){ status.className = "referral-status ok"; status.textContent = "🎁 紹介が成立してボーナスを受け取りました！"; }
+      if(input) input.style.display = "none";
+      if(enterBtn) enterBtn.style.display = "none";
+    } else if(save.referral.enteredCode){
+      if(status){ status.className = "referral-status pending"; status.textContent = "コード登録済み。現地で最初のカードを取ると成立します。"; }
+      if(input) input.style.display = "none";
+      if(enterBtn) enterBtn.style.display = "none";
+    } else if(!canEnter){
+      if(status){ status.className = "referral-status"; status.textContent = "※紹介コードの入力は、まだカードを持っていない“はじめての人”だけ使えます。"; }
+      if(input){ input.disabled = true; }
+      if(enterBtn){ enterBtn.disabled = true; }
+    } else {
+      if(status){ status.className = "referral-status"; status.textContent = ""; }
+      if(input){ input.disabled = false; input.style.display = ""; }
+      if(enterBtn){ enterBtn.disabled = false; enterBtn.style.display = ""; }
+    }
+    var countEl = document.getElementById("referral-count");
+    if(countEl) countEl.textContent = (save.referral.count != null ? save.referral.count : 0);
+    var next = document.getElementById("referral-next");
+    if(next){
+      var c = save.referral.count || 0;
+      var nm = REFERRAL_MILESTONES.filter(function(m){ return m.n > c; })[0];
+      next.textContent = nm ? ("あと " + (nm.n - c) + " 人で称号「" + nm.title + "」！") : "全マイルストーン達成！ありがとう🎉";
+    }
+  }
+
+  function openReferralModal(){
+    document.getElementById("referral-modal").classList.add("show");
+    renderReferralModal();
+    if(fbEnabled()){
+      ensureMyRefCode().then(function(){ renderReferralModal(); }).catch(function(e){ console.warn("[referral] code", e); });
+      fbCountReferrals().then(function(){ checkAchievements(); renderReferralModal(); }).catch(function(e){ console.warn("[referral] count", e); });
     }
   }
 
@@ -2080,6 +2365,11 @@
       checkCostumeUnlock(poi.id);
       renderAll();
       if(serialEligible) enqueueSerial(poi.id);   // 発見モーダル表示後に採番（完了したら「◯番目」を反映）
+      // 友達紹介：実GPSでの初カード取得が「紹介成立」の条件（ワープ/シミュレーションは対象外）
+      if(!viaWarp && save.settings.mode === "gps"){
+        if(!save.referral.milestoneReached){ save.referral.milestoneReached = true; persist(); }
+        processReferral();
+      }
     } else {
       // 再訪：前回の訪問から2時間以上あいたら「次の1回」としてカウント（同じ場所の連打を防ぐ）
       var now = Date.now();
@@ -3333,7 +3623,11 @@
     { id: "coins1000", name: "コイン収集家", desc: "累計コインを1000枚獲得した", tier: 2, check: function(s){ return s.totalCoinsEarned >= 1000; } },
     { id: "first_purchase", name: "はじめてのお買い物", desc: "ショップで何かを購入した", tier: 1, check: function(s){ return !!s.shopPurchasedOnce; } },
     { id: "streak3", name: "3日連続探検", desc: "3日連続でスポットを発見した", tier: 2, check: function(s){ return s.streak >= 3; } },
-    { id: "streak7", name: "一週間探検家", desc: "7日連続でスポットを発見した", tier: 3, check: function(s){ return s.streak >= 7; } }
+    { id: "streak7", name: "一週間探検家", desc: "7日連続でスポットを発見した", tier: 3, check: function(s){ return s.streak >= 7; } },
+    { id: "referral1", name: "はじめての紹介", desc: "友達を1人紹介した", tier: 2, check: function(s){ return (s.referral && s.referral.count || 0) >= 1; } },
+    { id: "referral3", name: "紹介上手", desc: "友達を3人紹介した", tier: 2, check: function(s){ return (s.referral && s.referral.count || 0) >= 3; } },
+    { id: "referral5", name: "長岡アンバサダー", desc: "友達を5人紹介した", tier: 3, check: function(s){ return (s.referral && s.referral.count || 0) >= 5; } },
+    { id: "referral10", name: "長岡の顔", desc: "友達を10人紹介した", tier: 3, check: function(s){ return (s.referral && s.referral.count || 0) >= 10; } }
   ];
 
   function checkAchievements(opts){
@@ -3448,6 +3742,31 @@
       document.getElementById("warp-modal").classList.remove("show");
     });
 
+    // 友達紹介モーダル
+    var referralOpenBtn = document.getElementById("referral-open-btn");
+    if(referralOpenBtn) referralOpenBtn.addEventListener("click", openReferralModal);
+    var referralClose = document.getElementById("referral-close");
+    if(referralClose) referralClose.addEventListener("click", function(){
+      document.getElementById("referral-modal").classList.remove("show");
+    });
+    var referralCopy = document.getElementById("referral-copy");
+    if(referralCopy) referralCopy.addEventListener("click", function(){
+      var code = save.referral.myCode;
+      if(!code){ toast("コードを準備中…"); return; }
+      var done = function(){ toast("紹介コードをコピーしました"); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(code).then(done).catch(function(){ done(); });
+      } else { done(); }
+    });
+    var referralEnter = document.getElementById("referral-enter");
+    if(referralEnter) referralEnter.addEventListener("click", function(){
+      var input = document.getElementById("referral-input");
+      enterReferralCode(input ? input.value : "").then(function(){
+        renderReferralModal();
+        renderAll();
+      });
+    });
+
     document.querySelectorAll(".nav-btn[data-screen]").forEach(function(btn){
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
     });
@@ -3531,9 +3850,14 @@
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     renderHomeFull();
     setInterval(tick, 1000);
-    // シリアル採番：起動時に未確定分を処理＋オンライン復帰時にも再試行（オフライン発見のフォロー）
+    // 友達紹介：Firebase有効時のみホームに導線ボタンを出す
+    var refBtn = document.getElementById("referral-open-btn");
+    if(refBtn && fbEnabled()) refBtn.style.display = "";
+
+    // シリアル採番／友達紹介成立：起動時に未確定分を処理＋オンライン復帰時にも再試行
     processSerialQueue();
-    window.addEventListener("online", processSerialQueue);
+    processReferral();
+    window.addEventListener("online", function(){ processSerialQueue(); processReferral(); });
   }
 
   // 加盟店データの読み込み（フェーズA・地域ビジネス連携）。お宝(pois.json)とは独立したデータ・独立したfetchで、
