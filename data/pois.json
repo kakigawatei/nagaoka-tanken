@@ -587,6 +587,253 @@
         "blurb": "南北16kmにおよぶ寺泊海岸の中心にある、広い砂浜のビーチ。浜辺にヤシの木が並びリゾートのような雰囲気で、夏は多くの海水浴客でにぎわう。遠浅で家族連れにも人気。日本海に沈む夕日の美しさでも知られる、夕景の名所。",
         "image": "card_kaisui.png"
       }
+    },
+    {
+      "id": "kanetsugu_museum",
+      "districtId": "yoita",
+      "name": "兼続お船ミュージアム",
+      "lat": 37.5378,
+      "lng": 138.8052,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "資料館・歴史",
+      "treasure": {
+        "title": "兼続お船ミュージアム（与板歴史民俗資料館）",
+        "era": "直江兼続・お船ゆかり",
+        "blurb": "直江兼続とその妻お船をテーマにした資料館。兜の前立に「愛」を掲げた兼続所用の甲冑（複製）を360度で展示し、甲冑を実際に着る体験もできる。与板出身で日本人初のビール醸造人となった中川清兵衛を紹介するコーナーもある。",
+        "image": "card_kanetsugu_museum.png"
+      }
+    },
+    {
+      "id": "yoita_castle",
+      "districtId": "yoita",
+      "name": "与板城跡（城山）",
+      "lat": 37.5396,
+      "lng": 138.8031,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "城跡・史跡",
+      "treasure": {
+        "title": "与板城跡（城山）",
+        "era": "直江兼続の居城",
+        "blurb": "上杉景勝の執政として活躍した直江兼続の居城。城山の頂に実城・二ノ郭・三ノ郭が一列に配され、実城の東には妻お船が水を汲み茶をたてたと伝わる「お船清水」が残る。愛と義に生きた兼続とお船をしのぶ史跡。",
+        "image": "card_yoita_castle.png"
+      }
+    },
+    {
+      "id": "moto_yoita",
+      "districtId": "yoita",
+      "name": "本与板城跡",
+      "lat": 37.5458,
+      "lng": 138.8112,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "城跡・史跡",
+      "treasure": {
+        "title": "本与板城跡",
+        "era": "直江氏の旧居城",
+        "blurb": "直江氏が与板城へ移る前の居城と伝わる山城跡。土塁や曲輪の跡が今も残り、静かな山道の先に中世の城のたたずまいをしのばせる。与板を治めた直江一族ゆかりの地。",
+        "image": "card_moto_yoita.png"
+      }
+    },
+    {
+      "id": "rakuzanen",
+      "districtId": "yoita",
+      "name": "楽山苑",
+      "lat": 37.5362,
+      "lng": 138.8078,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "庭園",
+      "treasure": {
+        "title": "楽山苑",
+        "era": "大坂屋三輪家の庭園",
+        "blurb": "与板の豪商・大坂屋三輪家によって造られた庭園。池や木立を巧みに配した回遊式の庭で、北前船交易などで栄えた与板商人の富と美意識を今に伝える。四季折々の風情が楽しめる。",
+        "image": "card_rakuzanen.png"
+      }
+    },
+    {
+      "id": "tochio_castle",
+      "districtId": "tochio",
+      "name": "栃尾城跡",
+      "lat": 37.4742,
+      "lng": 138.9987,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "城跡・史跡",
+      "treasure": {
+        "title": "栃尾城跡",
+        "era": "上杉謙信 旗揚げの地",
+        "blurb": "南北朝期の創始と伝わる標高約227mの鶴城山の山城跡。上杉謙信（長尾景虎）が14歳の頃この城に入り、中越を鎮めて旗揚げをしたとされる「謙信公旗揚げの地」。山頂からは栃尾の城下町を一望できる。",
+        "image": "card_tochio_castle.png"
+      }
+    },
+    {
+      "id": "akiba_okunoin",
+      "districtId": "tochio",
+      "name": "秋葉神社 奥の院",
+      "lat": 37.4721,
+      "lng": 138.9958,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "寺社・文化財",
+      "treasure": {
+        "title": "秋葉神社 奥の院",
+        "era": "石川雲蝶の彫刻",
+        "blurb": "秋葉公園にある秋葉三尺坊大権現（秋葉神社）の奥の院。弘化3年（1846）の建立で、土台から破風まで越後の名工・石川雲蝶と熊谷源太郎の彫刻で埋め尽くされ、市の文化財に指定。園内には法衣姿で座す謙信公の銅像も建つ。",
+        "image": "card_akiba_okunoin.png"
+      }
+    },
+    {
+      "id": "tochio_aburage",
+      "districtId": "tochio",
+      "name": "栃尾のあぶらげ",
+      "lat": 37.4756,
+      "lng": 138.9912,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "名物・グルメ",
+      "treasure": {
+        "title": "栃尾のあぶらげ",
+        "era": "名物ジャンボ油揚げ",
+        "blurb": "長さ20cm超・厚さ3cmほどの、栃尾を代表するジャンボな油揚げ（あぶらげ）。江戸時代の馬市のにぎわいや秋葉神社参詣の土産が起源とも伝わる。揚げたてを店先で味わえる、栃尾のソウルフード。",
+        "image": "card_tochio_aburage.png"
+      }
+    },
+    {
+      "id": "gangi_tochio",
+      "districtId": "tochio",
+      "name": "栃尾 雁木のまち並み",
+      "lat": 37.4762,
+      "lng": 138.9922,
+      "radius": 60,
+      "rarity": "common",
+      "coinsFirst": 130,
+      "coinsRepeat": 10,
+      "xp": 30,
+      "category": "町並み",
+      "treasure": {
+        "title": "栃尾 雁木のまち並み",
+        "era": "雪国の歴史的町並み",
+        "blurb": "雪深い栃尾の市街に残る「雁木（がんぎ）」の町並み。軒を長く延ばして雪の日も歩ける通路を確保した雪国の知恵で、市場町として栄えた栃尾の歴史を今に伝えるレトロな街並みが続く。",
+        "image": "card_gangi_tochio.png"
+      }
+    },
+    {
+      "id": "momijien",
+      "districtId": "koshiji",
+      "name": "もみじ園（巴ヶ丘山荘）",
+      "lat": 37.3536,
+      "lng": 138.7735,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "庭園・紅葉",
+      "treasure": {
+        "title": "もみじ園（巴ヶ丘山荘）",
+        "era": "明治期の紅葉庭園",
+        "blurb": "明治29年（1896）頃、地主・髙橋家の別荘の庭として造られた庭園。約4,000㎡に樹齢150〜200年のもみじや山桜が茂り、秋の紅葉ライトアップは幻想的。園内の蔵カフェで庭を眺めながら一服もできる。国登録有形文化財。",
+        "image": "card_momijien.png"
+      }
+    },
+    {
+      "id": "asahi_shuzo",
+      "districtId": "koshiji",
+      "name": "朝日酒造／酒楽の里あさひ山",
+      "lat": 37.3522,
+      "lng": 138.7748,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "酒蔵",
+      "treasure": {
+        "title": "朝日酒造／酒楽の里あさひ山",
+        "era": "久保田・朝日山の酒蔵",
+        "blurb": "「久保田」「朝日山」で知られる越路の造り酒屋。敷地内の「酒楽の里あさひ山」では多彩な酒を試せる試飲バーが人気で、食事処「あさひ山蛍庵」もある。もみじ園の整備にも協力する、越路の銘酒どころ。",
+        "image": "card_asahi_shuzo.png"
+      }
+    },
+    {
+      "id": "shoraikaku",
+      "districtId": "koshiji",
+      "name": "松籟閣",
+      "lat": 37.3528,
+      "lng": 138.7742,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "近代和風建築",
+      "treasure": {
+        "title": "松籟閣",
+        "era": "朝日酒造創業家の邸宅",
+        "blurb": "朝日酒造の創業家が昭和初期に建てた邸宅。松林（松籟）に囲まれた数寄屋風の近代和風建築で、各地の銘木や意匠を凝らした造りが見どころ。登録有形文化財として保存・公開されている。",
+        "image": "card_shoraikaku.png"
+      }
+    },
+    {
+      "id": "yomogihira_onsen",
+      "districtId": "yomogihira",
+      "name": "蓬平温泉",
+      "lat": 37.3702,
+      "lng": 138.8972,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "温泉",
+      "treasure": {
+        "title": "蓬平温泉",
+        "era": "長岡の奥座敷",
+        "blurb": "「長岡の奥座敷」と呼ばれる山あいの温泉地。とろみのある単純硫黄泉は肌ざわりがよく、湯上がりはつるつるに。商売繁盛の高龍神社のお膝元で、龍神伝説を起源に持つ数軒の宿がひなびた情緒を伝える。",
+        "image": "card_yomogihira_onsen.png"
+      }
+    },
+    {
+      "id": "koryu_okumiya",
+      "districtId": "yomogihira",
+      "name": "高龍神社 奥宮",
+      "lat": 37.3686,
+      "lng": 138.8956,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "寺社",
+      "treasure": {
+        "title": "高龍神社 奥宮",
+        "era": "金運のパワースポット奥宮",
+        "blurb": "商売繁盛・金運のパワースポットとして全国から参拝者が絶えない高龍神社の奥宮。本殿からさらに山上へ、急な石段を上った先に鎮座する。龍にちなんだ手水舎やのぼり旗が続く、神秘的な参道の奥の聖地。",
+        "image": "card_koryu_okumiya.png"
+      }
     }
   ]
 }

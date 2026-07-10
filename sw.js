@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v26";
+var CACHE_VERSION = "v27";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -146,7 +146,21 @@ var PRECACHE_URLS = [
   "assets/card_hasegawa_deluxe.png",
   "assets/card_yamakoshi_deluxe.png",
   "assets/card_teradomari_deluxe.png",
-  "assets/card_sakanoue_deluxe.png"
+  "assets/card_sakanoue_deluxe.png",
+  // 与板・栃尾・越路・蓬平 拡張（新13スポット＝通常＋豪華版）
+  "assets/card_kanetsugu_museum.png", "assets/card_kanetsugu_museum_deluxe.png",
+  "assets/card_yoita_castle.png", "assets/card_yoita_castle_deluxe.png",
+  "assets/card_moto_yoita.png", "assets/card_moto_yoita_deluxe.png",
+  "assets/card_rakuzanen.png", "assets/card_rakuzanen_deluxe.png",
+  "assets/card_tochio_castle.png", "assets/card_tochio_castle_deluxe.png",
+  "assets/card_akiba_okunoin.png", "assets/card_akiba_okunoin_deluxe.png",
+  "assets/card_tochio_aburage.png", "assets/card_tochio_aburage_deluxe.png",
+  "assets/card_gangi_tochio.png", "assets/card_gangi_tochio_deluxe.png",
+  "assets/card_momijien.png", "assets/card_momijien_deluxe.png",
+  "assets/card_asahi_shuzo.png", "assets/card_asahi_shuzo_deluxe.png",
+  "assets/card_shoraikaku.png", "assets/card_shoraikaku_deluxe.png",
+  "assets/card_yomogihira_onsen.png", "assets/card_yomogihira_onsen_deluxe.png",
+  "assets/card_koryu_okumiya.png", "assets/card_koryu_okumiya_deluxe.png"
 ];
 
 self.addEventListener("install", function (event) {
