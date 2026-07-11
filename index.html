@@ -199,6 +199,7 @@
     position:relative; margin:8px 14px 12px; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
     background:#ddd; flex-shrink:0;   /* 詳細ポップアップ表示時に地図が縦につぶれてピンがズレるのを防ぐ（スクロールで対応） */
   }
+  .map-zoom{ position:relative; transform-origin:0 0; touch-action:pan-y; }
   .map-stage img.mapbg{ width:100%; display:block; }
   .map-pin{
     position:absolute; width:34px; height:34px; transform:translate(-50%,-100%);
@@ -911,7 +912,9 @@
       <div class="layer-chip layer-shop active" id="layer-chip-shop">🏪 お店</div>
     </div>
     <div class="map-stage" id="map-stage">
-      <img class="mapbg" id="map-bg-img" src="assets/map_chuo.png" alt="地区マップ">
+      <div class="map-zoom" id="map-zoom">
+        <img class="mapbg" id="map-bg-img" src="assets/map_chuo.png" alt="地区マップ">
+      </div>
     </div>
     <div class="map-hint" id="map-hint">ピンをタップすると詳細が見られます</div>
     <div class="poi-popup" id="map-popup" style="display:none;"></div>
@@ -2982,6 +2985,74 @@
   /* ============================================================
    * 10. UI: マップ
    * ========================================================== */
+
+  /* ---------- マップのピンチズーム＆パン（1〜3倍） ---------- */
+  var mapZoom = { scale:1, tx:0, ty:0 };
+  var mapGesture = null;      // 進行中のジェスチャ状態
+  var mapMoved = false;       // ズーム/パンで動いたか（タップ誤爆防止）
+  var lastZoomDistrict = null;
+
+  function applyMapZoom(){
+    var z = document.getElementById("map-zoom");
+    if(z){
+      z.style.transform = "translate(" + mapZoom.tx + "px," + mapZoom.ty + "px) scale(" + mapZoom.scale + ")";
+      z.style.touchAction = mapZoom.scale > 1 ? "none" : "pan-y";   // 拡大中は指1本でパン、等倍時はページスクロール優先
+    }
+  }
+  function resetMapZoom(){ mapZoom.scale = 1; mapZoom.tx = 0; mapZoom.ty = 0; applyMapZoom(); }
+  function clampMapPan(){
+    var stage = document.getElementById("map-stage"); if(!stage) return;
+    var w = stage.clientWidth, h = stage.clientHeight;
+    mapZoom.tx = Math.min(0, Math.max(w * (1 - mapZoom.scale), mapZoom.tx));
+    mapZoom.ty = Math.min(0, Math.max(h * (1 - mapZoom.scale), mapZoom.ty));
+  }
+  function touchDist(a, b){ return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+
+  function initMapGestures(){
+    var stage = document.getElementById("map-stage");
+    if(!stage || stage._zoomInit) return;
+    stage._zoomInit = true;
+    stage.addEventListener("touchstart", function(e){
+      var rect = stage.getBoundingClientRect();
+      if(e.touches.length === 2){
+        mapGesture = { mode:"pinch", d0:touchDist(e.touches[0], e.touches[1]), s0:mapZoom.scale,
+          mx:(e.touches[0].clientX + e.touches[1].clientX)/2 - rect.left,
+          my:(e.touches[0].clientY + e.touches[1].clientY)/2 - rect.top,
+          tx0:mapZoom.tx, ty0:mapZoom.ty };
+        mapMoved = false;
+      } else if(e.touches.length === 1 && mapZoom.scale > 1){
+        mapGesture = { mode:"pan", x0:e.touches[0].clientX, y0:e.touches[0].clientY, tx0:mapZoom.tx, ty0:mapZoom.ty };
+        mapMoved = false;
+      } else {
+        mapGesture = null;
+      }
+    }, { passive:false });
+    stage.addEventListener("touchmove", function(e){
+      if(!mapGesture) return;
+      if(mapGesture.mode === "pinch" && e.touches.length === 2){
+        e.preventDefault();
+        var s = Math.min(3, Math.max(1, mapGesture.s0 * touchDist(e.touches[0], e.touches[1]) / mapGesture.d0));
+        mapZoom.tx = mapGesture.mx - (mapGesture.mx - mapGesture.tx0) * (s / mapGesture.s0);
+        mapZoom.ty = mapGesture.my - (mapGesture.my - mapGesture.ty0) * (s / mapGesture.s0);
+        mapZoom.scale = s; clampMapPan(); applyMapZoom(); mapMoved = true;
+      } else if(mapGesture.mode === "pan" && e.touches.length === 1){
+        e.preventDefault();
+        mapZoom.tx = mapGesture.tx0 + (e.touches[0].clientX - mapGesture.x0);
+        mapZoom.ty = mapGesture.ty0 + (e.touches[0].clientY - mapGesture.y0);
+        clampMapPan(); applyMapZoom(); mapMoved = true;
+      }
+    }, { passive:false });
+    stage.addEventListener("touchend", function(e){
+      if(mapMoved){ stage._ignoreClick = true; setTimeout(function(){ stage._ignoreClick = false; }, 350); }
+      if(e.touches.length === 0){
+        if(mapZoom.scale <= 1.02) resetMapZoom();
+        mapGesture = null;
+      } else if(e.touches.length === 1){
+        mapGesture = { mode:"pan", x0:e.touches[0].clientX, y0:e.touches[0].clientY, tx0:mapZoom.tx, ty0:mapZoom.ty };  // ピンチ→指1本残りでパンへ
+      }
+    });
+  }
+
   function renderMap(){
     var tabsEl = document.getElementById("map-district-tabs");
     tabsEl.innerHTML = "";
@@ -3004,8 +3075,11 @@
     document.getElementById("map-bg-img").src = DISTRICT_MAP_IMG[currentDistrict];
 
     var stage = document.getElementById("map-stage");
+    var zone = document.getElementById("map-zoom");
+    initMapGestures();
+    if(currentDistrict !== lastZoomDistrict){ resetMapZoom(); lastZoomDistrict = currentDistrict; }
     // 既存ピン・現在地マーカーを除去（背景imgは残す）
-    Array.prototype.slice.call(stage.querySelectorAll(".map-pin, .you-are-here")).forEach(function(el){ el.remove(); });
+    Array.prototype.slice.call(zone.querySelectorAll(".map-pin, .you-are-here")).forEach(function(el){ el.remove(); });
 
     var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict; });
     var bbox = BBOX[currentDistrict];
@@ -3024,7 +3098,7 @@
           ev.stopPropagation();
           showPoiPopup(poi, found);
         });
-        stage.appendChild(pin);
+        zone.appendChild(pin);
       });
     }
 
@@ -3043,20 +3117,24 @@
           ev.stopPropagation();
           showShopModal(shop);
         });
-        stage.appendChild(pin);
+        zone.appendChild(pin);
       });
     }
 
     renderMapYouAreHere();
 
     stage.onclick = function(ev){
+      if(stage._ignoreClick) return;   // 直前のピンチ/パン操作はタップとして扱わない
       if(save.settings.mode !== "simulate") {
         toast("設定画面で「シミュレーション」に切り替えるとタップで移動できます");
         return;
       }
       var rect = stage.getBoundingClientRect();
-      var xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-      var yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+      // ズーム/パンを考慮して、実際の地図上の位置に変換
+      var sx = (ev.clientX - rect.left - mapZoom.tx) / mapZoom.scale;
+      var sy = (ev.clientY - rect.top - mapZoom.ty) / mapZoom.scale;
+      var xPct = (sx / rect.width) * 100;
+      var yPct = (sy / rect.height) * 100;
       var latlng = unproject(xPct, yPct, bbox);
       setSimPosition(latlng.lat, latlng.lng);
       renderMap();
@@ -3066,8 +3144,8 @@
   }
 
   function renderMapYouAreHere(){
-    var stage = document.getElementById("map-stage");
-    var existing = stage.querySelector(".you-are-here");
+    var zone = document.getElementById("map-zoom");
+    var existing = zone.querySelector(".you-are-here");
     if(existing) existing.remove();
     if(!currentPos) return;
     var bbox = BBOX[currentDistrict];
@@ -3086,7 +3164,7 @@
     marker.style.top = pos.yPct + "%";
     // 自分のキャラクター（着用中の衣装も反映）のミニ版で現在地を示す
     marker.innerHTML = '<img class="yah-char" src="' + guideAssetPath("idle") + '" alt="現在地"><div class="yah-base"></div>';
-    stage.appendChild(marker);
+    zone.appendChild(marker);
   }
 
   function showPoiPopup(poi, found){
