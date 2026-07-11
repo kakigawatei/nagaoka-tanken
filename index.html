@@ -1036,7 +1036,7 @@
       <h2>このアプリについて</h2>
       <div class="settings-note">
         位置情報や進捗は基本的に端末内（localStorage）で処理・保存します。お宝カードの通し番号や友達紹介の機能では、端末ごとに自動発行される匿名IDと、発見したスポットのID・日時のみを外部（Firebase）へ送信します。氏名などの個人情報は送信しません。<br>
-        現在：中心部・摂田屋・山古志・寺泊・栃尾・与板・越路・蓬平の8地区、40スポット対応。ショップ・実績・称号・デイリーストリーク・衣装だんすに対応。<br>
+        現在：中心部・摂田屋・山古志・寺泊・栃尾・与板・越路・蓬平の8地区、42スポット対応。ショップ・実績・称号・デイリーストリーク・衣装だんすに対応。<br>
         マップには「お宝」に加えて地域の加盟店（お店）ピンも表示されます（フェーズA・デモ実装）。お店の近くではクーポンの利用も試せます。<br>
         ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
       </div>
@@ -3377,7 +3377,7 @@
 
   // 豪華版カード：そのスポットを何回か訪れると、カードが豪華版イラストに昇格する（再訪のごほうび）。
   var DELUXE_VISIT_THRESHOLD = 3;   // この訪問回数で豪華版に昇格（1回目＝初回発見）
-  // 豪華版イラストがあるスポット（全40スポット対応）
+  // 豪華版イラストがあるスポット（全42スポット対応）
   var DELUXE_CARDS = { aore:1, yamamoto:1, kawai:1, kina_saffron:1, yoshinogawa:1, tochio:1, yoita:1, hotokusan:1, sensai:1, nyozekura:1, honmaru:1, yukyuzan:1, koshimurasaki:1, hasegawa:1, yamakoshi:1, teradomari:1, sakanoue:1, toushijou:1, nakayama:1, kogomo:1, tanesuhara:1, koryu:1, hakusan:1, shomyoji:1, jukanen:1, suizoku:1, kaisui:1, kanetsugu_museum:1, yoita_castle:1, moto_yoita:1, rakuzanen:1, tochio_castle:1, akiba_okunoin:1, tochio_aburage:1, gangi_tochio:1, momijien:1, asahi_shuzo:1, shoraikaku:1, yomogihira_onsen:1, koryu_okumiya:1 };
   function visitCountOf(poiId){ var v = save.visits[poiId]; return v ? v.count : 0; }
   function hasDeluxe(poi){ return !!DELUXE_CARDS[poi.id]; }
