@@ -162,6 +162,28 @@
     animation:pulse 1.2s infinite;
   }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+
+  /* 近接ドキドキ演出 */
+  .proximity-line{
+    margin:0 16px 10px; border-radius:12px; padding:9px 14px; text-align:center;
+    font-weight:800; font-size:13.5px; color:#fff; background:#b0824a;
+    transition: background .3s;
+  }
+  .proximity-line.lvl1{ background:#8a9a6a; }
+  .proximity-line.lvl2{ background:#c9a227; color:#3a2a12; }
+  .proximity-line.lvl3{ background:#e08a2a; }
+  .proximity-line.lvl4{ background:var(--vermillion); }
+  .compass-wrap img{ transform-origin:center; }
+  .compass-wrap.beat img{ animation: cbeat .30s ease-out; }
+  @keyframes cbeat{ 0%{transform:scale(1);} 28%{transform:scale(var(--beat-scale,1.12));} 100%{transform:scale(1);} }
+  #proximity-pulse{
+    position:absolute; inset:0; pointer-events:none; z-index:40; opacity:0;
+    box-shadow: inset 0 0 90px 20px rgba(197,45,45,0.0);
+    background: radial-gradient(ellipse at center, rgba(197,45,45,0) 55%, rgba(197,45,45,0.28) 100%);
+  }
+  #proximity-pulse.beat{ animation: ppulse .34s ease-out; }
+  @keyframes ppulse{ 0%{opacity:0;} 35%{opacity:var(--pulse-op,.5);} 100%{opacity:0;} }
+
   .sim-badge{
     margin:0 16px 4px; font-size:11px; color:var(--vermillion); text-align:center; font-weight:700;
   }
@@ -826,6 +848,8 @@
 
     <div class="in-range-banner" id="home-inrange-banner" style="display:none;">この場所であやしい気配…その場にとどまろう</div>
 
+    <div class="proximity-line" id="home-proximity" style="display:none;"></div>
+
     <button class="gacha-here-btn" id="home-gacha-btn" style="display:none;">🎰 ここでガチャを回す</button>
 
     <div class="level-box">
@@ -1009,6 +1033,9 @@
     <button class="nav-btn" data-screen="shop"><img src="assets/ic_shop.png">店</button>
     <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png">設定</button>
   </div>
+
+  <!-- 近接ドキドキ演出：画面のふちが鼓動する赤いビネット（ビートごとに一瞬光る） -->
+  <div id="proximity-pulse" aria-hidden="true"></div>
 
   <!-- Discovery overlay -->
   <div id="discovery-overlay">
@@ -2600,19 +2627,101 @@
   /* ============================================================
    * 7. メインループ
    * ========================================================== */
+  /* ============================================================
+   * 7b. 近接ドキドキ演出（近づくほど鼓動が速くなる）
+   *  最寄りの「未発見」スポットまでの距離で強度を段階化し、鼓動ビート音＋コンパス／画面のふちの鼓動＋
+   *  テキスト＋振動で「熱い/冷たい」感を出す。
+   *  振動：iOSはWeb Vibration非対応 → ネイティブ(@capacitor/haptics)があれば使用、無ければ
+   *  navigator.vibrate（Web/Android）にフォールバック、それも無ければ静かに無効。
+   * ========================================================== */
+  var proximityDist = null;   // 最寄り未発見スポットまでの距離(m)。対象外はnull
+  var proximityTimer = null;
+
+  function sfxHeartbeat(level){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    var vol = 0.10 + level * 0.04;
+    playNote(ctx, t, 112, 0.14, { type:"sine", volume:vol, freqEnd:58, attack:0.004 });
+    if(level >= 2) playNote(ctx, t + 0.15, 92, 0.12, { type:"sine", volume:vol*0.8, freqEnd:52, attack:0.004 });
+  }
+
+  function pulseCompass(level){
+    var wrap = document.querySelector(".compass-wrap");
+    if(wrap){
+      wrap.style.setProperty("--beat-scale", (1 + level*0.05).toFixed(2));
+      wrap.classList.remove("beat"); void wrap.offsetWidth; wrap.classList.add("beat");
+    }
+    if(level >= 2){
+      var pp = document.getElementById("proximity-pulse");
+      if(pp){ pp.style.setProperty("--pulse-op", (0.25 + level*0.12).toFixed(2)); pp.classList.remove("beat"); void pp.offsetWidth; pp.classList.add("beat"); }
+    }
+  }
+
+  function vibrateProximity(level){
+    try{
+      var Cap = window.Capacitor;
+      if(Cap && Cap.Plugins && Cap.Plugins.Haptics && Cap.Plugins.Haptics.impact){
+        Cap.Plugins.Haptics.impact({ style: level>=4 ? "HEAVY" : level>=2 ? "MEDIUM" : "LIGHT" });
+        return;
+      }
+    }catch(e){}
+    try{ if(navigator.vibrate){ navigator.vibrate(level>=4?60:level>=3?45:level>=2?30:20); } }catch(e){}
+  }
+
+  function proximityBand(dist){
+    if(dist == null || dist > 300) return null;
+    if(dist > 150) return { level:1, interval:1600, text:"近づいてきた…" };
+    if(dist > 60)  return { level:2, interval:950,  text:"だんだん熱くなってきた…" };
+    if(dist > 30)  return { level:3, interval:520,  text:"熱い！もうすぐそこ！" };
+    return           { level:4, interval:300,  text:"すぐそば！その場でとどまって！" };
+  }
+
+  function updateProximity(){
+    if(!currentPos || !lastDistances.length){ proximityDist = null; return; }
+    var d = null;
+    for(var i=0;i<lastDistances.length;i++){
+      if(save.found.indexOf(lastDistances[i].poi.id) === -1){ d = lastDistances[i].dist; break; }
+    }
+    proximityDist = d;
+  }
+
+  function proximityBeat(){
+    var band = proximityBand(proximityDist);
+    var exploring = (currentScreen === "home" || currentScreen === "map");
+    var textEl = document.getElementById("home-proximity");
+    if(!band || !exploring){
+      if(textEl) textEl.style.display = "none";
+      proximityTimer = setTimeout(proximityBeat, 1000);
+      return;
+    }
+    sfxHeartbeat(band.level);       // 音・振動は歩行中（home/map）なら出す
+    vibrateProximity(band.level);
+    if(currentScreen === "home"){
+      pulseCompass(band.level);
+      var bannerShown = (document.getElementById("home-inrange-banner").style.display !== "none");
+      if(textEl){
+        if(bannerShown){ textEl.style.display = "none"; }
+        else { textEl.style.display = "block"; textEl.className = "proximity-line lvl" + band.level; textEl.textContent = "❤️‍🔥 " + band.text; }
+      }
+    } else if(textEl){ textEl.style.display = "none"; }
+    proximityTimer = setTimeout(proximityBeat, band.interval);
+  }
+
   function tick(){
     if(save.settings.mode === "gps"){
       // currentPos updated via geolocation callback
     }
     renderHomeNearest();
 
-    if(!currentPos || !DATA) return;
+    if(!currentPos || !DATA){ proximityDist = null; return; }
 
     var distances = DATA.pois.map(function(p){
       return { poi: p, dist: haversine(currentPos.lat, currentPos.lng, p.lat, p.lng) };
     });
     distances.sort(function(a,b){ return a.dist - b.dist; });
     lastDistances = distances;
+    updateProximity();
 
     var radarBonus = hasItem("radarBoost") ? RADAR_BONUS_M : 0;
     var inRange = null;
@@ -3964,6 +4073,7 @@
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     renderHomeFull();
     setInterval(tick, 1000);
+    proximityBeat();   // 近接ドキドキ演出（自己スケジュールで鼓動）
     // 友達紹介：Firebase有効時のみホームに導線ボタンを出す
     var refBtn = document.getElementById("referral-open-btn");
     if(refBtn && fbEnabled()) refBtn.style.display = "";

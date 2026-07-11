@@ -9,6 +9,10 @@
 - [ ] **iOS v2 提出**：v1.0が「Ready for Sale」後に、今の全部入り（シリアル/ワープ/地図/紹介/40スポット/バグ修正）を
   1.1 or 2.0 として提出。`build-www.js`→`cap sync ios`→Xcodeで番号↑→Archive→提出。※提出用チェックリストは別途用意予定。
   併せて App Store Connect の「Appのプライバシー」申告を更新（匿名ID＋発見記録をFirebaseへ送信＝データ収集ありに）。
+  - [ ] **近接ドキドキの“振動”を有効化（v2ビルド）**：Macで `npm install @capacitor/haptics` → `npx cap sync ios`。
+    コードは実装済み（`vibrateProximity` が `window.Capacitor.Plugins.Haptics.impact` を呼ぶ／無ければ `navigator.vibrate` にフォールバック）。
+    iOSはWeb Vibration非対応のため、実機の振動はこのプラグイン＋v2ビルドで初めて効く。
+  - [ ] **審査用デモ動画**：位置情報機能を実機で見せる画面収録（毎回の提出で必要）。今回のGuideline2.1対応で作ったものを流用。
 
 ## B. 改善案（UX・ゲーム性／Fableレビュー）
 - [ ] **初回オンボーディング**（軽〜中）：①マップで地区→②一番近い？へ→③圏内で自動発見、の3ステップ吹き出し。初回離脱対策の要。
