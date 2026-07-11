@@ -285,6 +285,8 @@
     color:#fff; background:linear-gradient(135deg,#2c3e63,#43608f);
     display:inline-block; padding:4px 12px; border-radius:999px;
   }
+  .visit-dates{ margin-top:8px; font-size:12px; font-weight:700; color:#5a8a4a; }
+  .visit-dates.none{ color:var(--ink-soft); font-weight:600; }
   .deluxe-note{ margin-top:8px; font-size:12.5px; font-weight:800;
     color:#b07d16; background:linear-gradient(135deg,#fdf3d2,#f6e3a8);
     display:inline-block; padding:4px 12px; border-radius:999px;
@@ -2449,54 +2451,70 @@
   // 再訪カウントのクールダウン：前回の訪問からこの時間が経つと「次の1回」としてカウント（コイン再訪報酬も）。
   var REVISIT_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2時間
 
+  // 実際に現地(実GPS)で訪れた記録。日時を残し（最大3回分を表示に使用）、
+  // まだ通し番号が無ければ「実訪問の順番」で採番を予約する（シミュ/ワープ入手カードも実地で番号がつく）。
+  function recordRealVisit(poiId, ts){
+    var v = save.visits[poiId];
+    if(!v) return;
+    if(!Array.isArray(v.realVisits)) v.realVisits = [];
+    v.realVisits.push(ts);
+    if(fbEnabled() && !save.serials[poiId]) enqueueSerial(poiId);
+  }
+
   function attemptDiscovery(poi, opts){
     opts = opts || {};
-    var viaWarp = !!opts.viaWarp;   // コインワープ経由の発見は通し番号（シリアル）の対象外
+    var viaWarp = !!opts.viaWarp;   // コインワープ経由は通し番号の対象外
+    // 実際に現地(実GPS)で訪れたか。シミュレーション／ワープは「実訪問」ではない＝日時記録もシリアルも付かない
+    var isRealVisit = !viaWarp && save.settings.mode === "gps";
     var dateStr = todayStr();
     var visit = save.visits[poi.id];
+    var now = Date.now();
 
     if(save.found.indexOf(poi.id) === -1){
       // 初回発見
       var dailyBonus = registerDailyActivity(dateStr);
       var bonusCoins = dailyBonus ? dailyBonus.total : 0;
       save.found.push(poi.id);
-      save.visits[poi.id] = { count: 1, lastDate: dateStr, lastAt: Date.now() };
+      save.visits[poi.id] = { count: 1, lastDate: dateStr, lastAt: now, realVisits: (visit && visit.realVisits) || [] };
       var coinsFirst = poi.coinsFirst;
       var doubled = consumeDoubleCoin();
       if(doubled) coinsFirst *= 2;
       save.coins += coinsFirst + bonusCoins;
       save.totalCoinsEarned += coinsFirst + bonusCoins;
       var leveled = addXp(poi.xp);
+      var serialPending = isRealVisit && fbEnabled() && !save.serials[poi.id];
+      if(isRealVisit) recordRealVisit(poi.id, now);   // 実訪問の記録＋（未採番なら）採番予約
       persist();
-      var serialEligible = fbEnabled() && !viaWarp;   // コインワープは通し番号を付けない
       showDiscoveryOverlay(poi, { first: true, coins: coinsFirst, xp: poi.xp, leveled: leveled, doubled: doubled, bonus: dailyBonus,
         serialNo: (save.serials[poi.id] ? save.serials[poi.id].no : null),
-        serialPending: serialEligible && !save.serials[poi.id] });
+        serialPending: serialPending });
       checkAchievements();
       checkCostumeUnlock(poi.id);
       renderAll();
-      if(serialEligible) enqueueSerial(poi.id);   // 発見モーダル表示後に採番（完了したら「◯番目」を反映）
       // 友達紹介：実GPSでの初カード取得が「紹介成立」の条件（ワープ/シミュレーションは対象外）
-      if(!viaWarp && save.settings.mode === "gps"){
+      if(isRealVisit){
         if(!save.referral.milestoneReached){ save.referral.milestoneReached = true; persist(); }
         processReferral();
       }
     } else {
       // 再訪：前回の訪問から2時間以上あいたら「次の1回」としてカウント（同じ場所の連打を防ぐ）
-      var now = Date.now();
       var lastAt = visit ? (visit.lastAt || 0) : 0;
-      if(now - lastAt < REVISIT_COOLDOWN_MS) return; // クールダウン中はアイドル（何もしない）
+      if(now - lastAt < REVISIT_COOLDOWN_MS) return; // クールダウン中はアイドル
       var dailyBonus2 = registerDailyActivity(dateStr);
       var bonusCoins2 = dailyBonus2 ? dailyBonus2.total : 0;
       var count = (visit ? visit.count : 0) + 1;
       var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
-      var doubled2 = false;   // ダブルコイン券は「初回発見」時のみ消費（再訪では使わない）
-      if(doubled2) repeatCoins *= 2;
       save.coins += repeatCoins + bonusCoins2;
       save.totalCoinsEarned += repeatCoins + bonusCoins2;
-      save.visits[poi.id] = { count: count, lastDate: dateStr, lastAt: now };
+      var hadSerial = !!save.serials[poi.id];
+      save.visits[poi.id] = { count: count, lastDate: dateStr, lastAt: now, realVisits: (visit && visit.realVisits) || [] };
+      // シミュ/ワープで先に集めたカードでも、あとで実際に行けば「実訪問の順番」で番号がつく
+      var serialPending2 = isRealVisit && !hadSerial && fbEnabled();
+      if(isRealVisit) recordRealVisit(poi.id, now);
       persist();
-      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: doubled2, bonus: dailyBonus2 });
+      showDiscoveryOverlay(poi, { first: false, coins: repeatCoins, doubled: false, bonus: dailyBonus2,
+        serialNo: (save.serials[poi.id] ? save.serials[poi.id].no : null),
+        serialPending: serialPending2 && !save.serials[poi.id] });
       checkAchievements();
       if(hasDeluxe(poi) && count === DELUXE_VISIT_THRESHOLD){
         setTimeout(function(){ toast("🎴 " + poi.treasure.title + " のカードが豪華版になった！"); }, 1600);
@@ -3318,11 +3336,24 @@
       var serialInfo = (save.serials[poi.id])
         ? '<div class="serial-note">🏅 あなたは ' + save.serials[poi.id].no + ' 番目の発見者</div>'
         : '';
+      // 実際に現地(実GPS)で訪れた日時（最大3回分＝豪華版の到達回数）
+      var realVisits = (save.visits[poi.id] && save.visits[poi.id].realVisits) || [];
+      var visitDatesInfo;
+      if(realVisits.length){
+        var dates = realVisits.slice(0, DELUXE_VISIT_THRESHOLD).map(function(ts){
+          var d = new Date(ts);
+          return d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate();
+        });
+        visitDatesInfo = '<div class="visit-dates">🚩 現地を訪れた日：' + dates.join("、") + '</div>';
+      } else {
+        visitDatesInfo = '<div class="visit-dates none">まだ現地では訪れていません（実際に行くと通し番号と訪問日がつきます）</div>';
+      }
       detail.innerHTML =
         '<img src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
         '<h3>' + poi.treasure.title + '</h3>' +
         '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
         serialInfo +
+        visitDatesInfo +
         deluxeInfo +
         '<p>' + poi.treasure.blurb + '</p>' +
         (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">お宝再鑑賞（所持：' + replayCount + '）</button>' : '');
