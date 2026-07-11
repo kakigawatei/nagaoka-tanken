@@ -3039,22 +3039,22 @@
       } else {
         mapGesture = null;
       }
-    }, { passive:false });
+    }, { passive:true });
+    // preventDefault は使わず touch-action（等倍=pan-y／拡大中=none）でブラウザ挙動を制御。
+    // これにより非passiveリスナーによる iOS のスクロール引っかかりを回避する。
     stage.addEventListener("touchmove", function(e){
       if(!mapGesture) return;
       if(mapGesture.mode === "pinch" && e.touches.length === 2){
-        e.preventDefault();
         var s = Math.min(3, Math.max(1, mapGesture.s0 * touchDist(e.touches[0], e.touches[1]) / mapGesture.d0));
         mapZoom.tx = mapGesture.mx - (mapGesture.mx - mapGesture.tx0) * (s / mapGesture.s0);
         mapZoom.ty = mapGesture.my - (mapGesture.my - mapGesture.ty0) * (s / mapGesture.s0);
         mapZoom.scale = s; clampMapPan(); applyMapZoom(); mapMoved = true;
       } else if(mapGesture.mode === "pan" && e.touches.length === 1){
-        e.preventDefault();
         mapZoom.tx = mapGesture.tx0 + (e.touches[0].clientX - mapGesture.x0);
         mapZoom.ty = mapGesture.ty0 + (e.touches[0].clientY - mapGesture.y0);
         clampMapPan(); applyMapZoom(); mapMoved = true;
       }
-    }, { passive:false });
+    }, { passive:true });
     stage.addEventListener("touchend", function(e){
       if(mapMoved){ stage._ignoreClick = true; setTimeout(function(){ stage._ignoreClick = false; }, 350); }
       if(e.touches.length === 0){
@@ -3839,6 +3839,19 @@
   ];
 
   // POI初回発見時に呼ばれる。そのPOIをunlockPoiに持つ衣装があれば解放し、未解放だった場合のみトースト表示。
+  // 既に発見済みのスポットに対応する衣装を遡及的に解放する（後から追加した衣装も対象）。
+  // 発見済みスポットの衣装が「未解放」のままにならないように、起動時に呼ぶ。
+  function syncCostumeUnlocks(){
+    var changed = false;
+    COSTUMES.forEach(function(c){
+      if(save.found.indexOf(c.unlockPoi) !== -1 && save.costumes.unlocked.indexOf(c.id) === -1){
+        save.costumes.unlocked.push(c.id);
+        changed = true;
+      }
+    });
+    if(changed) persist();
+  }
+
   function checkCostumeUnlock(poiId){
     var c = COSTUMES.filter(function(x){ return x.unlockPoi === poiId; })[0];
     if(!c) return;
@@ -4209,6 +4222,7 @@
     applyDevVisibility();     // 開発用UI（位置情報モード）の表示/非表示
     applyMode();
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
+    syncCostumeUnlocks();                 // 既に発見済みスポットの衣装を遡及解放（後から追加した衣装も反映）
     renderHomeFull();
     setInterval(tick, 1000);
     proximityBeat();   // 近接ドキドキ演出（自己スケジュールで鼓動）
