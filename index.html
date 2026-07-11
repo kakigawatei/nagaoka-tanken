@@ -2816,7 +2816,7 @@
   // 衣装（コスプレ）システム：着用中の衣装idに応じて、案内役スプライトのパスを差し替える。
   // 例）idle + isoroku 着用中 → assets/guide_idle_isoroku.png／衣装なし → assets/guide_idle.png
   // アバター専用の衣装イラストが存在する組み合わせ（idleのみ）。新しく届いたらここに追加。
-  var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"], tsuginosuke: ["boy2", "girl1", "girl2"], torasaburo: ["boy2", "girl1", "girl2"] };
+  var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"], tsuginosuke: ["boy2", "girl1", "girl2"], torasaburo: ["boy2", "girl1", "girl2"], kanetsugu: ["boy2", "girl1", "girl2"] };
 
   function guideAssetPath(mood){
     // 衣装（コスプレ）が最優先。未装備なら選択中のアバター（boy1=既存＝サフィックス無し）。
@@ -2850,16 +2850,29 @@
     if(img && img.getAttribute("src") !== src) img.setAttribute("src", src);
   }
 
+  // アバターの素の（衣装なし）スプライト。衣装スプライトが未用意の場合のフォールバック先。
+  function guideBaseAssetPath(mood){
+    var avatar = (save.avatar && save.avatar !== "boy1") ? ("_" + save.avatar) : "";
+    return "assets/guide_" + mood + avatar + ".png";
+  }
+  // 案内役の画像を設定。衣装スプライトが存在しない場合は素のアバターへフォールバック（画像割れ防止）。
+  function setGuideImg(img, mood){
+    if(!img) return;
+    var base = guideBaseAssetPath(mood);
+    img.onerror = function(){ this.onerror = null; if(this.getAttribute("src") !== base) this.setAttribute("src", base); };
+    setImgSrc(img, guideAssetPath(mood));
+  }
+
   function setGuideMood(mood){
     var img = document.getElementById("home-guide-img");
     var text = document.getElementById("home-guide-text");
     if(mood === "happy"){
-      setImgSrc(img, guideAssetPath("happy"));
+      setGuideImg(img, "happy");
     } else if(mood === "point"){
-      setImgSrc(img, guideAssetPath("point"));
+      setGuideImg(img, "point");
       text.textContent = "あっちに何かありそうだよ！";
     } else {
-      setImgSrc(img, guideAssetPath("idle"));
+      setGuideImg(img, "idle");
       text.textContent = greetingText();
     }
     renderTitleGuide();
@@ -2867,7 +2880,7 @@
 
   // タイトル画面のキャラも、ホームの案内役と同じ着用中衣装を反映する（常にidleポーズ）
   function renderTitleGuide(){
-    setImgSrc(document.getElementById("title-guide-img"), guideAssetPath("idle"));
+    setGuideImg(document.getElementById("title-guide-img"), "idle");
   }
 
   // アバター（見た目）切り替え。衣装未装備ならホーム/タイトルのキャラに反映される。
@@ -3162,8 +3175,8 @@
     marker.className = "you-are-here";
     marker.style.left = pos.xPct + "%";
     marker.style.top = pos.yPct + "%";
-    // 自分のキャラクター（着用中の衣装も反映）のミニ版で現在地を示す
-    marker.innerHTML = '<img class="yah-char" src="' + guideAssetPath("idle") + '" alt="現在地"><div class="yah-base"></div>';
+    // 自分のキャラクター（着用中の衣装も反映）のミニ版で現在地を示す（衣装スプライト未用意なら素のアバターに）
+    marker.innerHTML = '<img class="yah-char" src="' + guideAssetPath("idle") + '" alt="現在地" onerror="this.onerror=null;this.src=\'' + guideBaseAssetPath("idle") + '\'"><div class="yah-base"></div>';
     zone.appendChild(marker);
   }
 
@@ -3821,7 +3834,8 @@
   var COSTUMES = [
     { id: "isoroku", name: "山本五十六（海軍軍服）", unlockPoi: "yamamoto", price: COSTUME_PRICE },
     { id: "tsuginosuke", name: "河井継之助（幕末武士装束）", unlockPoi: "kawai", price: COSTUME_PRICE },
-    { id: "torasaburo", name: "小林虎三郎（学者羽織）", unlockPoi: "sakanoue", price: COSTUME_PRICE }
+    { id: "torasaburo", name: "小林虎三郎（学者羽織）", unlockPoi: "sakanoue", price: COSTUME_PRICE },
+    { id: "kanetsugu", name: "直江兼続（愛の兜）", unlockPoi: "kanetsugu_museum", price: COSTUME_PRICE }
   ];
 
   // POI初回発見時に呼ばれる。そのPOIをunlockPoiに持つ衣装があれば解放し、未解放だった場合のみトースト表示。
