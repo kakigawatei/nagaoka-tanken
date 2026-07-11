@@ -197,7 +197,7 @@
   .district-tab.active{ background:var(--indigo); color:#fff; }
   .map-stage{
     position:relative; margin:8px 14px 12px; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
-    background:#ddd;
+    background:#ddd; flex-shrink:0;   /* 詳細ポップアップ表示時に地図が縦につぶれてピンがズレるのを防ぐ（スクロールで対応） */
   }
   .map-stage img.mapbg{ width:100%; display:block; }
   .map-pin{
