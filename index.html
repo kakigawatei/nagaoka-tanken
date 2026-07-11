@@ -224,10 +224,23 @@
     box-shadow:0 0 0 2px #fff2d6, 0 2px 4px rgba(0,0,0,0.4);
   }
   .shop-pin-badge img{ width:20px; height:20px; filter:brightness(0) invert(1); }
+  /* 現在地マーカー：自分のキャラクター（ミニ版）が「ここにいるよ」と立つ */
   .you-are-here{
-    position:absolute; width:20px; height:20px; border-radius:50%; background:var(--vermillion);
-    border:3px solid #fff; transform:translate(-50%,-50%); box-shadow:0 0 0 4px rgba(192,57,43,0.35);
+    position:absolute; transform:translate(-50%,-100%); z-index:5;
+    display:flex; flex-direction:column; align-items:center; pointer-events:none;
   }
+  .you-are-here .yah-char{
+    width:40px; height:auto; display:block;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    animation: yahBob 1.8s ease-in-out infinite;
+  }
+  @keyframes yahBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
+  .you-are-here .yah-base{
+    width:24px; height:9px; margin-top:-3px; border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(192,57,43,0.55), rgba(192,57,43,0) 70%);
+    animation: yahPing 1.8s ease-out infinite;
+  }
+  @keyframes yahPing{ 0%{ transform:scale(0.7); opacity:0.9; } 70%{ transform:scale(1.5); opacity:0; } 100%{ opacity:0; } }
   .map-hint{ margin:0 16px 8px; font-size:12px; color:var(--ink-soft); text-align:center; }
   .poi-popup{
     margin:0 16px 12px; background:var(--card-bg); border-radius:12px; padding:12px 14px;
@@ -3071,6 +3084,8 @@
     marker.className = "you-are-here";
     marker.style.left = pos.xPct + "%";
     marker.style.top = pos.yPct + "%";
+    // 自分のキャラクター（着用中の衣装も反映）のミニ版で現在地を示す
+    marker.innerHTML = '<img class="yah-char" src="' + guideAssetPath("idle") + '" alt="現在地"><div class="yah-base"></div>';
     stage.appendChild(marker);
   }
 
