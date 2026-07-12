@@ -49,8 +49,8 @@
   *{box-sizing:border-box;}
   html,body{
     margin:0; padding:0;
-    height:100%;              /* フォールバック */
-    height:var(--vh, 100%);   /* JS実測(innerHeight)。全ブラウザで実表示高さに一致 */
+    height:100%;              /* フォールバック（dvh非対応の古いブラウザ用） */
+    height:100dvh;            /* 動的ビューポート高：iOS16+等で実表示高に一致し、下部ナビが画面最下部に密着 */
     background:var(--paper-dark);  /* 下部ナビと同色。万一隙間が出てもナビが下端まで繋がって見える */
     font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
     color:var(--ink);
@@ -63,8 +63,7 @@
     max-width:440px;
     width:100%;
     margin:0 auto 0 0;
-    height:100dvh;             /* 対応ブラウザ用フォールバック */
-    height:var(--vh, 100dvh);  /* JS実測(innerHeight)で全ブラウザ画面高に一致→ナビを最下部に密着 */
+    height:100%;               /* 親body(100dvh)いっぱいに広げ、下部ナビ(absolute bottom:0)を画面最下部へ密着 */
     background:var(--paper);
     position:relative;
     display:flex;
