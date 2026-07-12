@@ -385,7 +385,11 @@
 
   /* ---------- Bottom nav ---------- */
   .bottom-nav{
-    position:absolute; bottom:0; left:0; right:0; display:flex;
+    /* position:fixed で「レイアウトビューポートの下端」に直接固定する。
+       以前は #app(height:100%/100dvh) 内の absolute だったが、iOSスタンドアロンPWAでは
+       100dvh/innerHeight が実画面より小さく測られ #app が下に届かず、ナビの下に余白が残った。
+       fixed は #app の高さに依存せず必ず物理画面の最下端に貼り付くため余白が出ない。 */
+    position:fixed; bottom:0; left:0; width:100%; max-width:440px; display:flex;
     height:calc(66px + env(safe-area-inset-bottom));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
     padding-bottom:env(safe-area-inset-bottom);
     background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
