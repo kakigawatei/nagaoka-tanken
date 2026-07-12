@@ -3883,8 +3883,12 @@
     { id: "isoroku", name: "山本五十六（海軍軍服）", unlockPoi: "yamamoto", price: COSTUME_PRICE },
     { id: "tsuginosuke", name: "河井継之助（幕末武士装束）", unlockPoi: "kawai", price: COSTUME_PRICE },
     { id: "torasaburo", name: "小林虎三郎（学者羽織）", unlockPoi: "sakanoue", price: COSTUME_PRICE },
-    { id: "kanetsugu", name: "直江兼続（愛の兜）", unlockPoi: "kanetsugu_museum", price: COSTUME_PRICE }
+    { id: "kanetsugu", name: "直江兼続（愛の兜）", unlockPois: ["yoita_castle", "moto_yoita", "kanetsugu_museum"], price: COSTUME_PRICE }
   ];
+
+  // 衣装の解放条件POI（複数指定は unlockPois＝すべて発見で解放、単一は unlockPoi）
+  function costumeReqPois(c){ return (c.unlockPois && c.unlockPois.length) ? c.unlockPois : [c.unlockPoi]; }
+  function costumeUnlockMet(c){ return costumeReqPois(c).every(function(p){ return save.found.indexOf(p) !== -1; }); }
 
   // POI初回発見時に呼ばれる。そのPOIをunlockPoiに持つ衣装があれば解放し、未解放だった場合のみトースト表示。
   // 既に発見済みのスポットに対応する衣装を遡及的に解放する（後から追加した衣装も対象）。
@@ -3892,7 +3896,7 @@
   function syncCostumeUnlocks(){
     var changed = false;
     COSTUMES.forEach(function(c){
-      if(save.found.indexOf(c.unlockPoi) !== -1 && save.costumes.unlocked.indexOf(c.id) === -1){
+      if(costumeUnlockMet(c) && save.costumes.unlocked.indexOf(c.id) === -1){
         save.costumes.unlocked.push(c.id);
         changed = true;
       }
@@ -3901,13 +3905,15 @@
   }
 
   function checkCostumeUnlock(poiId){
-    var c = COSTUMES.filter(function(x){ return x.unlockPoi === poiId; })[0];
-    if(!c) return;
-    if(save.costumes.unlocked.indexOf(c.id) !== -1) return;
-    save.costumes.unlocked.push(c.id);
-    persist();
-    toast("衣装解放！" + c.name, { achievement: true });
-    sfxAchievement();
+    COSTUMES.forEach(function(c){
+      if(costumeReqPois(c).indexOf(poiId) === -1) return;      // このPOIは解放条件に関係ない
+      if(save.costumes.unlocked.indexOf(c.id) !== -1) return;  // 既に解放済み
+      if(!costumeUnlockMet(c)) return;                          // 条件POIがまだ全部そろっていない
+      save.costumes.unlocked.push(c.id);
+      persist();
+      toast("衣装解放！" + c.name, { achievement: true });
+      sfxAchievement();
+    });
   }
 
   function buyCostume(id){
@@ -3969,16 +3975,23 @@
       var unlocked = save.costumes.unlocked.indexOf(c.id) !== -1;
       var owned = save.costumes.owned.indexOf(c.id) !== -1;
       var equipped = save.costumes.equipped === c.id;
-      var poi = (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return p.id === c.unlockPoi; })[0] : null;
-      var poiName = poi ? poi.name : c.unlockPoi;
+      var reqPois = costumeReqPois(c);
+      function poiNameOf(id){ var p = (DATA && DATA.pois) ? DATA.pois.filter(function(x){ return x.id === id; })[0] : null; return p ? p.name : id; }
+      var reqNames = reqPois.map(poiNameOf);
+      var reqFound = reqPois.filter(function(id){ return save.found.indexOf(id) !== -1; }).length;
 
       var card = document.createElement("div");
       card.className = "shop-card costume-card" + (unlocked ? "" : " locked");
 
       var body = '<div class="shop-name">' + c.name + (equipped ? '<span class="costume-equipped-badge">着用中</span>' : '') + '</div>';
       if(!unlocked){
-        body += '<div class="shop-desc">' + poiName + ' へ行くと解放されます。</div>' +
-          '<button class="shop-buy-btn" disabled>未解放</button>';
+        if(reqPois.length > 1){
+          body += '<div class="shop-desc">' + reqNames.join('・') + ' の' + reqPois.length + 'スポットすべてを発見すると解放（' + reqFound + '/' + reqPois.length + '）</div>' +
+            '<button class="shop-buy-btn" disabled>未解放</button>';
+        } else {
+          body += '<div class="shop-desc">' + reqNames[0] + ' へ行くと解放されます。</div>' +
+            '<button class="shop-buy-btn" disabled>未解放</button>';
+        }
       } else if(!owned){
         body += '<div class="shop-desc">解放済み！購入すると着用できます。</div>' +
           '<button class="shop-buy-btn" data-buy-costume="' + c.id + '"' +
