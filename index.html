@@ -392,10 +392,9 @@
     position:fixed; bottom:0; left:0; width:100%; max-width:440px; display:flex;
     /* ホームインジケータ分の余白。ただし iOSスタンドアロン(black-translucent)では
        env(safe-area-inset-bottom) が実際(≈34px)よりはるかに大きい値(≈96px)を返すことがあり、
-       ナビ下に巨大な余白が出る。min()で34pxに上限を設けて過剰な余白を防ぐ。 */
-    --nav-safe: min(env(safe-area-inset-bottom), 34px);
-    height:calc(66px + var(--nav-safe));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
-    padding-bottom:var(--nav-safe);
+       ナビ下に巨大な余白が出る。min()で34pxに上限を設けて過剰な余白を防ぐ（inlineで確実に）。 */
+    height:calc(66px + min(env(safe-area-inset-bottom), 34px));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
+    padding-bottom:min(env(safe-area-inset-bottom), 34px);
     background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
   }
   .nav-btn{
