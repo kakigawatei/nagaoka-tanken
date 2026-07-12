@@ -6,6 +6,14 @@
 <title>ながおか探検録</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2a1f16">
+<!-- Google Analytics (GA4)：稼働状況（利用者数・アクティブ数等）の把握用。集計のみで個人は特定しない。 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LT7TJBCWGL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-LT7TJBCWGL');
+</script>
 <script>
 /* 全ブラウザ共通で画面高を合わせる。100dvh/100%はブラウザ(通常/アプリ内/スタンドアロン)で
    解釈が異なり下部ナビがズレるため、実測の window.innerHeight を --vh に入れ html/body/#app に使う。 */
