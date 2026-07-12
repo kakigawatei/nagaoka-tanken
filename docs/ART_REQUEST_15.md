@@ -33,7 +33,9 @@
 （＝既存の isoroku / tsuginosuke / torasaburo 衣装と同じ6枚構成。boy1のみ happy/point も用意し、
 boy2/girl1/girl2 は idle のみ＝happy/point は boy1版で代用される。）
 
-## B. 新スポットのお宝カード（2スポット＝通常＋豪華版の4枚）
+## B. 新スポットのお宝カード（2スポット＝通常＋豪華版の4枚）✅完了（2026-07-12）
+＝Codex生成をDriveから取り込み768×1152で組み込み済み（pois.json差し替え・DELUXE_CARDS登録・sw v33）。以下は依頼記録。
+
 共通スタイルは ART_REQUEST_14 と同じ（レトロなポストカード風・水彩手描き、縦3:4、
 1024×1536、文字・ロゴなし、既存カードと同じ絵師感）。
 
