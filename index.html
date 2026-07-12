@@ -380,6 +380,17 @@
 
   /* ---------- Book subtabs ---------- */
   .book-subtabs{ display:flex; gap:8px; padding:10px 14px 4px; }
+  /* 店ページ：ヘッダー（タブ）は固定、本文だけスクロール（iOSのsticky+慣性スクロールで
+     わずかにしかスクロールしない時にタブがくっつく／ステータスバー下に潜る問題の対策） */
+  #screen-shop{ overflow:hidden; padding-bottom:0; }
+  #screen-shop > .topbar,
+  #screen-shop > .shop-topbar-coin,
+  #screen-shop > .book-subtabs{ flex-shrink:0; }
+  #screen-shop .shop-body{
+    flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  }
   .book-subtab{
     flex:1; text-align:center; padding:8px 4px; border-radius:10px; font-size:13px; font-weight:700;
     background:var(--paper-dark); color:var(--ink-soft); cursor:pointer; box-shadow: inset 0 0 0 1px #d8c497;
@@ -979,16 +990,18 @@
       <div class="book-subtab active" data-shopsub="item">アイテム</div>
       <div class="book-subtab" data-shopsub="costume">衣装だんす</div>
     </div>
-    <div id="shop-panel-item">
-      <div class="shop-card warp-card">
-        <div class="shop-name">🧭 ワープ（遠くのスポットへ）</div>
-        <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。※ワープで手に入れたお宝カードには通し番号（発見順）は付きません。現地で発見したカードだけに番号が付きます。</div>
-        <button class="shop-buy-btn" id="warp-open-btn">ワープ先を選ぶ（<img src="assets/coin.png" class="inline-coin" alt="coin">1000）</button>
+    <div class="shop-body">
+      <div id="shop-panel-item">
+        <div class="shop-card warp-card">
+          <div class="shop-name">🧭 ワープ（遠くのスポットへ）</div>
+          <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。※ワープで手に入れたお宝カードには通し番号（発見順）は付きません。現地で発見したカードだけに番号が付きます。</div>
+          <button class="shop-buy-btn" id="warp-open-btn">ワープ先を選ぶ（<img src="assets/coin.png" class="inline-coin" alt="coin">1000）</button>
+        </div>
+        <div class="shop-grid" id="shop-grid"></div>
       </div>
-      <div class="shop-grid" id="shop-grid"></div>
-    </div>
-    <div id="shop-panel-costume" style="display:none;">
-      <div class="shop-grid" id="costume-grid"></div>
+      <div id="shop-panel-costume" style="display:none;">
+        <div class="shop-grid" id="costume-grid"></div>
+      </div>
     </div>
   </div>
 
