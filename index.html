@@ -441,6 +441,15 @@
   #discovery-overlay.show{ display:flex; }
   .chest-stage{ position:relative; width:160px; height:160px; margin-bottom:10px; }
   .chest-stage img.chest{ width:100%; height:100%; object-fit:contain; }
+  /* 「宝箱を見つけた！」タップ待ち：宝箱がゆれてタップを促す */
+  .chest-stage.tappable{ cursor:pointer; animation: chestWiggle 1.1s ease-in-out infinite; }
+  .chest-stage.tappable::after{
+    content:"👆"; position:absolute; right:-2px; bottom:-4px; font-size:34px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+    animation: tapHint 1.1s ease-in-out infinite;
+  }
+  @keyframes chestWiggle{ 0%,100%{ transform: rotate(-3deg) scale(1); } 50%{ transform: rotate(3deg) scale(1.06); } }
+  @keyframes tapHint{ 0%,100%{ transform: translateY(0); opacity:.8; } 50%{ transform: translateY(-9px); opacity:1; } }
   .coin-fly{
     position:absolute; width:28px; height:28px; left:50%; top:40%;
     animation: coinfly 0.9s ease-out forwards;
@@ -1473,6 +1482,15 @@
     });
   }
 
+  // 「宝箱を見つけた！」の軽い気づき音（開封ファンファーレより控えめ）
+  function sfxChestFound(){
+    if(!sfxEnabled()) return;
+    var ctx = ensureAudioCtx(); if(!ctx) return;
+    var t = ctx.currentTime;
+    playNote(ctx, t, 659.25, 0.16, { type:"triangle", volume:0.13 });
+    playNote(ctx, t + 0.12, 987.77, 0.20, { type:"triangle", volume:0.12 });
+  }
+
   function sfxLevelUp(){
     if(!sfxEnabled()) return;
     var ctx = ensureAudioCtx(); if(!ctx) return;
@@ -1505,7 +1523,8 @@
   var geoWatchId = null;
   var positionBuffer = [];
   var currentPos = null; // {lat,lng}
-  var dwellCandidate = null; // {poiId, since}
+  var dwellCandidate = null; // {poiId, since, prompted}
+  var currentInRangePoi = null; // 現在圏内のPOI（バナーからの再オープン用）
   var DWELL_MS = 3000;
   var POSITION_BUFFER_SIZE = 5;
   var geoError = null;        // 直近の位置情報エラー（1=許可なし/2=取得不可/3=タイムアウト）。取得成功でクリア
@@ -2525,6 +2544,48 @@
     if(fbEnabled() && !save.serials[poiId]) enqueueSerial(poiId);
   }
 
+  function discoveryOverlayShown(){
+    var o = document.getElementById("discovery-overlay");
+    return !!(o && o.classList.contains("show"));
+  }
+
+  // GPSで圏内に着いた初回：いきなり開けず「宝箱を見つけた！」→タップで開封（＝attemptDiscovery）。
+  function promptChest(poi){
+    var overlay = document.getElementById("discovery-overlay");
+    if(overlay.classList.contains("show")) return;   // 既に発見/開封演出が表示中なら何もしない
+    var stage = document.getElementById("chest-stage");
+    var chestImg = document.getElementById("chest-img");
+    var closeBtn = document.getElementById("discover-close-btn");
+
+    chestImg.src = "assets/chest_closed.png";
+    document.getElementById("discover-title").textContent = "宝箱を見つけた！";
+    document.getElementById("discover-sub").textContent = "タップして開けよう";
+    document.getElementById("discover-rewards").innerHTML = "";
+    document.getElementById("discover-serial").style.display = "none";
+    document.getElementById("levelup-banner").style.display = "none";
+    stage.classList.add("tappable");
+    setGuideMood("point");
+    overlay.classList.add("show");
+    sfxChestFound();
+
+    function cleanup(){
+      stage.classList.remove("tappable");
+      stage.removeEventListener("click", onOpen);
+      closeBtn.removeEventListener("click", onDismiss);
+    }
+    function onOpen(){
+      cleanup();
+      attemptDiscovery(poi);   // 開封＝報酬付与＋開く演出（showDiscoveryOverlayが同じオーバーレイを開封状態に描き替える）
+    }
+    function onDismiss(){
+      cleanup();
+      overlay.classList.remove("show");
+      setGuideMood("idle");
+    }
+    stage.addEventListener("click", onOpen);
+    closeBtn.addEventListener("click", onDismiss);
+  }
+
   function attemptDiscovery(poi, opts){
     opts = opts || {};
     var viaWarp = !!opts.viaWarp;   // コインワープ経由は通し番号の対象外
@@ -2814,6 +2875,7 @@
     var banner = document.getElementById("home-inrange-banner");
     var gachaBtn = document.getElementById("home-gacha-btn");
 
+    currentInRangePoi = inRange ? inRange.poi : null;
     if(inRange){
       var alreadyFound = save.found.indexOf(inRange.poi.id) !== -1;
       // 未発見＝「あやしい気配」バナー／発見済み＝再訪でガチャボタン
@@ -2822,9 +2884,15 @@
       if(alreadyFound) gachaBtn.setAttribute("data-poi", inRange.poi.id);
       // 滞在で発見（初回）／再訪（前回訪問から2時間経過でカウント＆再訪コイン）
       if(!dwellCandidate || dwellCandidate.poiId !== inRange.poi.id){
-        dwellCandidate = { poiId: inRange.poi.id, since: Date.now() };
+        dwellCandidate = { poiId: inRange.poi.id, since: Date.now(), prompted: false };
       } else if(Date.now() - dwellCandidate.since >= DWELL_MS){
-        attemptDiscovery(inRange.poi);
+        if(alreadyFound){
+          attemptDiscovery(inRange.poi);   // 再訪は従来どおり（2時間クールダウン制御あり）
+        } else if(!dwellCandidate.prompted && !discoveryOverlayShown()){
+          // 初回発見：いきなり開けず「宝箱を見つけた！」→タップで開封。圏内滞在中の再表示は1回に制限。
+          dwellCandidate.prompted = true;
+          promptChest(inRange.poi);
+        }
       }
     } else {
       dwellCandidate = null;
@@ -4162,6 +4230,13 @@
 
     document.getElementById("home-gacha-btn").addEventListener("click", function(ev){
       openGachaModal(ev.currentTarget.getAttribute("data-poi"));
+    });
+    // 圏内バナーをタップ：一度「宝箱を見つけた！」が出た後（滞在完了後）なら、閉じても再度開ける
+    document.getElementById("home-inrange-banner").addEventListener("click", function(){
+      if(currentInRangePoi && save.found.indexOf(currentInRangePoi.id) === -1
+         && dwellCandidate && dwellCandidate.prompted && !discoveryOverlayShown()){
+        promptChest(currentInRangePoi);
+      }
     });
     document.getElementById("gacha-spin-btn").addEventListener("click", spinGacha);
     document.getElementById("gacha-close").addEventListener("click", function(){
