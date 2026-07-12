@@ -55,7 +55,8 @@
     font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
     color:var(--ink);
     -webkit-tap-highlight-color:transparent;
-    overflow-x:hidden;
+    overflow:hidden;              /* ページ全体はスクロールさせない（各screen内でのみスクロール） */
+    overscroll-behavior:none;     /* iOSのラバーバンド（下タブが一緒に動く／初回に変な余白が出る）を抑止 */
     width:100%;
   }
   #app{
@@ -261,6 +262,9 @@
     flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
     -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     padding-bottom:calc(78px + env(safe-area-inset-bottom));
+    /* 地図が短い地区（中心部など）は縦中央に置いて下の余白を目立たせない。
+       縦長の地図は safe により先頭揃えに切り替わり、上端が切れずスクロールできる。 */
+    display:flex; flex-direction:column; justify-content:safe center;
   }
   .poi-popup{
     margin:0 16px 12px; background:var(--card-bg); border-radius:12px; padding:12px 14px;
