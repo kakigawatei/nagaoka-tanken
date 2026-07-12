@@ -21,11 +21,41 @@
   function setVH(){
     document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
   }
-  setVH();
-  window.addEventListener('resize', setVH);
-  window.addEventListener('orientationchange', function(){ setTimeout(setVH, 250); });
-  window.addEventListener('pageshow', setVH);
-  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setVH); }
+  /* 下部セーフエリアを実測して 0〜34px にクランプし、具体的なpx値で --sab を上書きする。
+     iOSスタンドアロンで env(safe-area-inset-bottom) が異常値(≈96px)を返しても、
+     下部ナビの余白が34pxを超えないようにする（CSS側の min() クランプとの二重防御）。 */
+  function setSAB(){
+    try{
+      var probe = document.createElement('div');
+      probe.style.cssText = 'position:fixed;left:-9999px;bottom:0;width:1px;height:1px;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;';
+      (document.body || document.documentElement).appendChild(probe);
+      var raw = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+      probe.parentNode.removeChild(probe);
+      window.__sabRaw = raw;  /* 診断表示用（設定画面の about-diag） */
+      var capped = Math.max(0, Math.min(raw, 34));
+      document.documentElement.style.setProperty('--sab', capped + 'px');
+    }catch(e){ /* 失敗してもCSSの min() クランプがそのまま効く */ }
+  }
+  /* 設定画面「このアプリについて」末尾の診断行。実機スクリーンショットから
+     「どのビルドが読み込まれているか」「ビューポート実測値」を判別するためのもの。 */
+  function updateDiag(){
+    var el = document.getElementById('about-diag');
+    if(!el) return;
+    var sab = '';
+    try{ sab = getComputedStyle(document.documentElement).getPropertyValue('--sab').trim(); }catch(e){}
+    el.textContent = 'build 2026-07-13a ／ inner:' + window.innerHeight +
+      ' screen:' + (window.screen ? window.screen.height : '?') +
+      ' sab生:' + (window.__sabRaw != null ? Math.round(window.__sabRaw * 10) / 10 : '?') + 'px' +
+      ' 適用:' + sab +
+      (window.navigator.standalone ? ' ／ standalone' : '');
+  }
+  function update(){ setVH(); setSAB(); updateDiag(); }
+  update();
+  window.addEventListener('resize', update);
+  window.addEventListener('orientationchange', function(){ setTimeout(update, 250); });
+  window.addEventListener('pageshow', update);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', update); }
+  document.addEventListener('DOMContentLoaded', update);
 })();
 </script>
 <meta name="mobile-web-app-capable" content="yes">
@@ -45,6 +75,12 @@
     --gold:#c9a227;
     --card-bg:#fbf4e2;
     --shadow: 0 4px 10px rgba(74,52,35,0.25);
+    /* 下部セーフエリア（ホームインジケータ≒34px）用の共通変数。
+       iOSスタンドアロン(black-translucent)では env(safe-area-inset-bottom) が
+       実際(≈34px)より大きい異常値(≈96px)を返すことがあるため min() で34pxに上限クランプ。
+       さらに <head> のJSが実測値を0〜34pxにクランプした「具体的なpx値」でこの変数を
+       上書きするため、env()やmin()の解釈が異常でも余白が暴れない（二重防御）。 */
+    --sab: min(env(safe-area-inset-bottom, 0px), 34px);
   }
   *{box-sizing:border-box;}
   html,body{
@@ -74,7 +110,7 @@
   img{ -webkit-user-drag:none; user-select:none; max-width:100%; }
 
   /* ---------- Screens ---------- */
-  .screen{ display:none; flex:1; min-height:0; flex-direction:column; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; -webkit-overflow-scrolling:touch; padding-bottom:calc(78px + env(safe-area-inset-bottom)); }
+  .screen{ display:none; flex:1; min-height:0; flex-direction:column; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; -webkit-overflow-scrolling:touch; padding-bottom:calc(78px + var(--sab, 0px)); }
   .screen.active{ display:flex; }
 
   /* ---------- Title ---------- */
@@ -260,7 +296,7 @@
   #screen-map .map-body{
     flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
     -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+    padding-bottom:calc(78px + var(--sab, 0px));
     /* 地図が短い地区（中心部など）は縦中央に置いて下の余白を目立たせない。
        縦長の地図は safe により先頭揃えに切り替わり、上端が切れずスクロールできる。 */
     display:flex; flex-direction:column; justify-content:safe center;
@@ -273,7 +309,7 @@
      （フロー挿入だと表示時に地図が縮んで一瞬ズレるため） */
   #map-popup{
     position:absolute; left:16px; right:16px; margin:0;
-    bottom:calc(78px + env(safe-area-inset-bottom) + 10px); z-index:6;
+    bottom:calc(78px + var(--sab, 0px) + 10px); z-index:6;
     box-shadow: inset 0 0 0 1px #d8c497, 0 4px 14px rgba(0,0,0,0.25);
   }
   .poi-popup .name{ font-weight:700; font-size:14px; margin-bottom:4px; }
@@ -388,13 +424,15 @@
     /* position:fixed で「レイアウトビューポートの下端」に直接固定する。
        以前は #app(height:100%/100dvh) 内の absolute だったが、iOSスタンドアロンPWAでは
        100dvh/innerHeight が実画面より小さく測られ #app が下に届かず、ナビの下に余白が残った。
-       fixed は #app の高さに依存せず必ず物理画面の最下端に貼り付くため余白が出ない。 */
+       注意：fixed の基準もレイアウトビューポートなので、iOSがビューポート高自体を
+       実画面より小さく報告する場合はナビ下に隙間が残り得る（html背景が同色なので
+       ナビと一体の帯に見える）。その場合は設定画面の診断行 inner/screen の差で判別できる。 */
     position:fixed; bottom:0; left:0; width:100%; max-width:440px; display:flex;
-    /* ホームインジケータ分の余白。ただし iOSスタンドアロン(black-translucent)では
-       env(safe-area-inset-bottom) が実際(≈34px)よりはるかに大きい値(≈96px)を返すことがあり、
-       ナビ下に巨大な余白が出る。min()で34pxに上限を設けて過剰な余白を防ぐ（inlineで確実に）。 */
-    height:calc(66px + min(env(safe-area-inset-bottom), 34px));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
-    padding-bottom:min(env(safe-area-inset-bottom), 34px);
+    /* ホームインジケータ分の余白。--sab は「min()で34px上限＋起動時JSが実測値を
+       0〜34pxにクランプした具体px値で上書き」の二重防御済み変数（:root参照）。
+       これにより env(safe-area-inset-bottom) が異常値(≈96px)を返しても余白は最大34px。 */
+    height:calc(66px + var(--sab, 0px));   /* box-sizing:border-box対応。ボタン領域66px＋ホームインジケータ分 */
+    padding-bottom:var(--sab, 0px);
     background:var(--paper-dark); border-top:2px solid #cbb98a; z-index:10;
   }
   .nav-btn{
@@ -417,7 +455,7 @@
   #screen-shop .shop-body{
     flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
     -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+    padding-bottom:calc(78px + var(--sab, 0px));
   }
   .book-subtab{
     flex:1; text-align:center; padding:8px 4px; border-radius:10px; font-size:13px; font-weight:700;
@@ -1100,6 +1138,8 @@
         マップには「お宝」に加えて地域の加盟店（お店）ピンも表示されます（フェーズA・デモ実装）。お店の近くではクーポンの利用も試せます。<br>
         ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
       </div>
+      <!-- 表示不具合の調査用診断行（<head>のJSが起動時・リサイズ時に更新） -->
+      <div class="settings-note" id="about-diag" style="margin-top:6px;opacity:0.75;"></div>
     </div>
   </div>
 
