@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v39";
+var CACHE_VERSION = "v40";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -197,18 +197,38 @@ self.addEventListener("activate", function (event) {
     caches
       .keys()
       .then(function (keys) {
+        var stale = keys.filter(function (key) {
+          return key.indexOf("nagaoka-tanken-") === 0 && key !== CACHE_NAME;
+        });
         return Promise.all(
-          keys
-            .filter(function (key) {
-              return key.indexOf("nagaoka-tanken-") === 0 && key !== CACHE_NAME;
-            })
-            .map(function (key) {
-              return caches.delete(key);
-            })
-        );
+          stale.map(function (key) {
+            return caches.delete(key);
+          })
+        ).then(function () {
+          // 旧バージョンが存在した＝アップデート時のみ true（初回インストールでは false）
+          return stale.length > 0;
+        });
       })
-      .then(function () {
-        return self.clients.claim();
+      .then(function (wasUpdate) {
+        return self.clients.claim().then(function () {
+          // 自己修復：アップデート時、既に開いている画面を新SW管理下で強制リロードして
+          // 最新のindex.htmlを確実に読ませる。iOSのホーム画面アプリが古いキャッシュを
+          // 握り続ける問題を、次回SW更新が届いた時点で自動的に解消するための仕組み。
+          if (!wasUpdate) return;
+          return self.clients
+            .matchAll({ type: "window" })
+            .then(function (clients) {
+              clients.forEach(function (c) {
+                if ("navigate" in c) {
+                  try {
+                    c.navigate(c.url);
+                  } catch (e) {
+                    /* 一部環境でnavigate不可でも致命的でない */
+                  }
+                }
+              });
+            });
+        });
       })
   );
 });
