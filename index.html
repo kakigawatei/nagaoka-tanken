@@ -36,6 +36,23 @@
       document.documentElement.style.setProperty('--sab', capped + 'px');
     }catch(e){ /* 失敗してもCSSの min() クランプがそのまま効く */ }
   }
+  /* iOSスタンドアロン(black-translucent)ではレイアウトビューポート高(innerHeight)が
+     実画面(screen.height)より上部インセット分(≒62px)小さく報告される。すると
+     position:fixed;bottom:0 のナビはビューポート下端(=実画面より上)に張り付き、
+     その下に実画面下端までの帯（html背景と同色）が残る。実測差ぶんナビを下げて
+     実画面の最下端に密着させる。standalone時のみ・0〜120pxにクランプ（ブラウザの
+     ツールバー差で誤補正しないようstandalone限定）。 */
+  function setNavDrop(){
+    try{
+      var drop = 0;
+      var sh = (window.screen && window.screen.height) || 0;
+      if(window.navigator.standalone && sh > window.innerHeight){
+        drop = Math.max(0, Math.min(sh - window.innerHeight, 120));
+      }
+      window.__navDrop = drop;
+      document.documentElement.style.setProperty('--nav-drop', drop + 'px');
+    }catch(e){ /* 失敗時は 0（従来通り bottom:0） */ }
+  }
   /* 設定画面「このアプリについて」末尾の診断行。実機スクリーンショットから
      「どのビルドが読み込まれているか」「ビューポート実測値」を判別するためのもの。 */
   function updateDiag(){
@@ -43,13 +60,14 @@
     if(!el) return;
     var sab = '';
     try{ sab = getComputedStyle(document.documentElement).getPropertyValue('--sab').trim(); }catch(e){}
-    el.textContent = 'build 2026-07-13a ／ inner:' + window.innerHeight +
+    el.textContent = 'build 2026-07-13b ／ inner:' + window.innerHeight +
       ' screen:' + (window.screen ? window.screen.height : '?') +
       ' sab生:' + (window.__sabRaw != null ? Math.round(window.__sabRaw * 10) / 10 : '?') + 'px' +
       ' 適用:' + sab +
+      ' drop:' + (window.__navDrop != null ? window.__navDrop : '?') + 'px' +
       (window.navigator.standalone ? ' ／ standalone' : '');
   }
-  function update(){ setVH(); setSAB(); updateDiag(); }
+  function update(){ setVH(); setSAB(); setNavDrop(); updateDiag(); }
   update();
   window.addEventListener('resize', update);
   window.addEventListener('orientationchange', function(){ setTimeout(update, 250); });
@@ -424,10 +442,11 @@
     /* position:fixed で「レイアウトビューポートの下端」に直接固定する。
        以前は #app(height:100%/100dvh) 内の absolute だったが、iOSスタンドアロンPWAでは
        100dvh/innerHeight が実画面より小さく測られ #app が下に届かず、ナビの下に余白が残った。
-       注意：fixed の基準もレイアウトビューポートなので、iOSがビューポート高自体を
-       実画面より小さく報告する場合はナビ下に隙間が残り得る（html背景が同色なので
-       ナビと一体の帯に見える）。その場合は設定画面の診断行 inner/screen の差で判別できる。 */
-    position:fixed; bottom:0; left:0; width:100%; max-width:440px; display:flex;
+       fixed の基準はレイアウトビューポート。iOSスタンドアロンでは innerHeight が
+       実画面より上部インセット分小さく報告され、bottom:0 だとナビ下に同色の帯が残る。
+       そこで --nav-drop（起動時JSが screen.height-innerHeight を実測）ぶん bottom を
+       マイナスにして実画面の最下端まで下げる。非該当環境では --nav-drop=0 で従来通り。 */
+    position:fixed; bottom:calc(-1 * var(--nav-drop, 0px)); left:0; width:100%; max-width:440px; display:flex;
     /* ホームインジケータ分の余白。--sab は「min()で34px上限＋起動時JSが実測値を
        0〜34pxにクランプした具体px値で上書き」の二重防御済み変数（:root参照）。
        これにより env(safe-area-inset-bottom) が異常値(≈96px)を返しても余白は最大34px。 */
