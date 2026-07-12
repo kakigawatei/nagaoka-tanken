@@ -21,9 +21,8 @@
   function setVH(){
     document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
   }
-  /* 下部セーフエリアを実測して 0〜34px にクランプし、具体的なpx値で --sab を上書きする。
-     iOSスタンドアロンで env(safe-area-inset-bottom) が異常値(≈96px)を返しても、
-     下部ナビの余白が34pxを超えないようにする（CSS側の min() クランプとの二重防御）。 */
+  /* 下部セーフエリア(ホームインジケータ≒34px)を実測し 0〜34px にクランプした
+     具体px値を --sab に設定する（CSS側の min() クランプとの二重防御）。 */
   function setSAB(){
     try{
       var probe = document.createElement('div');
@@ -31,43 +30,11 @@
       (document.body || document.documentElement).appendChild(probe);
       var raw = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
       probe.parentNode.removeChild(probe);
-      window.__sabRaw = raw;  /* 診断表示用（設定画面の about-diag） */
       var capped = Math.max(0, Math.min(raw, 34));
       document.documentElement.style.setProperty('--sab', capped + 'px');
     }catch(e){ /* 失敗してもCSSの min() クランプがそのまま効く */ }
   }
-  /* iOSスタンドアロン(black-translucent)ではレイアウトビューポート高(innerHeight)が
-     実画面(screen.height)より上部インセット分(≒62px)小さく報告される。すると
-     position:fixed;bottom:0 のナビはビューポート下端(=実画面より上)に張り付き、
-     その下に実画面下端までの帯（html背景と同色）が残る。実測差ぶんナビを下げて
-     実画面の最下端に密着させる。standalone時のみ・0〜120pxにクランプ（ブラウザの
-     ツールバー差で誤補正しないようstandalone限定）。 */
-  function setNavDrop(){
-    try{
-      var drop = 0;
-      var sh = (window.screen && window.screen.height) || 0;
-      if(window.navigator.standalone && sh > window.innerHeight){
-        drop = Math.max(0, Math.min(sh - window.innerHeight, 120));
-      }
-      window.__navDrop = drop;
-      document.documentElement.style.setProperty('--nav-drop', drop + 'px');
-    }catch(e){ /* 失敗時は 0（従来通り bottom:0） */ }
-  }
-  /* 設定画面「このアプリについて」末尾の診断行。実機スクリーンショットから
-     「どのビルドが読み込まれているか」「ビューポート実測値」を判別するためのもの。 */
-  function updateDiag(){
-    var el = document.getElementById('about-diag');
-    if(!el) return;
-    var sab = '';
-    try{ sab = getComputedStyle(document.documentElement).getPropertyValue('--sab').trim(); }catch(e){}
-    el.textContent = 'build 2026-07-13c ／ inner:' + window.innerHeight +
-      ' screen:' + (window.screen ? window.screen.height : '?') +
-      ' sab生:' + (window.__sabRaw != null ? Math.round(window.__sabRaw * 10) / 10 : '?') + 'px' +
-      ' 適用:' + sab +
-      ' drop:' + (window.__navDrop != null ? window.__navDrop : '?') + 'px' +
-      (window.navigator.standalone ? ' ／ standalone' : '');
-  }
-  function update(){ setVH(); setSAB(); setNavDrop(); updateDiag(); }
+  function update(){ setVH(); setSAB(); }
   update();
   window.addEventListener('resize', update);
   window.addEventListener('orientationchange', function(){ setTimeout(update, 250); });
@@ -1157,8 +1124,6 @@
         マップには「お宝」に加えて地域の加盟店（お店）ピンも表示されます（フェーズA・デモ実装）。お店の近くではクーポンの利用も試せます。<br>
         ホーム画面に追加するとアプリのように起動でき、一度読み込めばオフラインでも使えます。
       </div>
-      <!-- 表示不具合の調査用診断行（<head>のJSが起動時・リサイズ時に更新） -->
-      <div class="settings-note" id="about-diag" style="margin-top:6px;opacity:0.75;"></div>
     </div>
   </div>
 
