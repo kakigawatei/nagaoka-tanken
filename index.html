@@ -1736,6 +1736,46 @@
     return s;
   }
 
+  /* ============================================================
+   * 5d. 稼働状況の記録（プレイヤー総数・アクティブ数の把握用）
+   * ------------------------------------------------------------
+   * 端末ごとの匿名UIDで users/{uid} に lastSeen（最終利用日時）と platform を
+   * 1日1回だけ記録する。集計は Firebase 側で：
+   *   ・総プレイヤー数 ≒ users コレクションの件数（≒認証ユーザー数）
+   *   ・アクティブ数   = users で lastSeen >= 期間の件数（runAggregationQuery の count）
+   * 個人を特定する情報は送らない（UID＝端末ごとの匿名ID・日時・web/iosのみ）。
+   * ========================================================== */
+  var FB_LS_PING = "nagaoka_fb_lastping";
+  function fbPlatform(){
+    try { if(window.Capacitor && typeof window.Capacitor.getPlatform === "function") return window.Capacitor.getPlatform(); } catch(e){}
+    return "web";
+  }
+  function fbPingActive(){
+    if(!fbEnabled()) return;
+    var d = new Date();
+    var today = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+    try { if(localStorage.getItem(FB_LS_PING) === today) return; } catch(e){}   // 1日1回に制限
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    fbAuth().then(function(idToken){
+      var uid = fbMyUid();
+      if(!uid) return null;
+      var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents:commit";
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({ writes: [{
+          update: { name: fbDocName("users/" + uid), fields: {
+            lastSeen: { timestampValue: new Date().toISOString() },
+            platform: { stringValue: fbPlatform() }
+          } },
+          updateMask: { fieldPaths: ["lastSeen", "platform"] }   // 既存doc生成/更新（他フィールドは触らない）
+        }] })
+      });
+    }).then(function(r){
+      if(r && r.ok){ try { localStorage.setItem(FB_LS_PING, today); } catch(e){} }
+    }).catch(function(err){ console.warn("[active] ping failed（後で再試行）", err); });
+  }
+
   // 自分の紹介コードを用意（無ければ生成して refcodes に登録）。resolve(code)。
   function ensureMyRefCode(){
     if(save.referral.myCode) return Promise.resolve(save.referral.myCode);
@@ -4241,7 +4281,8 @@
     // シリアル採番／友達紹介成立：起動時に未確定分を処理＋オンライン復帰時にも再試行
     processSerialQueue();
     processReferral();
-    window.addEventListener("online", function(){ processSerialQueue(); processReferral(); });
+    fbPingActive();   // 稼働状況（最終利用日時）を1日1回記録＝アクティブ数の把握用
+    window.addEventListener("online", function(){ processSerialQueue(); processReferral(); fbPingActive(); });
   }
 
   // 加盟店データの読み込み（フェーズA・地域ビジネス連携）。お宝(pois.json)とは独立したデータ・独立したfetchで、
