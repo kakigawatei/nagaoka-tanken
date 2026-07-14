@@ -254,6 +254,31 @@
     box-shadow:0 0 0 2px #fff2d6, 0 2px 4px rgba(0,0,0,0.4);
   }
   .shop-pin-badge img{ width:20px; height:20px; filter:brightness(0) invert(1); }
+  .shop-pin-badge{ position:relative; }
+
+  /* ---------- 混雑ステータスのランプ（フェーズ0：お店が手動で切替） ---------- */
+  .pin-crowd-lamp{
+    position:absolute; top:-2px; right:-2px;
+    width:12px; height:12px; border-radius:50%;
+    border:2px solid #fff2d6; box-shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+  .pin-crowd-lamp.green{ background:#2e9e5b; }
+  .pin-crowd-lamp.yellow{ background:#e0a91b; }
+  .pin-crowd-lamp.red{ background:#c0392b; animation: crowdPulse 1.6s ease-in-out infinite; }
+  @keyframes crowdPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+
+  .crowd-row{
+    display:flex; align-items:center; gap:7px;
+    background:var(--paper-dark); border-radius:9px;
+    padding:7px 10px; margin-bottom:10px;
+  }
+  .crowd-lamp{ width:12px; height:12px; border-radius:50%; flex:none; }
+  .crowd-lamp.green{ background:#2e9e5b; }
+  .crowd-lamp.yellow{ background:#e0a91b; }
+  .crowd-lamp.red{ background:#c0392b; }
+  .crowd-text{ font-size:13px; font-weight:800; }
+  .crowd-note{ font-size:10.5px; color:var(--ink-soft); margin-left:auto; }
+
   /* 現在地マーカー：自分のキャラクター（ミニ版）が「ここにいるよ」と立つ */
   .you-are-here{
     position:absolute; transform:translate(-50%,-100%); z-index:5;
@@ -1278,6 +1303,53 @@
 
   var DATA = null; // { districts, pois }
   var SHOP_DATA = null; // { shops } - 加盟店データ（フェーズA）
+
+  /* ---------- 混雑ステータス（フェーズ0：お店のスタッフが crowd.html から手動で切替） ----------
+   * Firestore の crowd/{shopId} を読むだけ（公開読み取り。個人情報は一切含まない）。
+   * ★重要：updatedAt が CROWD_STALE_MS より古い、または level が "off" のときは何も表示しない。
+   *   「空いてます」と出ていたのに満席、が最悪の事故なので、古い情報は出さずに黙る。
+   * 将来ラズパイのAI判定を入れる場合も、同じ crowd/{shopId} を書き換えるだけで差し替えできる。 */
+  var CROWD_STALE_MS = 10 * 60 * 1000;   // 10分で「情報なし」に落とす
+  var CROWD_REFRESH_MS = 90 * 1000;      // アプリ表示中は90秒ごとに取り直す
+  var CROWD_STATE = {};                  // { shopId: {level, updatedAt} }
+  var CROWD_LABEL = {
+    green:  { text: "空いています",   cls: "green"  },
+    yellow: { text: "やや混雑",       cls: "yellow" },
+    red:    { text: "混雑しています", cls: "red"    }
+  };
+
+  // 有効な混雑レベルを返す（期限切れ・off・未設定なら null＝表示しない）
+  function crowdOf(shopId){
+    var c = CROWD_STATE[shopId];
+    if(!c || !c.level || c.level === "off" || !c.updatedAt) return null;
+    if(Date.now() - new Date(c.updatedAt).getTime() > CROWD_STALE_MS) return null;
+    return CROWD_LABEL[c.level] || null;
+  }
+
+  function fetchCrowd(){
+    if(!fbEnabled() || !SHOP_DATA || !SHOP_DATA.shops) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId +
+              "/databases/(default)/documents/crowd";
+    fetch(url)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if(!j) return;
+        var next = {};
+        (j.documents || []).forEach(function(d){
+          var id = d.name.split("/").pop();
+          var f = d.fields || {};
+          next[id] = {
+            level: (f.level && f.level.stringValue) || "off",
+            updatedAt: (f.updatedAt && f.updatedAt.timestampValue) || null
+          };
+        });
+        CROWD_STATE = next;
+        if(currentScreen === "map") renderMap();      // ピンのランプを更新
+        if(currentModalShop) renderShopModalBody();   // 開いているモーダルも更新
+      })
+      .catch(function(e){ console.warn("crowd fetch failed", e); });
+  }
   var BBOX = {};   // districtId -> bbox for map projection
 
   /* ============================================================
@@ -3308,7 +3380,9 @@
         pin.style.left = pos.xPct + "%";
         pin.style.top = pos.yPct + "%";
         pin.style.animationDelay = ((pois.length + idx) * 0.04) + "s";
-        pin.innerHTML = '<div class="shop-pin-badge"><img src="assets/ic_shop.png" alt="お店"></div>';
+        var crowd = crowdOf(shop.id);
+        pin.innerHTML = '<div class="shop-pin-badge"><img src="assets/ic_shop.png" alt="お店">' +
+          (crowd ? '<span class="pin-crowd-lamp ' + crowd.cls + '"></span>' : '') + '</div>';
         pin.addEventListener("click", function(ev){
           ev.stopPropagation();
           showShopModal(shop);
@@ -3459,6 +3533,14 @@
     html += '<div class="shop-modal-category">' + shop.category + '</div>';
     html += '<div class="shop-modal-name">' + shop.name + '</div>';
     if(shop.address) html += '<div class="shop-modal-address">' + shop.address + '</div>';
+
+    // 混雑ステータス（お店が今の状況を教えてくれている場合だけ表示。古い情報は出さない）
+    var crowd = crowdOf(shop.id);
+    if(crowd){
+      html += '<div class="crowd-row"><span class="crowd-lamp ' + crowd.cls + '"></span>' +
+              '<span class="crowd-text">' + crowd.text + '</span>' +
+              '<span class="crowd-note">お店からの情報</span></div>';
+    }
 
     if(shop.offer){
       html += '<div class="shop-modal-offer"><div class="offer-title">' + shop.offer.title + '</div><div class="offer-desc">' + shop.offer.desc + '</div></div>';
@@ -4456,6 +4538,10 @@
       initBBoxes(); // お店の座標もbboxに含めるため再計算
       if(currentScreen === "map") renderMap();
     }
+    // 混雑ステータスを取得（以後、表示中は定期的に更新。画面復帰時にも取り直す）
+    fetchCrowd();
+    setInterval(function(){ if(!document.hidden) fetchCrowd(); }, CROWD_REFRESH_MS);
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden) fetchCrowd(); });
   }
 
   // fetchはfile://環境で失敗しうるためインラインデータへフォールバック

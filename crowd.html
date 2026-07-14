@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="混雑ステータス">
+<meta name="theme-color" content="#e3d3ab">
+<title>混雑ステータス切替｜ながおか探検録 加盟店</title>
+<link rel="apple-touch-icon" href="assets/apple_touch_icon.png">
+<style>
+  :root{
+    --paper:#f1e6c9; --paper-dark:#e3d3ab; --ink:#4a3423; --ink-soft:#7a5c3e;
+    --line:#cbb98a; --green:#2e9e5b; --yellow:#e0a91b; --red:#c0392b; --off:#9b9b9b;
+    --sab: min(env(safe-area-inset-bottom, 0px), 34px);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  /* display:flex が hidden 属性を上書きしてしまうため、明示的に打ち消す */
+  [hidden]{ display:none !important; }
+  html,body{ height:100%; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    background:var(--paper); color:var(--ink);
+    display:flex; flex-direction:column; min-height:100dvh;
+    padding: env(safe-area-inset-top) 16px calc(16px + var(--sab));
+  }
+  header{ padding:16px 0 12px; border-bottom:2px solid var(--line); }
+  .eyebrow{ font-size:11px; letter-spacing:.12em; color:var(--ink-soft); font-weight:700; }
+  h1{ font-size:19px; margin-top:4px; }
+  .shopname{ font-size:14px; color:var(--ink-soft); margin-top:4px; }
+
+  main{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; padding:18px 0; }
+
+  /* 現在の状態 */
+  .now{
+    background:#fff; border:2px solid var(--line); border-radius:14px;
+    padding:16px; text-align:center;
+  }
+  .now .label{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .now .state{ display:flex; align-items:center; justify-content:center; gap:10px; }
+  .lamp{ width:22px; height:22px; border-radius:50%; background:var(--off); flex:none; }
+  .lamp.green{ background:var(--green); box-shadow:0 0 0 4px rgba(46,158,91,.18); }
+  .lamp.yellow{ background:var(--yellow); box-shadow:0 0 0 4px rgba(224,169,27,.18); }
+  .lamp.red{ background:var(--red); box-shadow:0 0 0 4px rgba(192,57,43,.18); }
+  .now .text{ font-size:20px; font-weight:900; }
+  .now .time{ font-size:11.5px; color:var(--ink-soft); margin-top:8px; }
+
+  /* ボタン */
+  .btns{ display:flex; flex-direction:column; gap:12px; }
+  button.lv{
+    display:flex; align-items:center; gap:14px;
+    padding:20px 18px; border:none; border-radius:14px; cursor:pointer;
+    font-size:19px; font-weight:900; color:#fff; text-align:left;
+    box-shadow:0 3px 0 rgba(0,0,0,.18);
+    transition:transform .06s;
+  }
+  button.lv:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.18); }
+  button.lv .dot{ width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,.9); flex:none; }
+  button.lv small{ display:block; font-size:12px; font-weight:600; opacity:.9; margin-top:2px; }
+  .lv.green{ background:var(--green); }
+  .lv.yellow{ background:var(--yellow); }
+  .lv.red{ background:var(--red); }
+  .lv.off{ background:var(--off); }
+  button.lv.sel{ outline:4px solid var(--ink); outline-offset:2px; }
+
+  /* PIN画面 */
+  #gate{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+  #gate input{
+    width:100%; padding:16px; font-size:24px; text-align:center; letter-spacing:.4em;
+    border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--ink);
+  }
+  #gate button{
+    width:100%; padding:16px; font-size:17px; font-weight:900; color:#fff;
+    background:#26405e; border:none; border-radius:12px; cursor:pointer;
+  }
+  .err{ color:var(--red); font-size:13px; font-weight:700; text-align:center; min-height:18px; }
+  .note{ font-size:11.5px; line-height:1.7; color:var(--ink-soft); }
+  footer{ padding-top:12px; border-top:1px solid var(--line); }
+  .toast{
+    position:fixed; left:50%; bottom:calc(24px + var(--sab)); transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 20px; border-radius:999px;
+    font-size:14px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .25s;
+    z-index:10; white-space:nowrap;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">ながおか探検録 加盟店</div>
+  <h1>混雑ステータス</h1>
+  <div class="shopname" id="shopname">読み込み中…</div>
+</header>
+
+<!-- PINゲート -->
+<div id="gate" hidden>
+  <p class="note">スタッフ用のPINコードを入力してください。<br>（クーポンの使用確認に使うPINと同じです）</p>
+  <input id="pin" type="tel" inputmode="numeric" maxlength="8" placeholder="････" autocomplete="off">
+  <div class="err" id="gate-err"></div>
+  <button id="gate-btn">開く</button>
+</div>
+
+<!-- メイン -->
+<main id="main" hidden>
+  <div class="now">
+    <div class="label">いまアプリに表示されている状態</div>
+    <div class="state">
+      <span class="lamp" id="now-lamp"></span>
+      <span class="text" id="now-text">—</span>
+    </div>
+    <div class="time" id="now-time"></div>
+  </div>
+
+  <div class="btns">
+    <button class="lv green" data-level="green">
+      <span class="dot"></span>
+      <span>空いています<small>すぐ座れる／余裕あり</small></span>
+    </button>
+    <button class="lv yellow" data-level="yellow">
+      <span class="dot"></span>
+      <span>やや混雑<small>少し待つかも／席が埋まってきた</small></span>
+    </button>
+    <button class="lv red" data-level="red">
+      <span class="dot"></span>
+      <span>混雑しています<small>満席・お待ちいただく状態</small></span>
+    </button>
+    <button class="lv off" data-level="off">
+      <span class="dot"></span>
+      <span>表示を消す<small>営業時間外・計測しないとき</small></span>
+    </button>
+  </div>
+</main>
+
+<footer>
+  <p class="note">
+    ※ ボタンを押すとすぐアプリに反映されます。<br>
+    ※ <b>10分以上更新がないと自動で表示が消えます</b>（古い情報でお客様に迷惑をかけないため）。こまめに押していただく必要はありません。忙しいときは無理をしないでください。<br>
+    ※ このページはホーム画面に追加しておくと、次回からワンタップで開けます。
+  </p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------
+   * 加盟店スタッフ用「混雑ステータス」切替ページ（フェーズ0）
+   * ・Firestore の crowd/{shopId} に {level, updatedAt, source} を書くだけ。
+   * ・映像・カメラは一切使わない（将来ラズパイのAI判定が同じdocを書く＝差し替え可能）。
+   * ・PINは data/shops.json の coupon.staffPIN を流用（クーポン確認PINと同じ）。
+   * ---------------------------------------------------------- */
+
+  var FIREBASE_CONFIG = {
+    apiKey:    "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74",  // kakigawatei-franchise ウェブAPIキー（index.htmlと同じ）
+    projectId: "kakigawatei-franchise"
+  };
+
+  var LEVELS = {
+    green:  { text: "空いています",     lamp: "green"  },
+    yellow: { text: "やや混雑",         lamp: "yellow" },
+    red:    { text: "混雑しています",   lamp: "red"    },
+    off:    { text: "表示なし",         lamp: ""       }
+  };
+  var STALE_MS = 10 * 60 * 1000;   // 10分で自動的に「表示なし」扱い
+
+  var params = new URLSearchParams(location.search);
+  var shopId = params.get("shop") || "";
+  var shop = null;
+  var idToken = null;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function toast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ---------- Firebase REST（匿名認証 → Firestore） ---------- */
+  function auth(){
+    if(idToken) return Promise.resolve(idToken);
+    return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ returnSecureToken: true })
+    })
+    .then(function(r){ if(!r.ok) throw new Error("auth " + r.status); return r.json(); })
+    .then(function(j){ idToken = j.idToken; return idToken; });
+  }
+
+  function docUrl(){
+    return "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId +
+           "/databases/(default)/documents/crowd/" + encodeURIComponent(shopId);
+  }
+
+  function readCrowd(){
+    return fetch(docUrl())
+      .then(function(r){
+        if(r.status === 404) return null;            // まだ一度も押されていない
+        if(!r.ok) throw new Error("read " + r.status);
+        return r.json();
+      })
+      .then(function(j){
+        if(!j || !j.fields) return null;
+        return {
+          level: (j.fields.level && j.fields.level.stringValue) || "off",
+          updatedAt: (j.fields.updatedAt && j.fields.updatedAt.timestampValue) || null
+        };
+      });
+  }
+
+  function writeCrowd(level){
+    return auth().then(function(token){
+      var url = docUrl() + "?updateMask.fieldPaths=level&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=source";
+      return fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ fields: {
+          level:     { stringValue: level },
+          updatedAt: { timestampValue: new Date().toISOString() },
+          source:    { stringValue: "manual" }
+        } })
+      });
+    }).then(function(r){
+      if(!r.ok) throw new Error("write " + r.status);
+      return true;
+    });
+  }
+
+  /* ---------- 表示 ---------- */
+  function fmtTime(iso){
+    if(!iso) return "";
+    var d = new Date(iso), now = new Date();
+    var min = Math.floor((now - d) / 60000);
+    var hhmm = ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2);
+    if(min < 1) return "たった今 更新（" + hhmm + "）";
+    if(min < 60) return min + "分前に更新（" + hhmm + "）";
+    return hhmm + " に更新";
+  }
+
+  function paint(state){
+    var level = state ? state.level : "off";
+    var stale = false;
+    if(state && state.updatedAt){
+      stale = (Date.now() - new Date(state.updatedAt).getTime()) > STALE_MS;
+    }
+    var effective = (!state || stale) ? "off" : level;
+    var info = LEVELS[effective] || LEVELS.off;
+
+    $("now-lamp").className = "lamp " + (info.lamp || "");
+    $("now-text").textContent = info.text;
+    $("now-time").textContent = state && state.updatedAt
+      ? (stale ? "（10分以上経ったので自動で消えています）" : fmtTime(state.updatedAt))
+      : "まだ設定されていません";
+
+    Array.prototype.forEach.call(document.querySelectorAll("button.lv"), function(b){
+      b.classList.toggle("sel", b.getAttribute("data-level") === effective);
+    });
+  }
+
+  function refresh(){
+    readCrowd()
+      .then(paint)
+      .catch(function(e){
+        console.warn(e);
+        paint(null);   // 読めなくても画面を「—」で固めない（未設定として描く）
+      });
+  }
+
+  /* ---------- 起動 ---------- */
+  function start(){
+    $("gate").hidden = true;
+    $("main").hidden = false;
+    refresh();
+    setInterval(refresh, 60000);   // 1分ごとに表示を同期（他の端末で押された場合も追従）
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll("button.lv"), function(b){
+    b.addEventListener("click", function(){
+      var level = b.getAttribute("data-level");
+      b.disabled = true;
+      writeCrowd(level)
+        .then(function(){
+          toast(level === "off" ? "表示を消しました" : "「" + LEVELS[level].text + "」にしました");
+          refresh();
+        })
+        .catch(function(e){
+          console.error(e);
+          toast("通信に失敗しました。電波を確認してください");
+        })
+        .then(function(){ b.disabled = false; });
+    });
+  });
+
+  // 店舗データ読み込み → PIN判定
+  fetch("data/shops.json")
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var shops = (data && data.shops) || [];
+      shop = shops.filter(function(s){ return s.id === shopId; })[0] || null;
+      if(!shop){
+        $("shopname").textContent = "お店が見つかりません";
+        document.getElementById("gate").hidden = false;
+        $("gate-err").textContent = "URLが正しくありません。運営にお問い合わせください。";
+        $("pin").disabled = true; $("gate-btn").disabled = true;
+        return;
+      }
+      $("shopname").textContent = shop.name;
+      document.title = shop.name + "｜混雑ステータス";
+
+      var savedKey = "crowd_ok_" + shopId;
+      if(localStorage.getItem(savedKey) === "1"){ start(); return; }   // 一度入れたら次回から省略
+
+      $("gate").hidden = false;
+      $("gate-btn").addEventListener("click", function(){
+        var pin = ($("pin").value || "").trim();
+        var expect = (shop.coupon && shop.coupon.staffPIN) || "";
+        if(pin && pin === expect){
+          try { localStorage.setItem(savedKey, "1"); } catch(e){}
+          start();
+        } else {
+          $("gate-err").textContent = "PINが違います";
+          $("pin").value = "";
+        }
+      });
+      $("pin").addEventListener("keydown", function(e){ if(e.key === "Enter") $("gate-btn").click(); });
+    })
+    .catch(function(e){
+      console.error(e);
+      $("shopname").textContent = "読み込みに失敗しました";
+    });
+})();
+</script>
+</body>
+</html>

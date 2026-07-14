@@ -136,7 +136,59 @@
 
 ---
 
-## 9. 結論
+## 9. ✅ Phase 0 実装済み（2026-07-14）
+
+### できたもの
+- **`crowd.html`** … 加盟店スタッフ用の切替ページ（スマホ想定）
+  - URL：`https://kakigawatei.github.io/nagaoka-tanken/crowd.html?shop=kakigawatei`
+  - **PIN**は `data/shops.json` の `coupon.staffPIN`（クーポン確認PINと同じ）。一度入れれば端末に記憶
+  - 🟢空いています ／ 🟡やや混雑 ／ 🔴混雑しています ／ ⚪️表示を消す の**大きな4ボタン**
+  - **ホーム画面に追加**しておけばワンタップで開ける
+- **`index.html`** … 混雑ランプの表示
+  - **お店ピン**の右上に色付きの丸（🔴は点滅）
+  - **お店モーダル**に「🟢 空いています ／ お店からの情報」の行
+  - **90秒ごとに自動更新**＋画面復帰時にも取り直す
+- **10分ルール**：`updatedAt` が10分以上古い／`level=off` のときは**何も表示しない**（`crowdOf()` が null を返す）
+
+### データ構造（Firestore）
+```
+crowd/{shopId}
+  level:     "green" | "yellow" | "red" | "off"
+  updatedAt: timestamp
+  source:    "manual" | "ai"     ← ラズパイのAI判定に差し替えても同じdocを書くだけ
+```
+
+### ⚠️ 残作業：Firestoreのセキュリティルールを追加する（masaさんの作業）
+**これを入れるまで動きません**（現状は書き込みも読み取りも 403）。
+Firebaseコンソール → Firestore Database → ルール に、**既存のルールに追記**：
+
+```
+match /crowd/{shopId} {
+  // 混雑レベルは個人情報ではないので公開読み取りでよい（アプリが認証なしで読む）
+  allow read: if true;
+
+  // 書き込みは「認証済み」かつ「決められた3フィールドと決められた値」のみ許可
+  allow write: if request.auth != null
+    && request.resource.data.keys().hasOnly(['level', 'updatedAt', 'source'])
+    && request.resource.data.level in ['green', 'yellow', 'red', 'off'];
+}
+```
+
+### 🔒 セキュリティの正直な話（Phase 0の限界）
+- 上のルールでも「**匿名認証を通せる人なら、誰でも任意の店のランプを書き換えられる**」状態です（PINはページ側のチェックなので、技術的には迂回可能）。
+- **1〜3店舗で検証する Phase 0 としては許容範囲**ですが、**店舗が増えたら必ず対策する**こと：
+  - 案A：店舗ごとの秘密キーを `shopKeys/{shopId}` に置き、ルールの `get()` で照合する
+  - 案B：Cloud Functions を挟んで書き込みを検証する（要Blazeプラン）
+- **`staffPIN` は現在 `shops.json` に平文で入っており、全店共通の "1234"**。**実店舗を増やす前に店舗ごとの値に変える**こと。
+
+### 次の一手：ラズパイ（Phase 1）
+`crowd/{shopId}` に `source:"ai"` で書くだけなので、**アプリ側の改修は不要**。
+ラズパイ側で：カメラ取得（RTSP/USB）→ 人物検出（YOLOv8n等）→ 人数÷満席人数 → 1〜5分おきに同じdocへPATCH。
+**手動ボタンの結果とAI判定を突き合わせて精度を測れる**（同じdocを見ればいい）。
+
+---
+
+## 10. 結論
 
 - **技術的には十分作れる。既存のFirebase構成にそのまま乗る。**
 - ただし **Phase 0（手動ボタン）を先にやるべき**。**AIは"面倒くささを消す自動化"であって、価値の source ではない。**
