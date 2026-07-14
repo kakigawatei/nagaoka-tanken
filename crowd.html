@@ -95,13 +95,20 @@
 
   /* PIN画面 */
   #gate{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+  .fld{ display:block; }
+  .fld span{ display:block; font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:5px; }
   #gate input{
-    width:100%; padding:16px; font-size:24px; text-align:center; letter-spacing:.4em;
+    width:100%; padding:15px; font-size:18px;
     border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--ink);
   }
   #gate button{
     width:100%; padding:16px; font-size:17px; font-weight:900; color:#fff;
     background:#26405e; border:none; border-radius:12px; cursor:pointer;
+  }
+  #gate button:disabled{ opacity:.55; }
+  .logout{
+    background:none; border:none; color:var(--ink-soft); font-size:12px;
+    text-decoration:underline; cursor:pointer; padding:4px;
   }
   .err{ color:var(--red); font-size:13px; font-weight:700; text-align:center; min-height:18px; }
   .note{ font-size:11.5px; line-height:1.7; color:var(--ink-soft); }
@@ -119,16 +126,23 @@
 
 <header>
   <div class="eyebrow">ながおか探検録 加盟店</div>
-  <h1>混雑ステータス</h1>
-  <div class="shopname" id="shopname">読み込み中…</div>
+  <h1>お店の混雑判定器</h1>
+  <div class="shopname" id="shopname">ログインしてください</div>
 </header>
 
-<!-- PINゲート -->
+<!-- ログイン（店舗ID＋パスワード） -->
 <div id="gate" hidden>
-  <p class="note">スタッフ用のPINコードを入力してください。<br>（クーポンの使用確認に使うPINと同じです）</p>
-  <input id="pin" type="tel" inputmode="numeric" maxlength="8" placeholder="････" autocomplete="off">
+  <p class="note">運営からお伝えした<b>店舗ID</b>と<b>パスワード</b>を入力してください。<br>一度ログインすると、次回からは自動で開きます。</p>
+  <label class="fld">
+    <span>店舗ID</span>
+    <input id="shopid" type="text" inputmode="latin" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="例：kakigawatei" autocomplete="username">
+  </label>
+  <label class="fld">
+    <span>パスワード</span>
+    <input id="pw" type="password" placeholder="••••••••" autocomplete="current-password">
+  </label>
   <div class="err" id="gate-err"></div>
-  <button id="gate-btn">開く</button>
+  <button id="gate-btn">ログイン</button>
 </div>
 
 <!-- メイン -->
@@ -218,16 +232,74 @@
     setTimeout(function(){ t.classList.remove("show"); }, 1800);
   }
 
-  /* ---------- Firebase REST（匿名認証 → Firestore） ---------- */
-  function auth(){
-    if(idToken) return Promise.resolve(idToken);
-    return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
+  /* ---------- 店舗ごとのログイン（Firebase Authentication のメール／パスワード） ----------
+   * 店舗IDから決まるメールアドレスでログインする：  kakigawatei → kakigawatei@shops.nagaoka-tanken.jp
+   * Firestoreのルール側で「自分の店のcrowdドキュメントしか書けない」ことを保証する：
+   *   request.auth.token.email == shopId + '@shops.nagaoka-tanken.jp'
+   * → 他店のランプを勝手に書き換えることが技術的に不可能になる（PIN方式の弱点を解消）。 */
+  var EMAIL_DOMAIN = "@shops.nagaoka-tanken.jp";
+  var LS_SHOP = "crowd_shop";
+  var LS_REFRESH = "crowd_refresh";
+
+  function emailOf(id){ return String(id).trim().toLowerCase() + EMAIL_DOMAIN; }
+
+  // 店舗ID＋パスワードでログイン（成功したら refreshToken を保存して次回から自動ログイン）
+  function signIn(id, pw){
+    return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ returnSecureToken: true })
+      body: JSON.stringify({ email: emailOf(id), password: pw, returnSecureToken: true })
     })
-    .then(function(r){ if(!r.ok) throw new Error("auth " + r.status); return r.json(); })
-    .then(function(j){ idToken = j.idToken; return idToken; });
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if(!res.ok){
+        var msg = (res.j && res.j.error && res.j.error.message) || "";
+        if(/INVALID_LOGIN_CREDENTIALS|EMAIL_NOT_FOUND|INVALID_PASSWORD/.test(msg)) throw new Error("BAD_CRED");
+        if(/TOO_MANY_ATTEMPTS/.test(msg)) throw new Error("TOO_MANY");
+        throw new Error(msg || "login failed");
+      }
+      idToken = res.j.idToken;
+      shopId = String(id).trim().toLowerCase();
+      try {
+        localStorage.setItem(LS_SHOP, shopId);
+        localStorage.setItem(LS_REFRESH, res.j.refreshToken);
+      } catch(e){}
+      return idToken;
+    });
+  }
+
+  // 保存済みのリフレッシュトークンで復帰（＝次回から自動ログイン）
+  function restore(){
+    var rt = null, sid = null;
+    try { rt = localStorage.getItem(LS_REFRESH); sid = localStorage.getItem(LS_SHOP); } catch(e){}
+    if(!rt || !sid) return Promise.resolve(false);
+    return fetch("https://securetoken.googleapis.com/v1/token?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(rt)
+    })
+    .then(function(r){ if(!r.ok) throw new Error("refresh " + r.status); return r.json(); })
+    .then(function(j){
+      idToken = j.id_token;
+      shopId = sid;
+      try { localStorage.setItem(LS_REFRESH, j.refresh_token); } catch(e){}
+      return true;
+    })
+    .catch(function(){ return false; });
+  }
+
+  function signOut(){
+    try { localStorage.removeItem(LS_REFRESH); localStorage.removeItem(LS_SHOP); } catch(e){}
+    location.reload();
+  }
+
+  // 書き込み時にトークンが切れていたら黙って更新して1回だけリトライする
+  function auth(){
+    if(idToken) return Promise.resolve(idToken);
+    return restore().then(function(ok){
+      if(!ok) throw new Error("NOT_SIGNED_IN");
+      return idToken;
+    });
   }
 
   function docUrl(){
@@ -251,22 +323,37 @@
       });
   }
 
-  function writeCrowd(level){
-    return auth().then(function(token){
-      var url = docUrl() + "?updateMask.fieldPaths=level&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=source";
-      return fetch(url, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-        body: JSON.stringify({ fields: {
-          level:     { stringValue: level },
-          updatedAt: { timestampValue: new Date().toISOString() },
-          source:    { stringValue: "manual" }
-        } })
-      });
-    }).then(function(r){
-      if(!r.ok) throw new Error("write " + r.status);
-      return true;
+  function patchCrowd(level, token){
+    var url = docUrl() + "?updateMask.fieldPaths=level&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=source";
+    return fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ fields: {
+        level:     { stringValue: level },
+        updatedAt: { timestampValue: new Date().toISOString() },
+        source:    { stringValue: "manual" }
+      } })
     });
+  }
+
+  function writeCrowd(level){
+    return auth()
+      .then(function(token){ return patchCrowd(level, token); })
+      .then(function(r){
+        if(r.status === 401 || r.status === 403){
+          // トークンの期限切れ → 更新して1回だけリトライ（店員を再ログインさせない）
+          idToken = null;
+          return restore().then(function(ok){
+            if(!ok) throw new Error("NOT_SIGNED_IN");
+            return patchCrowd(level, idToken);
+          });
+        }
+        return r;
+      })
+      .then(function(r){
+        if(!r.ok) throw new Error("write " + r.status);
+        return true;
+      });
   }
 
   /* ---------- 表示 ---------- */
@@ -391,42 +478,61 @@
     });
   });
 
-  // 店舗データ読み込み → PIN判定
+  // 店名の表示（shops.json にあれば店名を出す。無くてもログインは可能）
+  var SHOPS = [];
+  function showShopName(){
+    var s = SHOPS.filter(function(x){ return x.id === shopId; })[0];
+    var name = s ? s.name : shopId;
+    $("shopname").innerHTML = name + ' <button class="logout" id="logout">ログアウト</button>';
+    document.title = name + "｜お店の混雑判定器";
+    var lo = $("logout");
+    if(lo) lo.addEventListener("click", signOut);
+  }
+
+  function showGate(prefill){
+    $("gate").hidden = false;
+    $("shopname").textContent = "ログインしてください";
+    if(prefill) $("shopid").value = prefill;
+    $("gate-btn").addEventListener("click", doLogin);
+    $("pw").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
+    $("shopid").addEventListener("keydown", function(e){ if(e.key === "Enter") $("pw").focus(); });
+  }
+
+  function doLogin(){
+    var id = ($("shopid").value || "").trim();
+    var pw = $("pw").value || "";
+    if(!id || !pw){ $("gate-err").textContent = "店舗IDとパスワードを入力してください"; return; }
+    $("gate-btn").disabled = true;
+    $("gate-err").textContent = "";
+    signIn(id, pw)
+      .then(function(){
+        showShopName();
+        start();
+      })
+      .catch(function(e){
+        if(e.message === "BAD_CRED")      $("gate-err").textContent = "店舗IDまたはパスワードが違います";
+        else if(e.message === "TOO_MANY") $("gate-err").textContent = "試行回数が多すぎます。少し時間をおいてください";
+        else                              $("gate-err").textContent = "ログインできませんでした。電波を確認してください";
+        $("pw").value = "";
+      })
+      .then(function(){ $("gate-btn").disabled = false; });
+  }
+
+  // 起動：保存済みログインがあれば自動で開く。無ければログイン画面。
   fetch("data/shops.json")
     .then(function(r){ return r.json(); })
-    .then(function(data){
-      var shops = (data && data.shops) || [];
-      shop = shops.filter(function(s){ return s.id === shopId; })[0] || null;
-      if(!shop){
-        $("shopname").textContent = "お店が見つかりません";
-        document.getElementById("gate").hidden = false;
-        $("gate-err").textContent = "URLが正しくありません。運営にお問い合わせください。";
-        $("pin").disabled = true; $("gate-btn").disabled = true;
-        return;
-      }
-      $("shopname").textContent = shop.name;
-      document.title = shop.name + "｜混雑ステータス";
-
-      var savedKey = "crowd_ok_" + shopId;
-      if(localStorage.getItem(savedKey) === "1"){ start(); return; }   // 一度入れたら次回から省略
-
-      $("gate").hidden = false;
-      $("gate-btn").addEventListener("click", function(){
-        var pin = ($("pin").value || "").trim();
-        var expect = (shop.coupon && shop.coupon.staffPIN) || "";
-        if(pin && pin === expect){
-          try { localStorage.setItem(savedKey, "1"); } catch(e){}
-          start();
-        } else {
-          $("gate-err").textContent = "PINが違います";
-          $("pin").value = "";
-        }
-      });
-      $("pin").addEventListener("keydown", function(e){ if(e.key === "Enter") $("gate-btn").click(); });
+    .then(function(data){ SHOPS = (data && data.shops) || []; })
+    .catch(function(){ /* 店名が出ないだけ。ログインには影響しない */ })
+    .then(function(){
+      return restore();
     })
-    .catch(function(e){
-      console.error(e);
-      $("shopname").textContent = "読み込みに失敗しました";
+    .then(function(ok){
+      if(ok){
+        showShopName();
+        start();
+      } else {
+        showGate(shopId || "");   // ?shop=xxx が付いていれば店舗IDを埋めておく
+      }
     });
 })();
 </script>

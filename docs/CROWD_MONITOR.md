@@ -174,12 +174,43 @@ match /crowd/{shopId} {
 }
 ```
 
-### 🔒 セキュリティの正直な話（Phase 0の限界）
-- 上のルールでも「**匿名認証を通せる人なら、誰でも任意の店のランプを書き換えられる**」状態です（PINはページ側のチェックなので、技術的には迂回可能）。
-- **1〜3店舗で検証する Phase 0 としては許容範囲**ですが、**店舗が増えたら必ず対策する**こと：
-  - 案A：店舗ごとの秘密キーを `shopKeys/{shopId}` に置き、ルールの `get()` で照合する
-  - 案B：Cloud Functions を挟んで書き込みを検証する（要Blazeプラン）
-- **`staffPIN` は現在 `shops.json` に平文で入っており、全店共通の "1234"**。**実店舗を増やす前に店舗ごとの値に変える**こと。
+### 🔒 セキュリティ：**店舗ごとのログインに変更した（2026-07-14）**
+
+当初のPIN方式は「**匿名認証さえ通れば、誰でも他店のランプを書き換えられる**」欠陥があった（PINはページ側のチェックなので迂回可能）。
+→ **Firebase Authentication のメール／パスワードによる「店舗ごとのログイン」に変更**し、**Firestoreのルールで自分の店しか書けないことを保証**する。
+
+**しくみ**：店舗IDからメールアドレスを機械的に決める。
+```
+店舗ID: kakigawatei  →  kakigawatei@shops.nagaoka-tanken.jp
+```
+ルール側で「**ログインしているメール＝その店のメール**」を検証するので、**他店のドキュメントは物理的に書けない**。
+
+**crowd.html は1つのURLに集約**（店舗ごとのURLは不要）：
+`https://kakigawatei.github.io/nagaoka-tanken/crowd.html`
+→ **店舗ID＋パスワードでログイン** → 自動でその店のページになる。次回からは**自動ログイン**（リフレッシュトークンを保存）。
+
+### 🛠 新しい店舗を追加する手順（運営）
+1. **Firebaseコンソール → Authentication → Sign-in method → 「メール/パスワード」を有効化**（初回だけ）
+2. **Authentication → Users → ユーザーを追加**
+   - メール：`{店舗ID}@shops.nagaoka-tanken.jp`（例：`kakigawatei@shops.nagaoka-tanken.jp`）
+   - パスワード：その店に伝えるパスワード（**店ごとに違うものにする**）
+3. お店には「**店舗ID**」と「**パスワード**」だけを伝える（URLは全店共通）
+4. パスワードを忘れられたら、コンソールで再設定して伝え直す
+
+### Firestoreルール（crowd の部分を差し替える）
+```
+match /crowd/{shopId} {
+  allow read: if true;
+
+  // その店のアカウントでログインしている場合だけ、自分の店のドキュメントを書ける
+  allow write: if request.auth != null
+    && request.auth.token.email == shopId + '@shops.nagaoka-tanken.jp'
+    && request.resource.data.keys().hasOnly(['level', 'updatedAt', 'source'])
+    && request.resource.data.level in ['green', 'yellow', 'red', 'off'];
+}
+```
+
+> ※ `data/shops.json` の `coupon.staffPIN`（クーポン確認用）は**別物**。こちらは今も全店共通の "1234" なので、**実店舗を増やす前に店舗ごとの値に変える**こと。
 
 ### 次の一手：ラズパイ（Phase 1）
 `crowd/{shopId}` に `source:"ai"` で書くだけなので、**アプリ側の改修は不要**。
