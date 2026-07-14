@@ -3396,7 +3396,9 @@
     stage.onclick = function(ev){
       if(stage._ignoreClick) return;   // 直前のピンチ/パン操作はタップとして扱わない
       if(save.settings.mode !== "simulate") {
-        toast("設定画面で「シミュレーション」に切り替えるとタップで移動できます");
+        // 一般ユーザーには何も出さない（開発モード専用機能の存在を知らせない）。
+        // 開発モード中だけ、切り替え方を思い出せるようにヒントを出す。
+        if(isDevMode()) toast("設定画面で「シミュレーション」に切り替えるとタップで移動できます");
         return;
       }
       var rect = stage.getBoundingClientRect();
