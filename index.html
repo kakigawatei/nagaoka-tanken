@@ -279,6 +279,55 @@
   .crowd-text{ font-size:13px; font-weight:800; }
   .crowd-note{ font-size:10.5px; color:var(--ink-soft); margin-left:auto; }
 
+  /* ---------- お店リスト（近い順・混雑ランプ付き） ---------- */
+  #screen-shops{ overflow:hidden; padding-bottom:0; }
+  #screen-shops > .topbar, #screen-shops > .shops-head{ flex-shrink:0; }
+  .shops-head{ padding:8px 14px 10px; border-bottom:1px solid var(--line); }
+  .shops-legend{ display:flex; gap:12px; flex-wrap:wrap; }
+  .shops-legend span{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--ink-soft); font-weight:700; }
+  .shops-legend i{ display:inline-block; }
+  .shops-hint{ font-size:11px; color:var(--ink-soft); margin-top:6px; }
+  .shops-body{
+    flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+    padding:10px 14px calc(78px + var(--sab, 0px));
+  }
+  .shop-row{
+    display:flex; align-items:center; gap:11px;
+    background:var(--card-bg); border:2px solid #d8c497; border-radius:12px;
+    padding:11px 12px; margin-bottom:9px; cursor:pointer;
+  }
+  .shop-row:active{ transform:translateY(1px); }
+  .shop-row .avatar{
+    width:42px; height:42px; border-radius:12px; flex:none; position:relative;
+    background:var(--indigo); display:flex; align-items:center; justify-content:center;
+  }
+  .shop-row .avatar img{ width:22px; height:22px; filter:brightness(0) invert(1); }
+  /* Discordのオンライン表示のように、アイコンの右下にランプを重ねる */
+  .shop-row .avatar .lamp{
+    position:absolute; right:-3px; bottom:-3px;
+    width:14px; height:14px; border-radius:50%;
+    border:2.5px solid var(--card-bg);
+  }
+  .shop-row .avatar .lamp.green{ background:#2e9e5b; }
+  .shop-row .avatar .lamp.yellow{ background:#e0a91b; }
+  .shop-row .avatar .lamp.red{ background:#c0392b; }
+  .shop-row .avatar .lamp.gray{ background:#b3a68c; }
+  .shop-row .info{ flex:1; min-width:0; }
+  .shop-row .nm{ font-size:14px; font-weight:900; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .shop-row .meta{ font-size:11px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .shop-row .right{ text-align:right; flex:none; }
+  .shop-row .st{ font-size:11.5px; font-weight:900; }
+  .shop-row .st.green{ color:#2e9e5b; }
+  .shop-row .st.yellow{ color:#a97a06; }
+  .shop-row .st.red{ color:#c0392b; }
+  .shop-row .st.gray{ color:var(--ink-soft); font-weight:700; }
+  .shop-row .dist{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .shop-row .cpn{
+    display:inline-block; margin-top:4px; font-size:10px; font-weight:900;
+    background:var(--gold); color:#3a2a12; border-radius:99px; padding:1px 7px;
+  }
+  .shops-empty{ text-align:center; color:var(--ink-soft); font-size:13px; padding:40px 20px; line-height:1.8; }
+
   /* 現在地マーカー：自分のキャラクター（ミニ版）が「ここにいるよ」と立つ */
   .you-are-here{
     position:absolute; transform:translate(-50%,-100%); z-index:5;
@@ -1084,6 +1133,22 @@
     </div>
   </div>
 
+  <!-- 加盟店リスト（現在地から近い順・混雑ランプ付き） -->
+  <div class="screen" id="screen-shops">
+    <div class="topbar"><h1>お店</h1><div></div></div>
+    <div class="shops-head">
+      <div class="shops-legend">
+        <span><i class="crowd-lamp green"></i>空いている</span>
+        <span><i class="crowd-lamp yellow"></i>やや混雑</span>
+        <span><i class="crowd-lamp red"></i>混雑</span>
+      </div>
+      <div class="shops-hint" id="shops-hint">現在地から近い順に並んでいます</div>
+    </div>
+    <div class="shops-body">
+      <div id="shops-list"></div>
+    </div>
+  </div>
+
   <!-- SETTINGS -->
   <div class="screen" id="screen-settings">
     <div class="topbar"><h1>設定</h1><div></div></div>
@@ -1157,7 +1222,8 @@
     <button class="nav-btn active" data-screen="home"><img src="assets/ic_home.png">ホーム</button>
     <button class="nav-btn" data-screen="map"><img src="assets/ic_map.png">マップ</button>
     <button class="nav-btn" data-screen="book"><img src="assets/ic_book.png">図鑑</button>
-    <button class="nav-btn" data-screen="shop"><img src="assets/ic_shop.png">店</button>
+    <button class="nav-btn" data-screen="shops"><img src="assets/ic_shop.png">お店</button>
+    <button class="nav-btn" data-screen="shop"><img src="assets/coin.png">ショップ</button>
     <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png">設定</button>
   </div>
 
@@ -1326,6 +1392,67 @@
     return CROWD_LABEL[c.level] || null;
   }
 
+  /* ---------- お店リスト（現在地から近い順・混雑ランプ付き） ----------
+   * 「いまどこが空いてるか」を一覧で見るための画面。混雑ランプはお店が押した情報で、
+   * 10分以上更新がなければ crowdOf() が null を返す＝「情報なし（グレー）」として出す。 */
+  function fmtDist(m){
+    if(m == null) return "";
+    if(m < 1000) return Math.round(m) + "m";
+    return (m / 1000).toFixed(1) + "km";
+  }
+
+  function renderShopsList(){
+    var wrap = document.getElementById("shops-list");
+    var hint = document.getElementById("shops-hint");
+    if(!wrap) return;
+
+    var shops = (SHOP_DATA && SHOP_DATA.shops) ? SHOP_DATA.shops.slice() : [];
+    if(!shops.length){
+      wrap.innerHTML = '<div class="shops-empty">まだ加盟店がありません。<br>お楽しみに！</div>';
+      hint.textContent = "";
+      return;
+    }
+
+    // 現在地が取れていれば距離を出して近い順に、取れていなければ元の順で表示
+    var hasPos = !!currentPos;
+    shops.forEach(function(s){
+      s._dist = hasPos ? haversine(currentPos.lat, currentPos.lng, s.lat, s.lng) : null;
+    });
+    if(hasPos) shops.sort(function(a, b){ return a._dist - b._dist; });
+
+    hint.textContent = hasPos
+      ? "現在地から近い順に並んでいます"
+      : "現在地が取れないため、距離順に並べられません（位置情報を許可すると近い順になります）";
+
+    var html = "";
+    shops.forEach(function(s){
+      var crowd = crowdOf(s.id);
+      var cls   = crowd ? crowd.cls : "gray";
+      var label = crowd ? crowd.text : "情報なし";
+      html += '<div class="shop-row" data-shop="' + s.id + '">' +
+                '<div class="avatar"><img src="assets/ic_shop.png" alt=""><span class="lamp ' + cls + '"></span></div>' +
+                '<div class="info">' +
+                  '<div class="nm">' + s.name + '</div>' +
+                  '<div class="meta">' + (s.category || "") + '</div>' +
+                  (s.coupon ? '<span class="cpn">クーポンあり</span>' : '') +
+                '</div>' +
+                '<div class="right">' +
+                  '<div class="st ' + cls + '">' + label + '</div>' +
+                  (s._dist != null ? '<div class="dist">' + fmtDist(s._dist) + '</div>' : '') +
+                '</div>' +
+              '</div>';
+    });
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll(".shop-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var id = row.getAttribute("data-shop");
+        var shop = (SHOP_DATA.shops || []).filter(function(x){ return x.id === id; })[0];
+        if(shop) showShopModal(shop);   // タップで詳細（特典・クーポン・アクセス）
+      });
+    });
+  }
+
   function fetchCrowd(){
     if(!fbEnabled() || !SHOP_DATA || !SHOP_DATA.shops) return;
     if(typeof navigator !== "undefined" && navigator.onLine === false) return;
@@ -1346,6 +1473,7 @@
         });
         CROWD_STATE = next;
         if(currentScreen === "map") renderMap();      // ピンのランプを更新
+        if(currentScreen === "shops") renderShopsList();
         if(currentModalShop) renderShopModalBody();   // 開いているモーダルも更新
       })
       .catch(function(e){ console.warn("crowd fetch failed", e); });
@@ -3004,6 +3132,7 @@
     distances.sort(function(a,b){ return a.dist - b.dist; });
     lastDistances = distances;
     updateProximity();
+    if(currentScreen === "shops") renderShopsList();   // 移動に合わせて「近い順」を並べ直す
 
     var radarBonus = hasItem("radarBoost") ? RADAR_BONUS_M : 0;
     var inRange = null;
@@ -3064,6 +3193,7 @@
     if(name === "map") renderMap();
     if(name === "book") showBookSubtab(currentBookSubtab);
     if(name === "shop") showShopSubtab(currentShopSubtab);
+    if(name === "shops"){ renderShopsList(); fetchCrowd(); }   // 開くたびに最新の混雑状況を取り直す
     if(name === "settings") renderSettings();
     if(name === "home") renderHomeFull();
   }
