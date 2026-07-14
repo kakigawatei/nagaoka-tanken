@@ -7,8 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="混雑ステータス">
 <meta name="theme-color" content="#e3d3ab">
-<title>混雑ステータス切替｜ながおか探検録 加盟店</title>
-<link rel="apple-touch-icon" href="assets/apple_touch_icon.png">
+<title>お店の混雑判定器｜ながおか探検録 加盟店</title>
+<link rel="apple-touch-icon" href="assets/crowd_icon_180.png">
+<link rel="icon" href="assets/crowd_icon_192.png">
 <style>
   :root{
     --paper:#f1e6c9; --paper-dark:#e3d3ab; --ink:#4a3423; --ink-soft:#7a5c3e;
@@ -31,6 +32,34 @@
   .shopname{ font-size:14px; color:var(--ink-soft); margin-top:4px; }
 
   main{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; padding:18px 0; }
+
+  /* ---------- カウントダウンタイマー（10分で表示が消える） ---------- */
+  .timer{
+    background:#fff; border:3px solid var(--line); border-radius:16px;
+    padding:14px 16px 16px; text-align:center;
+  }
+  .timer .cap{ font-size:12px; font-weight:700; color:var(--ink-soft); }
+  .timer .clock{
+    font-size:64px; font-weight:900; line-height:1.05; letter-spacing:.02em;
+    font-variant-numeric:tabular-nums; margin:2px 0 4px;
+    color:var(--ink);
+  }
+  .timer .sub{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+  .bar{ height:8px; border-radius:99px; background:var(--paper-dark); overflow:hidden; margin-top:10px; }
+  .bar i{ display:block; height:100%; width:100%; border-radius:99px; background:var(--green); transition:width 1s linear, background .3s; }
+
+  /* 残りわずか */
+  .timer.warn{ border-color:var(--yellow); }
+  .timer.warn .clock{ color:#a97a06; }
+  .timer.warn .bar i{ background:var(--yellow); }
+  .timer.danger{ border-color:var(--red); animation:tick 1s ease-in-out infinite; }
+  .timer.danger .clock{ color:var(--red); }
+  .timer.danger .bar i{ background:var(--red); }
+  @keyframes tick{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.02); } }
+
+  /* 期限切れ／未設定 */
+  .timer.expired{ background:#f5efe0; border-color:var(--off); border-style:dashed; }
+  .timer.expired .clock{ color:var(--off); font-size:40px; }
 
   /* 現在の状態 */
   .now{
@@ -104,6 +133,13 @@
 
 <!-- メイン -->
 <main id="main" hidden>
+  <div class="timer" id="timer">
+    <div class="cap" id="timer-cap">アプリに表示が残る時間</div>
+    <div class="clock" id="clock">--:--</div>
+    <div class="sub" id="timer-sub">ボタンを押すと10分に戻ります</div>
+    <div class="bar"><i id="bar"></i></div>
+  </div>
+
   <div class="now">
     <div class="label">いまアプリに表示されている状態</div>
     <div class="state">
@@ -135,9 +171,10 @@
 
 <footer>
   <p class="note">
-    ※ ボタンを押すとすぐアプリに反映されます。<br>
-    ※ <b>10分以上更新がないと自動で表示が消えます</b>（古い情報でお客様に迷惑をかけないため）。こまめに押していただく必要はありません。忙しいときは無理をしないでください。<br>
-    ※ このページはホーム画面に追加しておくと、次回からワンタップで開けます。
+    ※ ボタンを押すとすぐアプリに反映され、<b>10分のカウントダウン</b>が始まります。<br>
+    ※ <b>10分たつと自動で表示が消えます</b>（古い情報でお客様に迷惑をかけないため）。押し直すと10分に戻ります。<br>
+    ※ 消えてもお店に不利益はありません。<b>忙しいときは無理に押さなくて大丈夫です。</b><br>
+    ※ このページを<b>ホーム画面に追加</b>しておくと、次回からワンタップで開けます。
   </p>
 </footer>
 
@@ -243,7 +280,57 @@
     return hhmm + " に更新";
   }
 
+  /* ---------- カウントダウン ----------
+   * currentState.updatedAt から「あと何秒でアプリの表示が消えるか」を毎秒描く。
+   * ボタンを押す＝updatedAtが今になる＝10分にリセット。 */
+  var currentState = null;   // { level, updatedAt }
+
+  function tick(){
+    var t = $("timer"), clock = $("clock"), sub = $("timer-sub"),
+        cap = $("timer-cap"), bar = $("bar");
+
+    // 未設定 or 消灯中：カウントダウンしない
+    if(!currentState || !currentState.updatedAt || currentState.level === "off"){
+      t.className = "timer expired";
+      cap.textContent = "アプリに表示が残る時間";
+      clock.textContent = "表示なし";
+      sub.textContent = "ボタンを押すと、10分間アプリに表示されます";
+      bar.style.width = "0%";
+      return;
+    }
+
+    var left = STALE_MS - (Date.now() - new Date(currentState.updatedAt).getTime());
+
+    if(left <= 0){   // 期限切れ＝アプリ側からも消えている
+      t.className = "timer expired";
+      cap.textContent = "アプリの表示は消えました";
+      clock.textContent = "0:00";
+      sub.textContent = "もう一度ボタンを押してください";
+      bar.style.width = "0%";
+      return;
+    }
+
+    var sec = Math.ceil(left / 1000);
+    var mm = Math.floor(sec / 60), ss = sec % 60;
+    clock.textContent = mm + ":" + (ss < 10 ? "0" + ss : ss);
+    bar.style.width = (left / STALE_MS * 100) + "%";
+    cap.textContent = "アプリに表示が残る時間";
+
+    if(left <= 60 * 1000){          // 残り1分
+      t.className = "timer danger";
+      sub.textContent = "まもなく消えます！押し直してください";
+    } else if(left <= 3 * 60 * 1000){ // 残り3分
+      t.className = "timer warn";
+      sub.textContent = "そろそろ押し直してください";
+    } else {
+      t.className = "timer";
+      sub.textContent = "押し直すと10分に戻ります";
+    }
+  }
+
   function paint(state){
+    currentState = state;
+
     var level = state ? state.level : "off";
     var stale = false;
     if(state && state.updatedAt){
@@ -261,6 +348,8 @@
     Array.prototype.forEach.call(document.querySelectorAll("button.lv"), function(b){
       b.classList.toggle("sel", b.getAttribute("data-level") === effective);
     });
+
+    tick();
   }
 
   function refresh(){
@@ -277,7 +366,10 @@
     $("gate").hidden = true;
     $("main").hidden = false;
     refresh();
-    setInterval(refresh, 60000);   // 1分ごとに表示を同期（他の端末で押された場合も追従）
+    setInterval(refresh, 60000);   // 1分ごとにサーバーと同期（他の端末で押された場合も追従）
+    setInterval(tick, 1000);       // 毎秒カウントダウン（常に動いている）
+    // 画面を閉じて戻ってきたときは即ズレを直す
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden) refresh(); });
   }
 
   Array.prototype.forEach.call(document.querySelectorAll("button.lv"), function(b){
@@ -286,7 +378,9 @@
       b.disabled = true;
       writeCrowd(level)
         .then(function(){
-          toast(level === "off" ? "表示を消しました" : "「" + LEVELS[level].text + "」にしました");
+          toast(level === "off" ? "表示を消しました" : "「" + LEVELS[level].text + "」にしました（10分）");
+          // 押した瞬間にタイマーを10分へリセット（サーバー同期を待たずに反映させる）
+          paint({ level: level, updatedAt: new Date().toISOString() });
           refresh();
         })
         .catch(function(e){
