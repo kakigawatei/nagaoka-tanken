@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ながおか探検録 加盟店のご案内</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --paper:#f1e6c9;
+    --paper-dark:#e3d3ab;
+    --ink:#4a3423;
+    --ink-soft:#7a5c3e;
+    --gold:#c9a227;
+    --navy:#26405e;
+    --line:#cbb98a;
+  }
+  body{
+    font-family:"Yu Gothic UI","Yu Gothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+    color:var(--ink);
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .page{
+    position:relative;
+    width:210mm; height:297mm;
+    background:var(--paper);
+    padding:16mm 15mm 14mm;
+    overflow:hidden;
+    page-break-after:always;
+    display:flex; flex-direction:column;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  /* ---------- shared bits ---------- */
+  .eyebrow{
+    font-size:9.5pt; letter-spacing:.18em; color:var(--ink-soft); font-weight:700;
+  }
+  h2.sec{
+    font-size:17pt; font-weight:800; color:var(--ink);
+    padding-bottom:2.5mm; margin-bottom:4mm;
+    border-bottom:2px solid var(--line);
+    display:flex; align-items:center; gap:3mm;
+  }
+  h2.sec::before{
+    content:""; width:4mm; height:4mm; border-radius:50%;
+    background:var(--gold); flex:none;
+  }
+  .lead{ font-size:10.5pt; line-height:1.85; color:var(--ink-soft); }
+  .foot{
+    margin-top:auto; padding-top:4mm; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:8pt; color:var(--ink-soft);
+  }
+
+  /* ---------- p1 cover ---------- */
+  .cover{ padding:0; }
+  .cover-top{
+    background:var(--navy); color:#f6efdc;
+    padding:22mm 15mm 16mm; text-align:center;
+    position:relative;
+  }
+  .cover-top::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:2.5mm;
+    background:linear-gradient(90deg,var(--gold),#e8c65a,var(--gold));
+  }
+  .cover-icon{
+    width:30mm; height:30mm; border-radius:7mm; display:block; margin:0 auto 6mm;
+    box-shadow:0 3mm 8mm rgba(0,0,0,.28);
+  }
+  .cover-top .eyebrow{ color:#d8c9a4; }
+  .cover-title{
+    font-size:27pt; font-weight:900; letter-spacing:.04em; margin:3mm 0 2mm;
+  }
+  .cover-sub{ font-size:12pt; color:#e5d9b8; letter-spacing:.05em; }
+  .cover-body{ padding:12mm 15mm 0; flex:1; display:flex; flex-direction:column; }
+  .catch{
+    font-size:16pt; font-weight:800; line-height:1.7; text-align:center;
+    margin-bottom:7mm;
+  }
+  .catch em{ font-style:normal; color:#a5801a; border-bottom:2px solid var(--gold); padding-bottom:1px; }
+  .cover-lead{ font-size:10.5pt; line-height:2; text-align:center; color:var(--ink-soft); margin-bottom:9mm; }
+
+  .three{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; margin-bottom:9mm; }
+  .three .box{
+    background:#fff; border:1.5px solid var(--line); border-radius:4mm;
+    padding:6mm 4mm; text-align:center;
+  }
+  .three .box img{ width:14mm; height:14mm; object-fit:contain; margin-bottom:3mm; }
+  .three .box b{ display:block; font-size:11pt; margin-bottom:2mm; }
+  .three .box p{ font-size:8.5pt; line-height:1.65; color:var(--ink-soft); }
+
+  .factbar{
+    display:flex; justify-content:space-around; align-items:center;
+    background:var(--paper-dark); border-radius:3mm; padding:5mm 3mm;
+  }
+  .fact{ text-align:center; }
+  .fact .n{ font-size:16pt; font-weight:900; color:var(--navy); }
+  .fact .l{ font-size:8pt; color:var(--ink-soft); margin-top:1mm; }
+  .campaign{
+    margin-top:5mm; background:#b1452f; color:#fff; border-radius:3mm;
+    padding:4mm 5mm; display:flex; align-items:center; gap:4mm;
+  }
+  .campaign > b{
+    flex:none; font-size:9pt; background:#fff; color:#b1452f;
+    border-radius:99px; padding:1mm 4mm;
+  }
+  .campaign span{ font-size:10pt; line-height:1.5; }
+  .campaign span b{ font-size:11.5pt; }
+  .cover-foot{
+    margin-top:auto; background:var(--paper-dark); border-top:1px solid var(--line);
+    padding:5mm 15mm; font-size:8.5pt; color:var(--ink-soft);
+    display:flex; justify-content:space-between;
+  }
+
+  /* ---------- p2 how it works ---------- */
+  .flow{ display:flex; gap:0; margin:6mm 0 8mm; }
+  .step{
+    flex:1; text-align:center; position:relative; padding:0 2mm;
+  }
+  .step:not(:last-child)::after{
+    content:"▶"; position:absolute; right:-2mm; top:9mm;
+    font-size:8pt; color:var(--gold);
+  }
+  .step .circ{
+    width:15mm; height:15mm; border-radius:50%; margin:0 auto 3mm;
+    background:var(--navy); color:#fff; font-size:13pt; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step b{ display:block; font-size:9.5pt; margin-bottom:1.5mm; }
+  .step p{ font-size:8pt; line-height:1.6; color:var(--ink-soft); }
+
+  .split{ display:grid; grid-template-columns:1fr 1fr; gap:6mm; margin-bottom:7mm; }
+  .panel{
+    background:#fff; border:1.5px solid var(--line); border-radius:4mm; padding:6mm;
+  }
+  .panel h3{
+    font-size:11pt; margin-bottom:3.5mm; color:var(--navy);
+    display:flex; align-items:center; gap:2mm;
+  }
+  .panel ul{ list-style:none; }
+  .panel li{
+    font-size:9pt; line-height:1.7; padding-left:5mm; position:relative; margin-bottom:2.5mm;
+    color:var(--ink-soft);
+  }
+  .panel li::before{
+    content:"✓"; position:absolute; left:0; top:0; color:var(--gold); font-weight:900;
+  }
+  .quote{
+    background:var(--paper-dark); border-left:3mm solid var(--gold);
+    border-radius:0 3mm 3mm 0; padding:5mm 6mm; font-size:9.5pt; line-height:1.85;
+  }
+  .quote b{ color:var(--navy); }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:2.5mm; margin-top:4mm; }
+  .chip{
+    background:#fff; border:1.5px solid var(--line); border-radius:99px;
+    padding:2mm 5mm; font-size:9pt; font-weight:700; color:var(--ink-soft);
+  }
+
+  /* plan picker guide (p3) */
+  .pick{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; margin-top:6mm; }
+  .pick div{
+    background:#fff; border:1.5px solid var(--line); border-radius:3mm;
+    padding:4mm; font-size:8.5pt; line-height:1.6; color:var(--ink-soft);
+  }
+  .pick div b{ display:block; color:var(--navy); font-size:9.5pt; margin-bottom:1.5mm; }
+
+  /* ---------- p3 pricing ---------- */
+  .tax-note{
+    display:inline-block; background:var(--navy); color:#fff;
+    font-size:9pt; font-weight:700; border-radius:99px; padding:1.5mm 5mm; margin-bottom:4mm;
+  }
+  .plans{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; margin-bottom:4mm; }
+  .plan{
+    background:#fff; border:1.5px solid var(--line); border-radius:4mm;
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .plan.rec{ border:2.5px solid var(--gold); box-shadow:0 2mm 5mm rgba(201,162,39,.18); }
+  /* all three heads share the same height so the price rows line up */
+  .plan-head{
+    background:var(--paper-dark); padding:7mm 3mm 3.5mm; text-align:center; position:relative;
+  }
+  .plan.rec .plan-head{ background:var(--gold); }
+  .plan.rec .plan-head .pname{ color:#3a2a12; }
+  .ribbon{
+    position:absolute; top:0; left:0; right:0;
+    background:var(--navy); color:#fff; font-size:7.5pt; font-weight:700;
+    padding:1mm; letter-spacing:.1em;
+  }
+  .pname{ font-size:12.5pt; font-weight:900; color:var(--ink); }
+  .plan-price{ padding:4mm 3mm; text-align:center; border-bottom:1px dashed var(--line); }
+  .plan-price .amt{ font-size:22pt; font-weight:900; color:var(--navy); letter-spacing:-.01em; }
+  .plan-price .yen{ font-size:11pt; font-weight:700; }
+  .plan-price .per{ font-size:9pt; color:var(--ink-soft); margin-top:1mm; }
+  .plan-body{ padding:4mm 4mm; flex:1; }
+  .plan-body ul{ list-style:none; }
+  .plan-body li{
+    font-size:8.5pt; line-height:1.55; margin-bottom:2.2mm; padding-left:4.5mm; position:relative;
+    color:var(--ink-soft);
+  }
+  .plan-body li::before{ content:"●"; position:absolute; left:0; top:0; font-size:6pt; color:var(--gold); }
+  .plan-body li b{ color:var(--ink); }
+  .ast{ color:#b1452f; font-weight:800; }
+  .plan-notes{
+    font-size:8pt; line-height:1.6; color:var(--ink-soft); margin:0 0 3mm;
+  }
+  .plan-notes b{ color:#b1452f; }
+
+  .init{
+    background:#fff; border:1.5px dashed var(--ink-soft); border-radius:4mm;
+    padding:4mm 5mm; margin-bottom:3mm;
+  }
+  .init-top{ display:flex; align-items:baseline; gap:4mm; margin-bottom:3mm; }
+  .init .ttl{ font-size:10.5pt; font-weight:800; flex:none; }
+  .init .amt{ font-size:13pt; font-weight:900; color:var(--navy); flex:none; }
+  .init .note{ font-size:8pt; color:var(--ink-soft); }
+  .tiers{ display:grid; grid-template-columns:repeat(4,1fr); gap:3mm; }
+  .tier{
+    border:1.5px solid var(--line); border-radius:3mm; padding:2.5mm 2mm; text-align:center;
+    background:var(--paper);
+  }
+  .tier.hot{ background:#b1452f; border-color:#b1452f; }
+  .tier .rank{ font-size:8pt; font-weight:800; color:var(--ink-soft); margin-bottom:1.5mm; }
+  .tier.hot .rank{ color:#f7dcd5; }
+  .tier .off{ font-size:9.5pt; font-weight:900; color:#b1452f; margin-bottom:1mm; }
+  .tier.hot .off{ color:#fff; }
+  .tier .val{ font-size:11pt; font-weight:900; color:var(--navy); }
+  .tier.hot .val{ color:#fff; font-size:12pt; }
+  .tier .was{ font-size:7.5pt; color:var(--ink-soft); text-decoration:line-through; }
+  .tier.hot .was{ color:#f0c4ba; }
+
+  .paybox{ background:var(--paper-dark); border-radius:4mm; padding:4.5mm 5mm; }
+  .paybox h3{ font-size:11pt; margin-bottom:3mm; color:var(--navy); }
+  .paylist{ display:grid; grid-template-columns:repeat(2,1fr); gap:2mm 6mm; }
+  .paylist div{ font-size:9pt; line-height:1.6; padding-left:5mm; position:relative; color:var(--ink-soft); }
+  .paylist div::before{ content:"✓"; position:absolute; left:0; color:var(--gold); font-weight:900; }
+  .pay2{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+  .paycard{ background:#fff; border:1.5px solid var(--line); border-radius:3mm; padding:4mm; }
+  .paycard > b{ display:block; font-size:10pt; color:var(--navy); margin-bottom:2mm; }
+  .paycard p b{ color:var(--ink); }
+  .paycard p{ font-size:8.5pt; line-height:1.65; color:var(--ink-soft); }
+  .paynote{ font-size:8pt; line-height:1.7; color:var(--ink-soft); margin-top:3.5mm; }
+  .paynote b{ color:var(--ink); }
+
+  /* ---------- p4 flow + faq ---------- */
+  .steps2{ margin-bottom:6mm; }
+  .s2{
+    display:flex; gap:4mm; align-items:flex-start; padding:3mm 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .s2:last-child{ border-bottom:none; }
+  .s2 .num{
+    flex:none; width:8mm; height:8mm; border-radius:50%;
+    background:var(--navy); color:#fff; font-size:9pt; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .s2 .txt b{ font-size:10pt; display:block; margin-bottom:1mm; }
+  .s2 .txt p{ font-size:8.5pt; line-height:1.6; color:var(--ink-soft); }
+  .s2 .tag{
+    margin-left:auto; flex:none; font-size:7.5pt; font-weight:700;
+    background:var(--paper-dark); color:var(--ink-soft);
+    border-radius:99px; padding:1mm 3mm; white-space:nowrap;
+  }
+  .s2 .tag.free{ background:var(--gold); color:#3a2a12; }
+
+  .faq{ display:grid; grid-template-columns:1fr 1fr; gap:3mm 6mm; margin-bottom:5mm; }
+  .qa .q{ font-size:9pt; font-weight:800; margin-bottom:1.5mm; }
+  .qa .q::before{ content:"Q. "; color:var(--gold); }
+  .qa .a{ font-size:8.5pt; line-height:1.65; color:var(--ink-soft); }
+  .qa .a::before{ content:"A. "; font-weight:800; color:var(--navy); }
+
+  .cta{
+    background:var(--navy); color:#fff; border-radius:5mm;
+    padding:6mm; display:flex; gap:6mm; align-items:center;
+  }
+  .cta .qr{ width:30mm; height:30mm; border-radius:2mm; background:#fff; padding:1.5mm; flex:none; }
+  .cta-txt{ flex:1; }
+  .cta-txt b{ display:block; font-size:13pt; font-weight:900; margin-bottom:2mm; }
+  .cta-txt p{ font-size:9pt; line-height:1.7; color:#dccfae; }
+  .cta-txt .url{ font-size:9.5pt; color:#fff; font-weight:700; margin-top:2mm; word-break:break-all; }
+  .cta-txt .mail{ font-size:9pt; color:#fff; margin-top:1.5mm; }
+
+  .legal{
+    margin-top:5mm; font-size:7.5pt; line-height:1.7; color:var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== P1 : COVER ===================== -->
+<section class="page cover">
+  <div class="cover-top">
+    <img class="cover-icon" src="../../assets/app_icon_1024.png" alt="">
+    <div class="eyebrow">加盟店のご案内 ／ 2026</div>
+    <div class="cover-title">ながおか探検録</div>
+    <div class="cover-sub">まちを歩く楽しさを、お店の集客に。</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="catch">
+      長岡のまちを歩いて宝を探すゲームに、<br>
+      あなたのお店を<em>「探検先」</em>として載せませんか。
+    </div>
+
+    <p class="cover-lead">
+      「ながおか探検録」は、実際にまちを歩いてスポットを巡り、<br>
+      お宝カードを集めるスマホゲームです（iOS／ブラウザ・無料）。<br>
+      加盟店になると地図にお店のピンが表示され、遊びに来た探検者が<br>
+      そのままご来店 —— ゲームの回遊が、そのまま送客になります。
+    </p>
+
+    <div class="three">
+      <div class="box">
+        <img src="../../assets/compass.png" alt="">
+        <b>地図に載る</b>
+        <p>ゲームの地図にお店のピンとお店ページを掲載。歩いている人の目に留まります。</p>
+      </div>
+      <div class="box">
+        <img src="../../assets/chest_open.png" alt="">
+        <b>特典で呼ぶ</b>
+        <p>「ドリンク1杯サービス」等のクーポンを設定。来店の“きっかけ”をつくります。</p>
+      </div>
+      <div class="box">
+        <img src="../../assets/coin.png" alt="">
+        <b>手間はゼロ</b>
+        <p>ピンもカードも運営が制作。お店は写真を送るだけ。あとはお任せください。</p>
+      </div>
+    </div>
+
+    <div class="factbar">
+      <div class="fact"><div class="n">8地区</div><div class="l">長岡・寺泊・栃尾ほか</div></div>
+      <div class="fact"><div class="n">40スポット</div><div class="l">実在の名所・史跡</div></div>
+      <div class="fact"><div class="n">iOS ＋ Web</div><div class="l">App Store 配信中・無料</div></div>
+      <div class="fact"><div class="n">月額3,000円〜</div><div class="l">税込・最低3か月から</div></div>
+    </div>
+
+    <div class="campaign">
+      <b>先行加盟店キャンペーン</b>
+      <span>先着<b>10店舗</b>は<b>初期登録料 5,000円 → 無料</b>（以降も50店舗目まで割引あり）</span>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <span>ながおか探検録製作委員会</span>
+    <span>kakigawatei.github.io/nagaoka-tanken/</span>
+  </div>
+</section>
+
+<!-- ===================== P2 : HOW IT WORKS ===================== -->
+<section class="page">
+  <div class="eyebrow">01 ／ しくみ</div>
+  <h2 class="sec">探検者がお店に来るまで</h2>
+
+  <div class="flow">
+    <div class="step">
+      <div class="circ">1</div>
+      <b>まちを歩く</b>
+      <p>プレイヤーはGPSで実際に現地へ。スポットを巡ってお宝カードを集めます。</p>
+    </div>
+    <div class="step">
+      <div class="circ">2</div>
+      <b>お店を見つける</b>
+      <p>地図に表示された加盟店のピンをタップ。写真・紹介文・特典が表示されます。</p>
+    </div>
+    <div class="step">
+      <div class="circ">3</div>
+      <b>クーポンを持って来店</b>
+      <p>お店の近くでクーポンを獲得。そのまま店頭へ足を運びます。</p>
+    </div>
+    <div class="step">
+      <div class="circ">4</div>
+      <b>店頭で利用</b>
+      <p>スタッフが画面を確認し、専用PINで「使用済み」に。特典を提供します。</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <h3>お店にとってのメリット</h3>
+      <ul>
+        <li>まちを<b>歩いている人</b>＝いま近くにいる人に届く広告</li>
+        <li><b>リピートが生まれる仕組み</b>：お店のカードは<b>3回通うと豪華版に昇格</b>（スタンダード以上）。“もう一度行く理由”がゲーム側にある</li>
+        <li>特典は<b>お店が決められる</b>（一杯サービス・割引・限定品など）</li>
+        <li>ピン・お店カードは<b>運営がゲーム調に制作</b>。写真はスマホ撮影でOK</li>
+        <li>チラシと違い、<b>掲載後もいつでも内容を変更</b>できる</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>お店にお願いすること</h3>
+      <ul>
+        <li>申請フォームの入力（<b>5〜10分・無料</b>）</li>
+        <li>外観写真1〜2枚＋名物の写真（<b>スマホでOK</b>）</li>
+        <li>特典の内容を決める（例：ソフトドリンク1杯サービス）</li>
+        <li>ご来店時、画面を見せられたら<b>特典を提供</b>していただく</li>
+        <li>月額料金のお支払い（クレジットカード・自動）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote">
+    <b>「三方よし」の仕組みです。</b><br>
+    探検者は<b>お得</b>にまちを楽しみ、お店は<b>集客</b>ができ、まちは<b>回遊</b>が生まれる。<br>
+    ながおか探検録は、ゲームの楽しさを長岡のまちの経済に還元することを目指しています。
+  </div>
+
+  <div style="margin-top:8mm">
+    <div class="eyebrow" style="margin-bottom:3mm">こんなお店に向いています</div>
+    <div class="chips">
+      <span class="chip">飲食店・食堂</span>
+      <span class="chip">カフェ・喫茶</span>
+      <span class="chip">居酒屋・バー</span>
+      <span class="chip">ベーカリー・スイーツ</span>
+      <span class="chip">小売・物販</span>
+      <span class="chip">美容・サロン</span>
+      <span class="chip">体験・レジャー</span>
+      <span class="chip">宿泊</span>
+    </div>
+    <p style="font-size:8.5pt; line-height:1.7; color:var(--ink-soft); margin-top:4mm">
+      ※ 業種は問いません。まちなかに実店舗があり、探検者をお迎えいただけるお店であればご相談いただけます。
+    </p>
+  </div>
+
+  <div class="foot">
+    <span>ながおか探検録｜加盟店のご案内</span>
+    <span>2</span>
+  </div>
+</section>
+
+<!-- ===================== P3 : PRICING ===================== -->
+<section class="page">
+  <div class="eyebrow">02 ／ 料金プラン</div>
+  <h2 class="sec">掲載プランと料金</h2>
+
+  <div class="tax-note">表示価格はすべて税込です</div>
+
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-head"><div class="pname">ライト</div></div>
+      <div class="plan-price">
+        <div><span class="amt">3,000</span><span class="yen">円</span></div>
+        <div class="per">／ 月（税込）</div>
+      </div>
+      <div class="plan-body">
+        <ul>
+          <li>地図に<b>お店ピンを掲載</b></li>
+          <li><b>お店ページ</b>（基本情報・写真・紹介文）</li>
+          <li><b>クーポン1種</b>（来店特典）を設定できる</li>
+          <li>掲載内容・特典の変更に対応</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="plan rec">
+      <div class="plan-head">
+        <div class="ribbon">おすすめ</div>
+        <div class="pname">スタンダード</div>
+      </div>
+      <div class="plan-price">
+        <div><span class="amt">6,000</span><span class="yen">円</span></div>
+        <div class="per">／ 月（税込）</div>
+      </div>
+      <div class="plan-body">
+        <ul>
+          <li><b>ライトの内容すべて</b></li>
+          <li>お店の<b>オリジナル図鑑カード</b>を制作（お店紹介入り）</li>
+          <li>探検者が<b>3回ご来店すると豪華版カードに昇格</b>＝リピートのごほうび</li>
+          <li>来店回数に応じて<b>★1〜★3</b>が付く</li>
+          <li>「<b>今日の得するお店</b>」枠の候補に入る</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="plan">
+      <div class="plan-head"><div class="pname">プレミアム</div></div>
+      <div class="plan-price">
+        <div><span class="amt">12,000</span><span class="yen">円</span></div>
+        <div class="per">／ 月（税込）</div>
+      </div>
+      <div class="plan-body">
+        <ul>
+          <li><b>スタンダードの内容すべて</b></li>
+          <li><b>お店独自のオリジナルイベント</b>をご相談のうえ企画・実装（期間限定イベント）<span class="ast">※</span></li>
+          <li><b>クーポンを複数</b>設定できる</li>
+          <li><b>特別仕様の豪華カード</b>（金枠・限定演出／イベント限定カード）</li>
+          <li><b>スポンサーとして表記</b>（イベントタイトル・クレジットにお店の名前を掲出）</li>
+          <li><b>AI活用のご相談・導入サポート</b>を無料でおまけ<span class="ast">※</span></li>
+          <li>一覧での<b>上位表示</b>＋<b>簡易レポート</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p class="plan-notes">
+    <b>※</b> オリジナルイベントは、お店へのヒアリングをもとに企画し、アプリのアップデートに合わせて実装・公開します（ご相談から公開まではお時間をいただきます）。
+    <b>※</b> AI活用サポートは、AIの導入・業務での使い方のご相談に運営がお応えするものです（プレミアム加盟店へのおまけのサービスです）。
+  </p>
+
+  <div class="init">
+    <div class="init-top">
+      <div class="ttl">初期登録料</div>
+      <div class="amt">5,000円</div>
+      <div class="note">
+        初回のみ（税込）。お店のピン・図鑑カードの制作、地図上の位置設定、掲載データの初期登録に充当します。<br>
+        <b style="color:#b1452f">いま、先行加盟店キャンペーンで割引中👇（加盟いただいた順に適用）</b>
+      </div>
+    </div>
+    <div class="tiers">
+      <div class="tier hot">
+        <div class="rank">先着 1〜10店舗目</div>
+        <div class="off">100%OFF</div>
+        <div class="val">無料</div>
+        <div class="was">5,000円</div>
+      </div>
+      <div class="tier">
+        <div class="rank">11〜30店舗目</div>
+        <div class="off">50%OFF</div>
+        <div class="val">2,500円</div>
+        <div class="was">5,000円</div>
+      </div>
+      <div class="tier">
+        <div class="rank">31〜50店舗目</div>
+        <div class="off">30%OFF</div>
+        <div class="val">3,500円</div>
+        <div class="was">5,000円</div>
+      </div>
+      <div class="tier">
+        <div class="rank">51店舗目以降</div>
+        <div class="off">通常価格</div>
+        <div class="val">5,000円</div>
+        <div class="was" style="text-decoration:none">&nbsp;</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>ながおか探検録｜加盟店のご案内</span>
+    <span>3</span>
+  </div>
+</section>
+
+<!-- ===================== P4 : PAYMENT + FLOW ===================== -->
+<section class="page">
+  <div class="eyebrow">03 ／ お支払い</div>
+  <h2 class="sec">お支払い方法</h2>
+
+  <div class="paybox">
+    <h3>お支払い方法 — カード払い / 銀行振込 どちらでもOK</h3>
+    <div class="pay2">
+      <div class="paycard">
+        <b>① クレジットカード</b>
+        <p>毎月自動でお支払い。振込に行く手間も、請求書の処理も不要です。領収書は毎月自動でメールに届きます。（決済代行：Stripe）</p>
+      </div>
+      <div class="paycard">
+        <b>② 銀行振込</b>
+        <p><b>3か月分をまとめて前払い</b>いただきます。<b>12か月分の一括なら1か月分サービス</b>（11か月分の料金で12か月掲載）。請求書をお送りしますので、期日までにお振込ください。振込手数料はご負担をお願いします。</p>
+      </div>
+    </div>
+    <p class="paynote">
+      <b>例）スタンダードの場合</b>：3か月一括＝18,000円／<b>12か月一括＝66,000円（1か月分＝6,000円お得）</b>（いずれも税込・初期登録料は別）<br>
+      ※ 最低利用期間は3か月です（4か月目以降はいつでも解約可）。解約は次回更新日の前までにメールでお申し出ください。プラン変更はいつでも可能です。
+    </p>
+  </div>
+
+  <div class="eyebrow" style="margin-top:9mm">04 ／ お申し込み</div>
+  <h2 class="sec">掲載までの流れ</h2>
+
+  <div class="steps2">
+    <div class="s2">
+      <div class="num">1</div>
+      <div class="txt"><b>申請フォームを送信する</b><p>お店の情報・写真・ご希望の特典をご記入ください（5〜10分）。この時点では費用は一切かかりません。</p></div>
+      <div class="tag free">無料</div>
+    </div>
+    <div class="s2">
+      <div class="num">2</div>
+      <div class="txt"><b>運営が内容を確認</b><p>掲載内容・特典の内容を確認し、担当よりメールでご連絡します。</p></div>
+      <div class="tag">2〜3日</div>
+    </div>
+    <div class="s2">
+      <div class="num">3</div>
+      <div class="txt"><b>お支払い（カード または 銀行振込）</b><p>プランと料金をご確認のうえ、カードの方はご案内メールのお支払いリンクから登録。振込の方は請求書をお送りしますので期日までにお振込ください。ここで契約成立となります。</p></div>
+      <div class="tag">カード／振込</div>
+    </div>
+    <div class="s2">
+      <div class="num">4</div>
+      <div class="txt"><b>運営がピン・お店カードを制作</b><p>いただいた写真をもとに、ゲームの世界観に合わせた専用のピンとカードを制作します。</p></div>
+      <div class="tag">お任せ</div>
+    </div>
+    <div class="s2">
+      <div class="num">5</div>
+      <div class="txt"><b>掲載スタート</b><p>入金確認後、通常7営業日以内に掲載。スタッフ用のクーポン確認PINをお送りします。</p></div>
+      <div class="tag">7営業日以内</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>ながおか探検録｜加盟店のご案内</span>
+    <span>4</span>
+  </div>
+</section>
+
+<!-- ===================== P5 : FAQ / CTA ===================== -->
+<section class="page">
+  <div class="eyebrow">05 ／ よくあるご質問</div>
+  <h2 class="sec">Q &amp; A</h2>
+
+  <div class="faq">
+    <div class="qa">
+      <div class="q">最低契約期間はありますか？</div>
+      <div class="a"><b>3か月</b>です。カードやピンの制作に時間をいただくため、まず3か月お試しください。4か月目以降はいつでも解約できます（解約はその課金期間の満了をもって終了）。</div>
+    </div>
+    <div class="qa">
+      <div class="q">写真はプロに頼む必要がありますか？</div>
+      <div class="a">不要です。スマホ撮影の写真で結構です。運営がゲーム調のピン・カードに仕上げます。</div>
+    </div>
+    <div class="qa">
+      <div class="q">特典（クーポン）の内容は決まっていますか？</div>
+      <div class="a">お店側で自由に決められます。「ドリンク1杯サービス」「お会計10%OFF」「初回限定おまけ」など。利用条件も設定できます。</div>
+    </div>
+    <div class="qa">
+      <div class="q">クーポンの不正利用が心配です。</div>
+      <div class="a">利用時はスタッフ様が専用PINを入力して確定する方式です。スクリーンショットだけでは使えません。</div>
+    </div>
+    <div class="qa">
+      <div class="q">効果はどう分かりますか？</div>
+      <div class="a">プレミアムではクーポンの発行数・利用数を定期的にご報告します。</div>
+    </div>
+    <div class="qa">
+      <div class="q">掲載内容を変えたくなったら？</div>
+      <div class="a">メールでご連絡ください。営業時間・写真・特典の変更に対応します（追加費用なし）。</div>
+    </div>
+    <div class="qa">
+      <div class="q">クレジットカードを使いたくないのですが。</div>
+      <div class="a"><b>銀行振込に対応しています。</b>3か月分をまとめて前払いいただく形です（12か月一括なら1か月分サービス）。請求書をお送りしますので、お申し込み時に「振込希望」とお伝えください。</div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <img class="qr" src="qr_form.png" alt="">
+    <div class="cta-txt">
+      <b>まずは申請フォームから（無料）</b>
+      <p>QRコードを読み取るか、URLからアクセスしてください。<br>ご質問だけでも、お気軽にメールでご連絡ください。</p>
+      <div class="url">https://tally.so/r/GxyO8L</div>
+      <div class="mail">お問い合わせ：aburalabo@gmail.com</div>
+    </div>
+  </div>
+
+  <div class="legal">
+    ながおか探検録製作委員会（運営統括責任者：岡雅俊）／ サービスサイト：https://kakigawatei.github.io/nagaoka-tanken/<br>
+    ※表示価格はすべて税込です。※所在地・電話番号は、ご請求があったとき遅滞なく開示いたします。
+    ※本サービスは送客の機会を提供するものであり、来店数・売上等の効果を保証するものではありません。
+    ※ご契約にあたっては別途「加盟店利用規約」および「特定商取引法に基づく表記」をご確認ください。
+  </div>
+
+  <div class="foot">
+    <span>ながおか探検録｜加盟店のご案内</span>
+    <span>4</span>
+  </div>
+</section>
+
+</body>
+</html>

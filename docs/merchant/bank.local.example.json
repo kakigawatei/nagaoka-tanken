@@ -1,0 +1,8 @@
+{
+  "_comment": "これはサンプルです。このファイルを bank.local.json という名前でコピーして、実際の口座情報を書いてください。bank.local.json は .gitignore 済みなので GitHub には上がりません（このリポジトリは公開です）。",
+  "bankName": "○○銀行（銀行コード：0000）",
+  "branch": "○○支店（000）",
+  "accountType": "普通",
+  "accountNo": "0000000",
+  "accountHolder": "ヤゴウ（カナ）"
+}

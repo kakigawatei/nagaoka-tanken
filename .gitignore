@@ -6,3 +6,7 @@ www/
 ios/
 android/
 .DS_Store
+
+# 加盟店請求書：口座情報（絶対にコミットしない。公開リポジトリのため）
+docs/merchant/bank.local.json
+docs/merchant/out/
