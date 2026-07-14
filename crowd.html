@@ -132,10 +132,10 @@
 
 <!-- ログイン（店舗ID＋パスワード） -->
 <div id="gate" hidden>
-  <p class="note">運営からお伝えした<b>店舗ID</b>と<b>パスワード</b>を入力してください。<br>一度ログインすると、次回からは自動で開きます。</p>
+  <p class="note">運営からお伝えした<b>メールアドレス</b>と<b>パスワード</b>を入力してください。<br>一度ログインすると、次回からは自動で開きます。</p>
   <label class="fld">
-    <span>店舗ID</span>
-    <input id="shopid" type="text" inputmode="latin" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="例：kakigawatei" autocomplete="username">
+    <span>メールアドレス</span>
+    <input id="shopid" type="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="例：shop@example.com" autocomplete="username">
   </label>
   <label class="fld">
     <span>パスワード</span>
@@ -237,34 +237,52 @@
    * Firestoreのルール側で「自分の店のcrowdドキュメントしか書けない」ことを保証する：
    *   request.auth.token.email == shopId + '@shops.nagaoka-tanken.jp'
    * → 他店のランプを勝手に書き換えることが技術的に不可能になる（PIN方式の弱点を解消）。 */
-  var EMAIL_DOMAIN = "@shops.nagaoka-tanken.jp";
   var LS_SHOP = "crowd_shop";
   var LS_REFRESH = "crowd_refresh";
+  var uid = null;
 
-  function emailOf(id){ return String(id).trim().toLowerCase() + EMAIL_DOMAIN; }
+  /* ログイン後、「このアカウントはどの店か」を Firestore の shopOwners/{uid} から引く。
+   * → メールアドレスは何でもよい（gmailでも、お店の実在アドレスでもOK）。
+   *   お店とアカウントの紐付けは、メールの文字列ではなく uid で行う。 */
+  function resolveShop(){
+    return fetch("https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId +
+                 "/databases/(default)/documents/shopOwners/" + encodeURIComponent(uid), {
+      headers: { "Authorization": "Bearer " + idToken }
+    })
+    .then(function(r){
+      if(r.status === 404 || r.status === 403) throw new Error("NO_SHOP");
+      if(!r.ok) throw new Error("resolve " + r.status);
+      return r.json();
+    })
+    .then(function(j){
+      var sid = j && j.fields && j.fields.shopId && j.fields.shopId.stringValue;
+      if(!sid) throw new Error("NO_SHOP");
+      shopId = sid;
+      try { localStorage.setItem(LS_SHOP, shopId); } catch(e){}
+      return shopId;
+    });
+  }
 
-  // 店舗ID＋パスワードでログイン（成功したら refreshToken を保存して次回から自動ログイン）
-  function signIn(id, pw){
+  // メールアドレス＋パスワードでログイン（成功したら refreshToken を保存して次回から自動ログイン）
+  function signIn(email, pw){
     return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + encodeURIComponent(FIREBASE_CONFIG.apiKey), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: emailOf(id), password: pw, returnSecureToken: true })
+      body: JSON.stringify({ email: String(email).trim(), password: pw, returnSecureToken: true })
     })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
       if(!res.ok){
         var msg = (res.j && res.j.error && res.j.error.message) || "";
-        if(/INVALID_LOGIN_CREDENTIALS|EMAIL_NOT_FOUND|INVALID_PASSWORD/.test(msg)) throw new Error("BAD_CRED");
+        if(/PASSWORD_LOGIN_DISABLED|OPERATION_NOT_ALLOWED/.test(msg)) throw new Error("DISABLED");
         if(/TOO_MANY_ATTEMPTS/.test(msg)) throw new Error("TOO_MANY");
+        if(/INVALID_LOGIN_CREDENTIALS|EMAIL_NOT_FOUND|INVALID_PASSWORD/.test(msg)) throw new Error("BAD_CRED");
         throw new Error(msg || "login failed");
       }
       idToken = res.j.idToken;
-      shopId = String(id).trim().toLowerCase();
-      try {
-        localStorage.setItem(LS_SHOP, shopId);
-        localStorage.setItem(LS_REFRESH, res.j.refreshToken);
-      } catch(e){}
-      return idToken;
+      uid = res.j.localId;
+      try { localStorage.setItem(LS_REFRESH, res.j.refreshToken); } catch(e){}
+      return resolveShop();
     });
   }
 
@@ -281,6 +299,7 @@
     .then(function(r){ if(!r.ok) throw new Error("refresh " + r.status); return r.json(); })
     .then(function(j){
       idToken = j.id_token;
+      uid = j.user_id;
       shopId = sid;
       try { localStorage.setItem(LS_REFRESH, j.refresh_token); } catch(e){}
       return true;
@@ -499,19 +518,21 @@
   }
 
   function doLogin(){
-    var id = ($("shopid").value || "").trim();
+    var email = ($("shopid").value || "").trim();
     var pw = $("pw").value || "";
-    if(!id || !pw){ $("gate-err").textContent = "店舗IDとパスワードを入力してください"; return; }
+    if(!email || !pw){ $("gate-err").textContent = "メールアドレスとパスワードを入力してください"; return; }
     $("gate-btn").disabled = true;
     $("gate-err").textContent = "";
-    signIn(id, pw)
+    signIn(email, pw)
       .then(function(){
         showShopName();
         start();
       })
       .catch(function(e){
-        if(e.message === "BAD_CRED")      $("gate-err").textContent = "店舗IDまたはパスワードが違います";
+        if(e.message === "BAD_CRED")      $("gate-err").textContent = "メールアドレスまたはパスワードが違います";
         else if(e.message === "TOO_MANY") $("gate-err").textContent = "試行回数が多すぎます。少し時間をおいてください";
+        else if(e.message === "NO_SHOP")  $("gate-err").textContent = "このアカウントにお店が紐付いていません。運営にご連絡ください";
+        else if(e.message === "DISABLED") $("gate-err").textContent = "ログイン機能が有効になっていません（運営にご連絡ください）";
         else                              $("gate-err").textContent = "ログインできませんでした。電波を確認してください";
         $("pw").value = "";
       })
@@ -531,7 +552,7 @@
         showShopName();
         start();
       } else {
-        showGate(shopId || "");   // ?shop=xxx が付いていれば店舗IDを埋めておく
+        showGate("");
       }
     });
 })();

@@ -179,32 +179,49 @@ match /crowd/{shopId} {
 当初のPIN方式は「**匿名認証さえ通れば、誰でも他店のランプを書き換えられる**」欠陥があった（PINはページ側のチェックなので迂回可能）。
 → **Firebase Authentication のメール／パスワードによる「店舗ごとのログイン」に変更**し、**Firestoreのルールで自分の店しか書けないことを保証**する。
 
-**しくみ**：店舗IDからメールアドレスを機械的に決める。
+**しくみ（2026-07-14 改訂：メールアドレスは自由にした）**
+アカウントと店舗の紐付けを**メールの文字列ではなく `uid`** で行う。
+→ **どんなメールアドレスでも使える**（Gmail、お店の実在アドレス、何でもよい）。
+
 ```
-店舗ID: kakigawatei  →  kakigawatei@shops.nagaoka-tanken.jp
+Firestore: shopOwners/{uid} = { shopId: "kakigawatei" }
+                ↑ Authenticationのユーザー UID
 ```
-ルール側で「**ログインしているメール＝その店のメール**」を検証するので、**他店のドキュメントは物理的に書けない**。
+- **crowd.html**：メールアドレス＋パスワードでログイン → `shopOwners/{自分のuid}` を読んで**自分の店を特定**
+- **Firestoreルール**：`shopOwners/{uid}.shopId` と書き込み先の `{shopId}` が**一致するときだけ**書ける
+→ **他店のランプは物理的に書けない**
 
 **crowd.html は1つのURLに集約**（店舗ごとのURLは不要）：
 `https://kakigawatei.github.io/nagaoka-tanken/crowd.html`
-→ **店舗ID＋パスワードでログイン** → 自動でその店のページになる。次回からは**自動ログイン**（リフレッシュトークンを保存）。
+→ ログインすると自動でその店のページになる。次回からは**自動ログイン**（リフレッシュトークンを保存）。
+
+**実在のメールを使う利点**：お店が**自分でパスワード再設定**できる（Firebaseからリセットメールが届く）。架空ドメインだとメールが届かないので、運営が毎回コンソールで再設定することになる。
 
 ### 🛠 新しい店舗を追加する手順（運営）
-1. **Firebaseコンソール → Authentication → Sign-in method → 「メール/パスワード」を有効化**（初回だけ）
-2. **Authentication → Users → ユーザーを追加**
-   - メール：`{店舗ID}@shops.nagaoka-tanken.jp`（例：`kakigawatei@shops.nagaoka-tanken.jp`）
-   - パスワード：その店に伝えるパスワード（**店ごとに違うものにする**）
-3. お店には「**店舗ID**」と「**パスワード**」だけを伝える（URLは全店共通）
-4. パスワードを忘れられたら、コンソールで再設定して伝え直す
+1. **Firebaseコンソール → Authentication → ログイン方法 → 「メール/パスワード」を有効化**（初回だけ）
+2. **Authentication → ユーザー → 「ユーザーを追加」**
+   - メール：**そのお店の実在アドレス**（例：`info@kakigawatei.com`）／テストなら自分のGmailでもOK
+   - パスワード：その店に伝えるもの（**店ごとに違うものにする**）
+   - 作成後、**そのユーザーの UID をコピー**
+3. **Firestore → データ → コレクション `shopOwners` を作成**
+   - **ドキュメントID＝コピーしたUID**
+   - フィールド：`shopId`（文字列）＝ `data/shops.json` の店舗ID（例：`kakigawatei`）
+4. お店には「**メールアドレス**」「**パスワード**」「**URL**（全店共通）」を伝える
 
 ### Firestoreルール（crowd の部分を差し替える）
 ```
+match /shopOwners/{uid} {
+  // 自分の紐付けだけ読める（他人のは読めない）。書き込みはコンソールからのみ。
+  allow read: if request.auth != null && request.auth.uid == uid;
+  allow write: if false;
+}
+
 match /crowd/{shopId} {
   allow read: if true;
 
-  // その店のアカウントでログインしている場合だけ、自分の店のドキュメントを書ける
+  // 自分に紐付いた店のドキュメントだけ書ける
   allow write: if request.auth != null
-    && request.auth.token.email == shopId + '@shops.nagaoka-tanken.jp'
+    && get(/databases/$(database)/documents/shopOwners/$(request.auth.uid)).data.shopId == shopId
     && request.resource.data.keys().hasOnly(['level', 'updatedAt', 'source'])
     && request.resource.data.level in ['green', 'yellow', 'red', 'off'];
 }
