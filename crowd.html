@@ -38,13 +38,19 @@
     background:#fff; border:3px solid var(--line); border-radius:16px;
     padding:14px 16px 16px; text-align:center;
   }
-  .timer .cap{ font-size:12px; font-weight:700; color:var(--ink-soft); }
+  /* 文言や桁数が変わっても枠の高さが変わらないよう、各行の高さを固定する
+     （「表示を消す」を押したときに画面がカクッとリサイズされるのを防ぐ） */
+  .timer .cap{ font-size:12px; font-weight:700; color:var(--ink-soft); height:17px; }
   .timer .clock{
-    font-size:64px; font-weight:900; line-height:1.05; letter-spacing:.02em;
-    font-variant-numeric:tabular-nums; margin:2px 0 4px;
-    color:var(--ink);
+    font-size:64px; font-weight:900; letter-spacing:.02em;
+    font-variant-numeric:tabular-nums; color:var(--ink);
+    height:70px; display:flex; align-items:center; justify-content:center;
   }
-  .timer .sub{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+  .timer .sub{
+    font-size:12.5px; font-weight:700; color:var(--ink-soft);
+    height:36px; display:flex; align-items:center; justify-content:center;
+    line-height:1.35; text-align:center;
+  }
   .bar{ height:8px; border-radius:99px; background:var(--paper-dark); overflow:hidden; margin-top:10px; }
   .bar i{ display:block; height:100%; width:100%; border-radius:99px; background:var(--green); transition:width 1s linear, background .3s; }
 
@@ -59,7 +65,7 @@
 
   /* 期限切れ／未設定 */
   .timer.expired{ background:#f5efe0; border-color:var(--off); border-style:dashed; }
-  .timer.expired .clock{ color:var(--off); font-size:40px; }
+  .timer.expired .clock{ color:var(--off); font-size:34px; }   /* 高さは .clock で固定済み */
 
   /* 現在の状態 */
   .now{
@@ -94,9 +100,8 @@
   /* ---------- 選択状態（ラジオボタンのように、白丸の中が濃く塗りつぶされる） ---------- */
   button.lv .dot{
     width:24px; height:24px; border-radius:50%; flex:none; position:relative;
-    background:rgba(255,255,255,.35);
-    box-shadow: inset 0 0 0 3px #fff;      /* 未選択：白い輪っかだけ（中は空） */
-    transition: background .18s, box-shadow .18s;
+    background:#fff;            /* 未選択：まっさらな白丸（ボタンの色が透けないよう不透明） */
+    transition: background .18s;
   }
   button.lv .dot::after{                    /* 選択：中を濃い色で塗りつぶす */
     content:""; position:absolute; inset:5px; border-radius:50%;
@@ -104,8 +109,7 @@
     transform:scale(0); opacity:0;
     transition: transform .2s cubic-bezier(.34,1.56,.64,1), opacity .15s;
   }
-  button.lv.sel .dot{ background:#fff; box-shadow: inset 0 0 0 3px #fff; }
-  button.lv.sel .dot::after{ transform:scale(1); opacity:1; }
+  button.lv.sel .dot::after{ transform:scale(1); opacity:1; }   /* 選択：白丸の中が黒丸で埋まる */
 
   button.lv.sel{
     outline:4px solid var(--ink); outline-offset:2px;
