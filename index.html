@@ -3202,12 +3202,18 @@
   // 例）idle + isoroku 着用中 → assets/guide_idle_isoroku.png／衣装なし → assets/guide_idle.png
   // アバター専用の衣装イラストが存在する組み合わせ（idleのみ）。新しく届いたらここに追加。
   var AVATAR_COSTUMES = { isoroku: ["boy2", "girl1", "girl2"], tsuginosuke: ["boy2", "girl1", "girl2"], torasaburo: ["boy2", "girl1", "girl2"], kanetsugu: ["boy2", "girl1", "girl2"] };
+  // 全ポーズ（idle/happy/point）でアバター別の衣装絵を用意している組み合わせ。アルパカ着ぐるみはキャラメル版を3ポーズ揃えた。
+  var AVATAR_COSTUMES_ALLMOOD = { alpaca: ["boy2", "girl1", "girl2"] };
 
   function guideAssetPath(mood){
     // 衣装（コスプレ）が最優先。未装備なら選択中のアバター（boy1=既存＝サフィックス無し）。
     var costume = save.costumes && save.costumes.equipped;
     if(costume){
       var av = save.avatar || "boy1";
+      // 全ポーズぶんアバター別絵がある衣装（アルパカ）は mood を問わずその子専用版を使う
+      if(av !== "boy1" && AVATAR_COSTUMES_ALLMOOD[costume] && AVATAR_COSTUMES_ALLMOOD[costume].indexOf(av) !== -1){
+        return "assets/guide_" + mood + "_" + av + "_" + costume + ".png";
+      }
       // アバター専用の衣装絵があればそれを（idleのみ用意。happy/pointは画面上ほぼ出ないため既存版で代用）
       if(av !== "boy1" && mood === "idle" && AVATAR_COSTUMES[costume] && AVATAR_COSTUMES[costume].indexOf(av) !== -1){
         return "assets/guide_idle_" + av + "_" + costume + ".png";

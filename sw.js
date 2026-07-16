@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v73";
+var CACHE_VERSION = "v74";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -70,10 +70,19 @@ var PRECACHE_URLS = [
   "assets/guide_idle_boy2_kanetsugu.png",
   "assets/guide_idle_girl1_kanetsugu.png",
   "assets/guide_idle_girl2_kanetsugu.png",
-  // 山古志アルパカ着ぐるみ（2牧場コンプで解放）
+  // 山古志アルパカ着ぐるみ（2牧場コンプで解放）／boy1＝共通クリーム版、boy2・girl1・girl2＝アバター別キャラメル版（全ポーズ）
   "assets/guide_idle_alpaca.png",
   "assets/guide_happy_alpaca.png",
   "assets/guide_point_alpaca.png",
+  "assets/guide_idle_boy2_alpaca.png",
+  "assets/guide_happy_boy2_alpaca.png",
+  "assets/guide_point_boy2_alpaca.png",
+  "assets/guide_idle_girl1_alpaca.png",
+  "assets/guide_happy_girl1_alpaca.png",
+  "assets/guide_point_girl1_alpaca.png",
+  "assets/guide_idle_girl2_alpaca.png",
+  "assets/guide_happy_girl2_alpaca.png",
+  "assets/guide_point_girl2_alpaca.png",
   "assets/fw_kiku.png",
   "assets/fw_botan.png",
   "assets/fw_yanagi.png",
