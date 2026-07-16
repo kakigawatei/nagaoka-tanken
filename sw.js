@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v66";
+var CACHE_VERSION = "v67";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
