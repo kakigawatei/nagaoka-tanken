@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v71";
+var CACHE_VERSION = "v72";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -70,6 +70,10 @@ var PRECACHE_URLS = [
   "assets/guide_idle_boy2_kanetsugu.png",
   "assets/guide_idle_girl1_kanetsugu.png",
   "assets/guide_idle_girl2_kanetsugu.png",
+  // 山古志アルパカ着ぐるみ（2牧場コンプで解放）
+  "assets/guide_idle_alpaca.png",
+  "assets/guide_happy_alpaca.png",
+  "assets/guide_point_alpaca.png",
   "assets/fw_kiku.png",
   "assets/fw_botan.png",
   "assets/fw_yanagi.png",
@@ -101,6 +105,8 @@ var PRECACHE_URLS = [
   "assets/card_kogomo_deluxe.png",
   "assets/card_tanesuhara.png",
   "assets/card_tanesuhara_deluxe.png",
+  "assets/card_yubu.png",
+  "assets/card_yubu_deluxe.png",
   "assets/card_koryu.png",
   "assets/card_koryu_deluxe.png",
   "assets/card_hakusan.png",
