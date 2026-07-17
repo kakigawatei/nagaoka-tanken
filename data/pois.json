@@ -722,25 +722,6 @@
       }
     },
     {
-      "id": "tochio_aburage",
-      "districtId": "tochio",
-      "name": "栃尾のあぶらげ",
-      "lat": 37.4756,
-      "lng": 138.9912,
-      "radius": 60,
-      "rarity": "uncommon",
-      "coinsFirst": 160,
-      "coinsRepeat": 10,
-      "xp": 38,
-      "category": "名物・グルメ",
-      "treasure": {
-        "title": "栃尾のあぶらげ",
-        "era": "名物ジャンボ油揚げ",
-        "blurb": "長さ20cm超・厚さ3cmほどの、栃尾を代表するジャンボな油揚げ（あぶらげ）。江戸時代の馬市のにぎわいや秋葉神社参詣の土産が起源とも伝わる。揚げたてを店先で味わえる、栃尾のソウルフード。",
-        "image": "card_tochio_aburage.png"
-      }
-    },
-    {
       "id": "gangi_tochio",
       "districtId": "tochio",
       "name": "栃尾 雁木のまち並み",
