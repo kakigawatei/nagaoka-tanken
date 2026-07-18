@@ -2889,7 +2889,8 @@
     { id:"kiku_murasaki", name:"紫菊",     img:"assets/fw_kiku_murasaki.png", blurb:"紫に染まる、あでやかな大輪。" },
     { id:"shakudama", name:"正三尺玉",     img:"assets/fw_shakudama.png", blurb:"長岡名物の特大花火。" },
     { id:"phoenix",   name:"フェニックス", img:"assets/fw_phoenix.png",   blurb:"復興を願う、不死鳥の花火。" },
-    { id:"heart",     name:"ハート",       img:"assets/fw_heart.png",     blurb:"夜空に咲く、恋のかたち。型物花火。" }
+    { id:"heart",     name:"ハート",       img:"assets/fw_heart.png",     blurb:"夜空に咲く、恋のかたち。型物花火。" },
+    { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" }
   ];
   var FW_ORDER = FIREWORKS.map(function(f){ return f.id; });
   function fwById(id){ for(var i=0;i<FIREWORKS.length;i++){ if(FIREWORKS[i].id === id) return FIREWORKS[i]; } return null; }
@@ -2927,7 +2928,7 @@
   // 大玉（スターマイン/正三尺玉/フェニックス）は位置固定・画面いっぱいに打ち上げる
   var AR_BIG = { shakudama:true, phoenix:true };
   var AR_ROT_MAX = Math.PI;              // 打ち上げごとのランダム回転（±180°＝完全自由）。形が毎回違う向きに
-  var AR_NOROT = { yanagi:true };        // 向きが決まってる花火（柳＝下垂れ）は回転させない
+  var AR_NOROT = { yanagi:true, smile:true }; // 向きが決まってる花火（柳＝下垂れ／スマイル＝上下向き固定）は回転させない
   var AR_TINT  = { heart:true };         // 型物花火は打ち上げごとに色をランダムに変える（スマイル等を随時追加）
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
