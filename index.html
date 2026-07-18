@@ -937,7 +937,7 @@
   #ar-view{ position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; }
   /* video は canvas への描画ソース。非表示だが drawImage が黒くならないよう完全display:noneにはしない */
   #ar-video{ position:absolute; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; }
-  #ar-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
+  #ar-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
   .ar-topbar{
     position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center;
     justify-content:space-between; gap:10px;
@@ -2880,7 +2880,7 @@
     { id:"kiku",      name:"菊",           img:"assets/fw_kiku.png",      blurb:"まん丸に開く定番の大輪。" },
     { id:"botan",     name:"牡丹",         img:"assets/fw_botan.png",     blurb:"光の玉が密に詰まった彩りの花火。" },
     { id:"yanagi",    name:"柳",           img:"assets/fw_yanagi.png",    blurb:"金の光が枝垂れる、しだれ柳。" },
-    { id:"starmine",  name:"スターマイン", img:"assets/fw_starmine.png",  blurb:"小花火が連なる賑やかな一斉打ち。" },
+    { id:"kiku_murasaki", name:"紫菊",     img:"assets/fw_kiku_murasaki.png", blurb:"紫に染まる、あでやかな大輪。" },
     { id:"shakudama", name:"正三尺玉",     img:"assets/fw_shakudama.png", blurb:"長岡名物の特大花火。" },
     { id:"phoenix",   name:"フェニックス", img:"assets/fw_phoenix.png",   blurb:"復興を願う、不死鳥の花火。" }
   ];
@@ -2918,13 +2918,16 @@
   /* ---------- ARカメラ花火（canvas合成：背景[カメラ/写真/夜空]→花火→キャラ、撮影・自動モード対応） ---------- */
   var arStream = null, arFacing = "environment", arSelFw = null;
   // 大玉（スターマイン/正三尺玉/フェニックス）は位置固定・画面いっぱいに打ち上げる
-  var AR_BIG = { starmine:true, shakudama:true, phoenix:true };
+  var AR_BIG = { shakudama:true, phoenix:true };
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
   var arFwImg = {};             // id -> Image（開花画像キャッシュ）
   var arBgMode = "camera";      // "camera" | "photo"
   var arBgImg = null;           // 背景写真
-  var arCharOn = false, arCharImg = null;
+  var arCharOn = false, arCharImgs = {}, arCharMood = "happy";
+  var arCharCX = 0, arCharCY = 0, arCharScale = 1;
+  var AR_MOODS = ["happy", "idle", "point"];
+  var arPtrs = {}, arDrag = null;   // タッチ操作（キャラのドラッグ/ピンチ、背景タップ＝花火）
   var arAuto = false, arAutoTimer = 0;
   var arVideoReady = false;
   var arShotBlob = null, arShotUrl = null;
@@ -3051,11 +3054,28 @@
     g.addColorStop(0,"#070b18"); g.addColorStop(1,"#161f36");
     ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
   }
+  function arCharImg(){
+    var m = arCharMood;
+    if(!arCharImgs[m]){ var im = new Image(); im.src = guideAssetPath(m); arCharImgs[m] = im; }
+    return arCharImgs[m];
+  }
+  function arCharBox(){
+    var H = arCanvas.clientHeight;
+    var im = arCharImgs[arCharMood];
+    var ratio = (im && im.naturalWidth) ? im.naturalWidth/im.naturalHeight : 0.666;
+    var ch = H*0.44*arCharScale, cw = ch*ratio;
+    return { x:arCharCX-cw/2, y:arCharCY-ch/2, w:cw, h:ch };
+  }
+  function arPointInChar(px, py){
+    if(!arCharOn) return false;
+    var b = arCharBox();
+    return px>=b.x && px<=b.x+b.w && py>=b.y && py<=b.y+b.h;
+  }
   function arDrawCharacter(ctx, W, H){
-    if(!arCharOn || !arCharImg || !arCharImg.complete || !arCharImg.naturalWidth) return;
-    var ratio = arCharImg.naturalWidth / arCharImg.naturalHeight;
-    var ch = H*0.44, cw = ch*ratio;
-    ctx.drawImage(arCharImg, W*0.5 - cw/2, H - ch - H*0.02, cw, ch);
+    if(!arCharOn) return;
+    var im = arCharImg(); if(!im.complete || !im.naturalWidth) return;
+    var b = arCharBox();
+    ctx.drawImage(im, b.x, b.y, b.w, b.h);
   }
   function arDrawWatermark(ctx, W, H){
     var s = Math.max(12, Math.round(Math.min(W,H)*0.032));
@@ -3086,8 +3106,15 @@
   function arSetChar(on){
     arCharOn = on;
     var btn = document.getElementById("ar-char"); if(btn) btn.classList.toggle("on", on);
-    if(on && (!arCharImg || arCharImg.dataset_mood !== "1")){
-      arCharImg = new Image(); arCharImg.dataset_mood = "1"; arCharImg.src = guideAssetPath("happy");
+    var hint = document.getElementById("ar-hint");
+    if(on){
+      arCharMood = "happy"; arCharScale = 1;
+      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, ch = H*0.44;
+      arCharCX = W*0.5; arCharCY = H - ch/2 - H*0.03;
+      arCharImg();
+      if(hint) hint.textContent = "キャラ：ドラッグで移動・2本指で拡大・タップで表情";
+    } else {
+      if(hint) hint.textContent = "画面をタップで花火 🎆";
     }
   }
   function arStopAuto(){
@@ -3158,7 +3185,9 @@
     arSelFw = grandestUnlockedFw() || FW_ORDER[0];
     arRenderPicker();
     arActive = []; arBgMode = "camera"; arBgImg = null;
-    arCharOn = false; var cbn = document.getElementById("ar-char"); if(cbn) cbn.classList.remove("on");
+    arCharOn = false; arCharImgs = {}; arCharMood = "happy"; arCharScale = 1; arDrag = null; arPtrs = {};
+    var cbn = document.getElementById("ar-char"); if(cbn) cbn.classList.remove("on");
+    var hint = document.getElementById("ar-hint"); if(hint) hint.textContent = "画面をタップで花火 🎆";
     arStopAuto();
     view.style.display = "block";
     arResize();
@@ -3166,12 +3195,56 @@
     arRunning = true;
     arRAF = requestAnimationFrame(arFrame);
     arStartCamera();
-    view.onclick = function(e){
-      if(e.target.closest && (e.target.closest(".ar-btn") || e.target.closest(".ar-pick") ||
-         e.target.closest(".ar-cbtn") || e.target.closest(".ar-modal"))) return;
-      var r = arCanvas.getBoundingClientRect();
-      arLaunch(e.clientX - r.left, e.clientY - r.top);
-    };
+  }
+  function arLocal(e){ var r = arCanvas.getBoundingClientRect(); return { x:e.clientX - r.left, y:e.clientY - r.top }; }
+  function arDist(a, b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function arPtrDown(e){
+    if(!arRunning) return;
+    var pt = arLocal(e); arPtrs[e.pointerId] = pt;
+    var ids = Object.keys(arPtrs);
+    if(arCharOn && ids.length === 2){
+      arDrag = { mode:"pinch", startDist: arDist(arPtrs[ids[0]], arPtrs[ids[1]]) || 1, startScale: arCharScale };
+      return;
+    }
+    if(arCharOn && arPointInChar(pt.x, pt.y)){
+      arDrag = { mode:"char", id:e.pointerId, offX: pt.x-arCharCX, offY: pt.y-arCharCY, downX:pt.x, downY:pt.y, moved:false };
+    } else {
+      arDrag = { mode:"bg", id:e.pointerId, downX:pt.x, downY:pt.y, moved:false };
+    }
+  }
+  function arPtrMove(e){
+    if(!arRunning || !arPtrs[e.pointerId]) return;
+    var pt = arLocal(e); arPtrs[e.pointerId] = pt;
+    if(!arDrag) return;
+    if(arDrag.mode === "pinch"){
+      var ids = Object.keys(arPtrs);
+      if(ids.length >= 2){
+        var d = arDist(arPtrs[ids[0]], arPtrs[ids[1]]);
+        arCharScale = Math.max(0.4, Math.min(2.6, arDrag.startScale * (d/arDrag.startDist)));
+      }
+      return;
+    }
+    if(arDrag.mode === "char" && e.pointerId === arDrag.id){
+      arCharCX = pt.x - arDrag.offX; arCharCY = pt.y - arDrag.offY;
+      if(Math.hypot(pt.x-arDrag.downX, pt.y-arDrag.downY) > 8) arDrag.moved = true;
+    } else if(arDrag.mode === "bg" && e.pointerId === arDrag.id){
+      if(Math.hypot(pt.x-arDrag.downX, pt.y-arDrag.downY) > 8) arDrag.moved = true;
+    }
+  }
+  function arPtrUp(e){
+    if(!arRunning) return;
+    var pt = arPtrs[e.pointerId] || arLocal(e);
+    delete arPtrs[e.pointerId];
+    if(!arDrag) return;
+    if(arDrag.mode === "char" && e.pointerId === arDrag.id){
+      if(!arDrag.moved){ var i = AR_MOODS.indexOf(arCharMood); arCharMood = AR_MOODS[(i+1)%AR_MOODS.length]; arCharImg(); }
+      arDrag = null;
+    } else if(arDrag.mode === "bg" && e.pointerId === arDrag.id){
+      if(!arDrag.moved) arLaunch(pt.x, pt.y);
+      arDrag = null;
+    } else if(arDrag.mode === "pinch"){
+      if(Object.keys(arPtrs).length < 2) arDrag = null;
+    }
   }
   function arClose(){
     var view = document.getElementById("ar-view");
@@ -3197,6 +3270,13 @@
     var sp = g("ar-share");    if(sp) sp.addEventListener("click", arShare);
     var sv = g("ar-save");     if(sv) sv.addEventListener("click", arSaveShot);
     var mc = g("ar-modal-close"); if(mc) mc.addEventListener("click", arClosePreview);
+    var cv = g("ar-canvas");
+    if(cv){
+      cv.addEventListener("pointerdown", arPtrDown);
+      cv.addEventListener("pointermove", arPtrMove);
+      cv.addEventListener("pointerup", arPtrUp);
+      cv.addEventListener("pointercancel", arPtrUp);
+    }
     window.addEventListener("resize", function(){ if(arRunning) arResize(); });
     document.addEventListener("visibilitychange", function(){
       if(document.hidden){ if(arStream) arStopCamera(); }
