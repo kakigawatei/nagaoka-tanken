@@ -984,6 +984,18 @@
     box-shadow:0 0 12px 4px rgba(255,220,120,.9); pointer-events:none;
     transform:translate(-50%,-50%);
   }
+  /* 大玉：位置固定・画面いっぱい */
+  img.ar-bloom-full{
+    left:0; top:0; width:100%; height:100%; max-width:none; aspect-ratio:auto;
+    object-fit:contain; transform:translate(0,0) scale(.34);
+    animation:arBloomFull 1.9s ease-out forwards;
+  }
+  @keyframes arBloomFull{
+    0%{ opacity:0; transform:scale(.34); filter:brightness(2.2); }
+    15%{ opacity:1; transform:scale(.92); filter:brightness(1.6); }
+    46%{ opacity:1; transform:scale(1.0); filter:brightness(1.08); }
+    100%{ opacity:0; transform:scale(1.04); filter:brightness(.78); }
+  }
 
   /* ---------- ワープ ---------- */
   .warp-card{ border:2px solid var(--indigo); }
@@ -2889,6 +2901,8 @@
 
   /* ---------- ARカメラ花火（カメラ映像の上に、集めた花火をタップで打ち上げ） ---------- */
   var arStream = null, arFacing = "environment", arSelFw = null;
+  // 大玉（スターマイン/正三尺玉/フェニックス）は位置固定・画面いっぱいに打ち上げる
+  var AR_BIG = { starmine:true, shakudama:true, phoenix:true };
 
   function arStopCamera(){
     if(arStream){ try{ arStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} arStream = null; }
@@ -2940,13 +2954,17 @@
   function arLaunch(x, y){
     var fx = document.getElementById("ar-fx"); if(!fx) return;
     var f = fwById(arSelFw) || fwById(FW_ORDER[0]); if(!f) return;
-    var H = fx.clientHeight || window.innerHeight;
+    var W = fx.clientWidth || window.innerWidth, H = fx.clientHeight || window.innerHeight;
+    var big = !!AR_BIG[f.id];
+    // 大玉はタップ位置に関係なく中央固定・画面いっぱい
+    var tx = big ? W * 0.5 : x;
+    var ty = big ? H * 0.5 : y;
     var rocket = document.createElement("div");
     rocket.className = "ar-rocket";
-    rocket.style.left = x + "px"; rocket.style.top = y + "px";
+    rocket.style.left = tx + "px"; rocket.style.top = ty + "px";
     fx.appendChild(rocket);
-    var startY = Math.max(0, H - y);
-    var done = function(){ if(rocket.parentNode) rocket.parentNode.removeChild(rocket); arBloom(fx, f, x, y); };
+    var startY = Math.max(0, H - ty);
+    var done = function(){ if(rocket.parentNode) rocket.parentNode.removeChild(rocket); arBloom(fx, f, tx, ty, big); };
     if(rocket.animate){
       var a = rocket.animate([
         { transform:"translate(-50%,-50%) translateY(" + startY + "px)", opacity:0.25 },
@@ -2959,11 +2977,12 @@
       done();
     }
   }
-  function arBloom(fx, f, x, y){
+  function arBloom(fx, f, x, y, big){
     if(!fx) return;
     var img = document.createElement("img");
-    img.className = "ar-bloom"; img.src = f.img; img.alt = f.name;
-    img.style.left = x + "px"; img.style.top = y + "px";
+    img.className = big ? "ar-bloom ar-bloom-full" : "ar-bloom";
+    img.src = f.img; img.alt = f.name;
+    if(!big){ img.style.left = x + "px"; img.style.top = y + "px"; }
     img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
     fx.appendChild(img);
   }
