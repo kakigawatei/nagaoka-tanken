@@ -3171,63 +3171,73 @@
     ctx.restore();
     return true;
   }
-  // 土星の花火：傾いた輪（後半→玉→前半で立体感）＋中央の玉。玉のグラデ光が右→左へ流れる。
-  //  ctx: 描画先, (cx,cy): 中心, D: 全体直径, op: 不透明度(0-1), now: 時刻(ms)
+  // 土星の花火（実写風）：緑→ピンクの粒が密集したダリア状の球＋左右に伸びる白い環の筋（先端ピンク）。
+  //  球のグラデ（緑↔ピンク）が右→左へ流れる。ctx:描画先, (cx,cy):中心, D:全体直径, op:不透明度, now:時刻ms
+  function arSatDot(ctx, x, y, r, col, coreA){
+    var g = ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0, "rgba(255,255,255," + coreA + ")");
+    g.addColorStop(0.4, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0.95)");
+    g.addColorStop(1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
   function arDrawSaturn(ctx, cx, cy, D, op, now){
-    var rb = D*0.23;                       // 玉の半径
-    var rx = D*0.49, ry = D*0.17;          // 輪の外側半径（横長の楕円）
-    var tilt = -0.30;                      // 輪の傾き
-    var ph = ((now % 2600) / 2600);        // 0→1 で1周する位相（グラデの流れ）
+    var rb = D*0.21;                       // 本体の球の半径
+    var tilt = -0.20;                      // 環の傾き
+    var ct = Math.cos(tilt), st = Math.sin(tilt);
+    var ph = (now % 2600) / 2600;          // グラデの流れ位相
+    var GREEN = [90,235,120], PINK = [255,95,205];
+    function bodyCol(dx){                   // 横位置dx(-rb..rb)で緑↔ピンク。phで右→左へ流れる
+      var u = 0.5 + dx/(2*rb);
+      var t = 0.5 - 0.5*Math.cos(Math.PI*2*(u + ph));
+      return [GREEN[0]+(PINK[0]-GREEN[0])*t, GREEN[1]+(PINK[1]-GREEN[1])*t, GREEN[2]+(PINK[2]-GREEN[2])*t];
+    }
+    // 疑似乱数（idごとに毎回同じ形にならないよう now は使わず固定シード）
+    function rnd(i){ var x = Math.sin(i*127.1)*43758.5; return x - Math.floor(x); }
     ctx.save();
     ctx.globalAlpha = op;
-    // --- 輪を点で描く。前後で分けて玉に重なる立体感を出す ---
-    function ringArc(back){
-      ctx.globalCompositeOperation = "lighter";
-      for(var band=0; band<2; band++){
-        var er = rx - band*(D*0.055), er2 = ry - band*(D*0.02);
-        var N = 54;
-        for(var i=0;i<N;i++){
-          var a = i/N*Math.PI*2;
-          if(back ? (Math.sin(a) >= 0) : (Math.sin(a) < 0)) continue; // 上半分=奥、下半分=手前
-          var ex = Math.cos(a)*er, ey = Math.sin(a)*er2;
-          var px = cx + ex*Math.cos(tilt) - ey*Math.sin(tilt);
-          var py = cy + ex*Math.sin(tilt) + ey*Math.cos(tilt);
-          var hue = (a/Math.PI*180 - ph*360) % 360; if(hue<0) hue+=360; // 輪も淡く色が回る
-          var dr = D*0.022;
-          var gg = ctx.createRadialGradient(px,py,0,px,py,dr);
-          gg.addColorStop(0,"#ffffff");
-          gg.addColorStop(0.35,"hsl("+hue+",90%,72%)");
-          gg.addColorStop(1,"hsla("+hue+",90%,60%,0)");
-          ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(px,py,dr,0,Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = "lighter";
+    // 環の筋：ほぼ水平の細い光の直線を左右に。局所座標(lx=環平面, ly=垂直)→画面へ。
+    function ringStreaks(front){
+      var perSide = 6, fan = 0.30;                    // 細く・扇は控えめ＝薄い環に
+      for(var sgn=-1; sgn<=1; sgn+=2){
+        for(var k=0;k<perSide;k++){
+          var a = (k/(perSide-1) - 0.5)*fan;
+          var up = a < 0;                             // 上向き=奥
+          if(front ? up : !up) continue;
+          var dx0 = Math.cos(a)*sgn, dy0 = Math.sin(a);
+          var rIn = rb*0.5, rOut = rb*(2.0 + rnd(k*3+sgn)*0.3);
+          var steps = 14;
+          for(var s=0;s<=steps;s++){
+            var t = s/steps, r = rIn + (rOut-rIn)*t;
+            var lx = dx0*r, ly = dy0*r*0.35;           // 縦を強く圧縮＝薄い環
+            var px = cx + lx*ct - ly*st, py = cy + lx*st + ly*ct;
+            var tip = Math.max(0, (t-0.6)/0.4);        // 外側ほどピンク
+            var col = [255, 255-tip*170, 255-tip*55];
+            var dr = D*0.012*(1 - t*0.3);
+            arSatDot(ctx, px, py, dr, col, 0.8-t*0.5);
+          }
         }
       }
     }
-    ringArc(true);                         // 奥の輪
-    // --- 中央の玉：右→左に流れるレインボーグラデ ---
-    ctx.save();
-    ctx.beginPath(); ctx.arc(cx,cy,rb,0,Math.PI*2); ctx.clip();
-    ctx.globalCompositeOperation = "source-over";
-    var grad = ctx.createLinearGradient(cx-rb, cy, cx+rb, cy);
-    for(var s=0;s<=10;s++){
-      var t=s/10;
-      var h=(t*360 - ph*360) % 360; if(h<0) h+=360; // ph増加で色が左へ移動＝右から入れ替わる
-      grad.addColorStop(t,"hsl("+h+",92%,56%)");
+    ringStreaks(false);                     // 奥の環
+    // 本体：放射状のスポークに粒を並べた丸いダリア球（緑→ピンク）。中心の白飛びを抑える。
+    var spokes = 34;
+    for(var sp=0; sp<spokes; sp++){
+      var ang = sp/spokes*Math.PI*2 + rnd(sp)*0.10;
+      var dxu = Math.cos(ang), dyu = Math.sin(ang);
+      var reach = rb*(0.98 + rnd(sp*2)*0.10);
+      for(var r2 = rb*0.14; r2 <= reach; r2 += rb*0.1){
+        var jx = (rnd(sp*7+r2)-0.5)*rb*0.05, jy = (rnd(sp*5+r2)-0.5)*rb*0.05;
+        var x = cx + dxu*r2 + jx, y = cy + dyu*r2 + jy;
+        var col = bodyCol(dxu*r2);
+        var edge = r2/reach;
+        var dr = D*0.017*(1.05 - edge*0.5);
+        arSatDot(ctx, x, y, dr, col, 0.24 + edge*0.28); // 内側は白コア弱め＝中心の白飛び防止
+      }
     }
-    ctx.fillStyle=grad; ctx.fillRect(cx-rb,cy-rb,rb*2,rb*2);
-    // 球体シェーディング（左上ハイライト＋周辺減光）で立体感
-    var sh = ctx.createRadialGradient(cx-rb*0.32,cy-rb*0.32,rb*0.1, cx,cy,rb);
-    sh.addColorStop(0,"rgba(255,255,255,0.5)");
-    sh.addColorStop(0.55,"rgba(255,255,255,0)");
-    sh.addColorStop(1,"rgba(0,0,0,0.4)");
-    ctx.fillStyle=sh; ctx.fillRect(cx-rb,cy-rb,rb*2,rb*2);
-    ctx.restore();
-    // 玉のまわりの淡いグロー
-    ctx.globalCompositeOperation = "lighter";
-    var glow = ctx.createRadialGradient(cx,cy,rb*0.6, cx,cy,rb*1.5);
-    glow.addColorStop(0,"rgba(255,255,255,0.28)");
-    glow.addColorStop(1,"rgba(255,255,255,0)");
-    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(cx,cy,rb*1.5,0,Math.PI*2); ctx.fill();
-    ringArc(false);                        // 手前の輪
+    // 中心の芯（ピンク寄り・白飛びしない程度）
+    arSatDot(ctx, cx, cy, rb*0.42, [255,120,210], 0.55);
+    ringStreaks(true);                      // 手前の環（球を横切る）
     ctx.restore();
   }
   function arDrawCover(ctx, src, sw, sh, W, H, mirror){
