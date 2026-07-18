@@ -3020,6 +3020,7 @@
   var AR_HUE   = { smile:true, date:true, date_row:true, name:true }; // 多色型物：色相を毎回回転（スマイル／日付／なまえのレインボー文字）
   var AR_SIZE  = { heart:0.6, smile:0.6, date:1.0, date_row:1.0, saturn:0.62, name:1.0 }; // 標準サイズ倍率（なまえは日付横と同じくらい）
   var AR_NOAUTO = { date:true, date_row:true, name:true }; // 自動花火では上げない（日付/なまえは手動で選んだ時だけ）
+  var AR_DRONE = { name:true, date:true, date_row:true }; // ドローン演出：打ち上げず、その場に点灯→停滞→ゆっくり消灯
   var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
@@ -3133,12 +3134,15 @@
     var rotMax = AR_ROT_LIM[f.id] || AR_ROT_MAX;
     // 大玉もタップ位置で開く（位置固定なし・サイズだけ大きい）
     var img = f.variants ? arLoadImgSrc(f.variants[Math.floor(Math.random()*f.variants.length)]) : arLoadFwImg(f);
-    arActive.push({ f:f, img:img, big:big, x:x, y:y,
+    var drone = !!AR_DRONE[f.id];
+    arActive.push({ f:f, img:img, big:big, x:x, y:y, drone:drone,
       rot: (big || AR_NOROT[f.id]) ? 0 : (Math.random()*2-1)*rotMax,
       tint: !!AR_TINT[f.id], pal: arPickPalette(), tinted: null,
       hue: AR_HUE[f.id] ? Math.floor(Math.random()*360) : 0, hued: null,
       sizeMul: (AR_SIZE[f.id] || 1) * (1 + (Math.random()*2-1)*AR_SIZE_VAR),
-      born: performance.now(), rocketDur:460, bloomDur: big ? 1900 : 1700 });
+      born: performance.now(),
+      rocketDur: drone ? 0 : 460,                 // ドローンは打ち上げ（ロケット）なし
+      bloomDur: drone ? 3400 : (big ? 1900 : 1700) }); // ドローンは長め＝停滞＋ゆっくり消灯
   }
   function arLaunch(x, y){
     var f = fwById(arSelFw) || fwById(FW_ORDER[0]); if(!f) return;
@@ -3154,6 +3158,8 @@
   }
   var AR_S_OP=[[0,0],[0.14,1],[0.42,1],[1,0]], AR_S_SC=[[0,0.15],[0.14,0.85],[0.42,1.03],[1,1.14]], AR_S_BR=[[0,2.4],[0.14,1.7],[0.42,1.1],[1,0.75]];
   var AR_B_OP=[[0,0],[0.15,1],[0.46,1],[1,0]], AR_B_SC=[[0,0.34],[0.15,0.92],[0.46,1.0],[1,1.04]], AR_B_BR=[[0,2.2],[0.15,1.6],[0.46,1.08],[1,0.78]];
+  // ドローン演出：開かず(スケール一定)、すっと点灯→その場で停滞→ゆっくり消灯。
+  var AR_D_OP=[[0,0],[0.12,1],[0.5,1],[1,0]], AR_D_SC=[[0,0.97],[0.12,1],[1,1]], AR_D_BR=[[0,1.35],[0.18,1.08],[0.5,1],[1,0.9]];
 
   function arDrawFirework(ctx, o, now){
     var el = now - o.born;
@@ -3171,9 +3177,12 @@
     }
     var p2 = (el - o.rocketDur) / o.bloomDur;
     if(p2 >= 1) return false;
-    var op = arKey(o.big?AR_B_OP:AR_S_OP, p2);
-    var sc = arKey(o.big?AR_B_SC:AR_S_SC, p2);
-    var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
+    var opF = o.drone?AR_D_OP:(o.big?AR_B_OP:AR_S_OP);
+    var scF = o.drone?AR_D_SC:(o.big?AR_B_SC:AR_S_SC);
+    var brF = o.drone?AR_D_BR:(o.big?AR_B_BR:AR_S_BR);
+    var op = arKey(opF, p2);
+    var sc = arKey(scF, p2);
+    var br = arKey(brF, p2);
     var side = o.big ? Math.min(W, H) * 1.5 : Math.min(W*0.72, 400);
     side *= (o.sizeMul || 1);
     var w = side*sc, h = side*sc;
