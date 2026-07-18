@@ -2926,7 +2926,9 @@
   var arStream = null, arFacing = "environment", arSelFw = null;
   // 大玉（スターマイン/正三尺玉/フェニックス）は位置固定・画面いっぱいに打ち上げる
   var AR_BIG = { shakudama:true, phoenix:true };
-  var AR_ROT_MAX = 1.05;   // 打ち上げごとのランダム回転（ラジアン, ±約60°）。ハート等の形が毎回違う向きに
+  var AR_ROT_MAX = Math.PI;              // 打ち上げごとのランダム回転（±180°＝完全自由）。形が毎回違う向きに
+  var AR_NOROT = { yanagi:true };        // 向きが決まってる花火（柳＝下垂れ）は回転させない
+  var AR_TINT  = { heart:true };         // 型物花火は打ち上げごとに色をランダムに変える（スマイル等を随時追加）
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
   var arFwImg = {};             // id -> Image（開花画像キャッシュ）
@@ -2989,11 +2991,29 @@
       p.appendChild(b);
     });
   }
+  function arPickPalette(){
+    var h1 = Math.floor(Math.random()*360);
+    var h2 = (h1 + 50 + Math.floor(Math.random()*180)) % 360;
+    return [h1, h2];
+  }
+  function arMakeTinted(img, pal){
+    var w = img.naturalWidth || 512, h = img.naturalHeight || 512;
+    var oc = document.createElement("canvas"); oc.width = w; oc.height = h;
+    var octx = oc.getContext("2d");
+    octx.drawImage(img, 0, 0, w, h);
+    octx.globalCompositeOperation = "source-in";   // 形（アルファ）を保ったまま色だけ差し替え
+    var g = octx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, "hsl(" + pal[0] + ",100%,66%)");
+    g.addColorStop(1, "hsl(" + pal[1] + ",100%,60%)");
+    octx.fillStyle = g; octx.fillRect(0, 0, w, h);
+    return oc;
+  }
   function arPushFw(f, x, y){
     var big = !!AR_BIG[f.id];
     // 大玉もタップ位置で開く（位置固定なし・サイズだけ大きい）
     arActive.push({ f:f, img:arLoadFwImg(f), big:big, x:x, y:y,
-      rot: big ? 0 : (Math.random()*2-1)*AR_ROT_MAX,
+      rot: (big || AR_NOROT[f.id]) ? 0 : (Math.random()*2-1)*AR_ROT_MAX,
+      tint: !!AR_TINT[f.id], pal: arPickPalette(), tinted: null,
       born: performance.now(), rocketDur:460, bloomDur: big ? 1900 : 1700 });
   }
   function arLaunch(x, y){
@@ -3028,6 +3048,8 @@
     var p2 = (el - o.rocketDur) / o.bloomDur;
     if(p2 >= 1) return false;
     var img = o.img; if(!img.complete || !img.naturalWidth) return true;
+    if(o.tint && !o.tinted) o.tinted = arMakeTinted(img, o.pal);
+    var src = o.tinted || img;
     var op = arKey(o.big?AR_B_OP:AR_S_OP, p2);
     var sc = arKey(o.big?AR_B_SC:AR_S_SC, p2);
     var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
@@ -3038,8 +3060,8 @@
     ctx.save(); ctx.globalCompositeOperation = "lighter";
     if(o.rot){ ctx.translate(cx, cy); ctx.rotate(o.rot); ctx.translate(-cx, -cy); }
     ctx.globalAlpha = op;
-    ctx.drawImage(img, cx - w/2, cy - h/2, w, h);
-    if(br > 1){ ctx.globalAlpha = op * Math.min(1, (br-1)*0.6); ctx.drawImage(img, cx - w/2, cy - h/2, w, h); }
+    ctx.drawImage(src, cx - w/2, cy - h/2, w, h);
+    if(br > 1){ ctx.globalAlpha = op * Math.min(1, (br-1)*0.6); ctx.drawImage(src, cx - w/2, cy - h/2, w, h); }
     ctx.restore();
     return true;
   }
