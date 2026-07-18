@@ -2932,6 +2932,8 @@
   var AR_NOROT = { yanagi:true };        // 向きが完全固定の花火（柳＝下垂れ）は回転させない
   var AR_TINT  = { heart:true };         // 単色型物：打ち上げごとに全体を2色グラデで塗り替える
   var AR_HUE   = { smile:true };         // 多色型物（スマイル）：部分ごとの色（口=赤/目=緑…）を保ったまま色相を毎回回転
+  var AR_SIZE  = { heart:0.72, smile:0.72 }; // 標準サイズ倍率（ハート/スマイルは少し小さめが基準）
+  var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
   var arFwImg = {};             // id -> Image（開花画像キャッシュ）
@@ -3041,6 +3043,7 @@
       rot: (big || AR_NOROT[f.id]) ? 0 : (Math.random()*2-1)*rotMax,
       tint: !!AR_TINT[f.id], pal: arPickPalette(), tinted: null,
       hue: AR_HUE[f.id] ? Math.floor(Math.random()*360) : 0, hued: null,
+      sizeMul: (AR_SIZE[f.id] || 1) * (1 + (Math.random()*2-1)*AR_SIZE_VAR),
       born: performance.now(), rocketDur:460, bloomDur: big ? 1900 : 1700 });
   }
   function arLaunch(x, y){
@@ -3082,6 +3085,7 @@
     var sc = arKey(o.big?AR_B_SC:AR_S_SC, p2);
     var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
     var side = o.big ? Math.min(W, H) * 1.5 : Math.min(W*0.72, 400);
+    side *= (o.sizeMul || 1);
     var w = side*sc, h = side*sc;
     var cx = o.x, cy = o.y;
     op = Math.max(0, Math.min(1, op));
