@@ -2989,9 +2989,8 @@
   }
   function arPushFw(f, x, y){
     var big = !!AR_BIG[f.id];
-    var W = arCanvas.clientWidth, H = arCanvas.clientHeight;
-    arActive.push({ f:f, img:arLoadFwImg(f), big:big,
-      x: big ? W*0.5 : x, y: big ? H*0.5 : y,
+    // 大玉もタップ位置で開く（位置固定なし・サイズだけ大きい）
+    arActive.push({ f:f, img:arLoadFwImg(f), big:big, x:x, y:y,
       born: performance.now(), rocketDur:460, bloomDur: big ? 1900 : 1700 });
   }
   function arLaunch(x, y){
@@ -3031,7 +3030,7 @@
     var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
     var side = o.big ? Math.min(W, H) * 1.5 : Math.min(W*0.72, 400);
     var w = side*sc, h = side*sc;
-    var cx = o.big ? W*0.5 : o.x, cy = o.big ? H*0.5 : o.y;
+    var cx = o.x, cy = o.y;
     op = Math.max(0, Math.min(1, op));
     ctx.save(); ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha = op;
