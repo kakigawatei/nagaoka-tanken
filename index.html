@@ -2799,7 +2799,7 @@
       var cell = document.createElement("div");
       cell.className = "fw-cell" + (has ? " has" : "");
       cell.innerHTML = has
-        ? ("<div class=\"fw-thumb\"><img src=\"" + f.img + "\" alt=\"" + f.name + "\"></div><div class=\"fw-name\">" + f.name + "</div>")
+        ? ("<div class=\"fw-thumb\"><img src=\"" + fwImgSrc(f) + "\" alt=\"" + f.name + "\"></div><div class=\"fw-name\">" + f.name + "</div>")
         : ("<div class=\"fw-thumb locked\">？</div><div class=\"fw-name\">？？？</div>");
       if(has){
         cell.addEventListener("click", function(){
@@ -2890,8 +2890,49 @@
     { id:"shakudama", name:"正三尺玉",     img:"assets/fw_shakudama.png", blurb:"長岡名物の特大花火。" },
     { id:"phoenix",   name:"フェニックス", img:"assets/fw_phoenix.png",   blurb:"復興を願う、不死鳥の花火。" },
     { id:"heart",     name:"ハート",       img:"assets/fw_heart.png",     blurb:"夜空に咲く、恋のかたち。型物花火。" },
-    { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" }
+    { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" },
+    { id:"date",      name:"日付",         img:"",  dynamic:true,          blurb:"今日という日が、夜空に数字で打ち上がる特別な花火。" }
   ];
+  // 動的花火（日付）の画像srcを返す。dynamic花火は毎日その日の日付をcanvasで描く。
+  var arDateUrl = { key:null, url:"" };
+  function fwImgSrc(f){
+    if(!f.dynamic) return f.img;
+    var n = new Date(), key = n.getFullYear() + "-" + (n.getMonth()+1) + "-" + n.getDate();
+    if(arDateUrl.key !== key){ arDateUrl.key = key; arDateUrl.url = arBuildDateCanvas().toDataURL(); }
+    return arDateUrl.url;
+  }
+  // 今日の日付を「光のドット」で描いた512×512の透過canvasを作る（上段=西暦／下段=月.日）。
+  function arBuildDateCanvas(){
+    var n = new Date(), S = 512;
+    var line1 = String(n.getFullYear());
+    var line2 = (n.getMonth()+1) + "." + n.getDate();
+    var mask = document.createElement("canvas"); mask.width = S; mask.height = S;
+    var mc = mask.getContext("2d");
+    mc.fillStyle = "#fff"; mc.textAlign = "center"; mc.textBaseline = "middle";
+    mc.font = "bold 132px system-ui,-apple-system,sans-serif";
+    mc.fillText(line1, S/2, S*0.31);
+    mc.font = "bold 210px system-ui,-apple-system,sans-serif";
+    mc.fillText(line2, S/2, S*0.66);
+    var data = mc.getImageData(0, 0, S, S).data;
+    var out = document.createElement("canvas"); out.width = S; out.height = S;
+    var oc = out.getContext("2d");
+    oc.globalCompositeOperation = "lighter";
+    var step = 11, r = 8;
+    for(var py = step/2|0; py < S; py += step){
+      for(var px = step/2|0; px < S; px += step){
+        if(data[(py*S + px)*4 + 3] > 100){
+          var hue = (px / S * 300) | 0;                       // 横方向にレインボー＝カラフル
+          var g = oc.createRadialGradient(px, py, 0, px, py, r);
+          g.addColorStop(0, "#ffffff");
+          g.addColorStop(0.3, "hsl(" + hue + ",100%,63%)");
+          g.addColorStop(0.62, "hsla(" + hue + ",100%,58%,0.55)");
+          g.addColorStop(1, "hsla(" + hue + ",100%,55%,0)");
+          oc.fillStyle = g; oc.beginPath(); oc.arc(px, py, r, 0, Math.PI*2); oc.fill();
+        }
+      }
+    }
+    return out;
+  }
   var FW_ORDER = FIREWORKS.map(function(f){ return f.id; });
   function fwById(id){ for(var i=0;i<FIREWORKS.length;i++){ if(FIREWORKS[i].id === id) return FIREWORKS[i]; } return null; }
   function fwUnlockedCount(){ return FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id]; }).length; }
@@ -2918,7 +2959,7 @@
     var layer = document.getElementById("fw-show");
     if(!layer){ layer = document.createElement("div"); layer.id = "fw-show"; app.appendChild(layer); }
     var img = document.createElement("img");
-    img.className = "fw-show-img"; img.src = f.img; img.alt = f.name;
+    img.className = "fw-show-img"; img.src = fwImgSrc(f); img.alt = f.name;
     img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
     layer.appendChild(img);
   }
@@ -2929,10 +2970,10 @@
   var AR_BIG = { shakudama:true, phoenix:true };
   var AR_ROT_MAX = Math.PI;              // 打ち上げごとのランダム回転（±180°＝完全自由）。形が毎回違う向きに
   var AR_ROT_LIM = { smile: Math.PI*0.28 }; // 向きのある型物は控えめに傾ける（スマイル＝±約50°で笑顔を保ちつつ角度を変える）
-  var AR_NOROT = { yanagi:true };        // 向きが完全固定の花火（柳＝下垂れ）は回転させない
+  var AR_NOROT = { yanagi:true, date:true }; // 向きが完全固定の花火（柳＝下垂れ／日付＝数字が読めるよう）は回転させない
   var AR_TINT  = { heart:true };         // 単色型物：打ち上げごとに全体を2色グラデで塗り替える
-  var AR_HUE   = { smile:true };         // 多色型物（スマイル）：部分ごとの色（口=赤/目=緑…）を保ったまま色相を毎回回転
-  var AR_SIZE  = { heart:0.72, smile:0.72 }; // 標準サイズ倍率（ハート/スマイルは少し小さめが基準）
+  var AR_HUE   = { smile:true, date:true }; // 多色型物：部分ごとの色を保ったまま色相を毎回回転（スマイル＝目/口／日付＝数字のレインボー）
+  var AR_SIZE  = { heart:0.72, smile:0.72, date:1.2 }; // 標準サイズ倍率（ハート/スマイルは少し小さめ／日付は読めるよう少し大きめ）
   var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
@@ -2948,8 +2989,9 @@
   var arShotBlob = null, arShotUrl = null;
 
   function arLoadFwImg(f){
+    if(f.dynamic){ var di = new Image(); di.src = fwImgSrc(f); return di; } // 日付は毎回その日の画像で
     if(arFwImg[f.id]) return arFwImg[f.id];
-    var im = new Image(); im.src = f.img; arFwImg[f.id] = im; return im;
+    var im = new Image(); im.src = fwImgSrc(f); arFwImg[f.id] = im; return im;
   }
   function arStopCamera(){
     if(arStream){ try{ arStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} arStream = null; }
@@ -2991,7 +3033,7 @@
       var f = fwById(id); if(!f) return;
       var b = document.createElement("div");
       b.className = "ar-pick" + (id === arSelFw ? " sel" : "");
-      b.innerHTML = "<img src=\"" + f.img + "\" alt=\"" + f.name + "\">";
+      b.innerHTML = "<img src=\"" + fwImgSrc(f) + "\" alt=\"" + f.name + "\">";
       b.addEventListener("click", function(ev){ ev.stopPropagation(); arSelFw = id; arRenderPicker(); });
       p.appendChild(b);
     });
