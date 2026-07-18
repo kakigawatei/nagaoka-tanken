@@ -2891,9 +2891,9 @@
     { id:"phoenix",   name:"フェニックス", img:"assets/fw_phoenix.png",   blurb:"復興を願う、不死鳥の花火。" },
     { id:"heart",     name:"ハート",       img:"assets/fw_heart.png",     blurb:"夜空に咲く、恋のかたち。型物花火。" },
     { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" },
+    { id:"saturn",    name:"土星",         img:"assets/fw_saturn1.png", variants:["assets/fw_saturn1.png","assets/fw_saturn2.png","assets/fw_saturn3.png","assets/fw_saturn4.png"], blurb:"輪をまとった惑星の花火。上がるたびに輪の向きが変わる。" },
     { id:"date",      name:"日付（2段）",  img:"",  dynamic:true, dateMode:"stack", blurb:"今日という日が、西暦と月日の2段で夜空に打ち上がる特別な花火。" },
-    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" },
-    { id:"saturn",    name:"土星",         img:"assets/fw_saturn1.png", variants:["assets/fw_saturn1.png","assets/fw_saturn2.png","assets/fw_saturn3.png","assets/fw_saturn4.png"], blurb:"輪をまとった惑星の花火。上がるたびに輪の向きが変わる。" }
+    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" }
   ];
   // 動的花火の画像srcを返す。dynamic(日付)は毎日その日の日付、procedural(土星)は静止1コマをcanvasで描く。
   var arDateUrl = {};   // "YYYY-M-D-mode" -> dataURL
