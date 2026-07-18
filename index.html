@@ -2984,6 +2984,7 @@
   var AR_TINT  = { heart:true };         // 単色型物：打ち上げごとに全体を2色グラデで塗り替える
   var AR_HUE   = { smile:true, date:true, date_row:true }; // 多色型物：部分ごとの色を保ったまま色相を毎回回転（スマイル＝目/口／日付＝数字のレインボー）
   var AR_SIZE  = { heart:0.6, smile:0.6, date:1.0, date_row:1.0 }; // 標準サイズ倍率（ハート/スマイル/日付ともに小さめ）
+  var AR_NOAUTO = { date:true, date_row:true }; // 自動花火モードでは打ち上げない（日付花火は手動で選んだ時だけ）
   var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
   var arActive = [];            // 打ち上げ中の花火
@@ -3242,7 +3243,7 @@
   }
   function arAutoTick(){
     if(!arAuto || !arRunning) return;
-    var pool = FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id]; });
+    var pool = FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id] && !AR_NOAUTO[id]; });
     if(pool.length){
       var id = pool[Math.floor(Math.random()*pool.length)];
       if(AR_BIG[id] && Math.random() > 0.35){
