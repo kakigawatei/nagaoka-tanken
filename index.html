@@ -935,9 +935,9 @@
   }
   .ar-open-btn:active{ transform:scale(.98); }
   #ar-view{ position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; }
-  #ar-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; }
-  #ar-video.mirror{ transform:scaleX(-1); }
-  #ar-fx{ position:absolute; inset:0; pointer-events:none; z-index:2; }
+  /* video は canvas への描画ソース。非表示だが drawImage が黒くならないよう完全display:noneにはしない */
+  #ar-video{ position:absolute; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; }
+  #ar-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
   .ar-topbar{
     position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center;
     justify-content:space-between; gap:10px;
@@ -960,42 +960,41 @@
   .ar-picker{
     position:absolute; left:0; right:0; z-index:3; display:flex; gap:8px; justify-content:center;
     flex-wrap:wrap; padding:0 12px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
   }
   .ar-pick{
-    width:46px; height:46px; flex:0 0 auto; border-radius:10px; padding:3px; cursor:pointer;
+    width:44px; height:44px; flex:0 0 auto; border-radius:10px; padding:3px; cursor:pointer;
     background:rgba(0,0,0,.4); border:2px solid transparent;
   }
   .ar-pick img{ width:100%; height:100%; object-fit:contain; display:block; }
   .ar-pick.sel{ border-color:#ffd24d; box-shadow:0 0 10px rgba(255,210,77,.75); }
-  .ar-bloom{
-    position:absolute; width:72vw; max-width:400px; aspect-ratio:1/1; margin:0;
-    transform:translate(-50%,-50%) scale(.15); opacity:0; pointer-events:none;
-    will-change:transform,opacity,filter; animation:arBloom 1.7s ease-out forwards;
+  .ar-controls{
+    position:absolute; left:0; right:0; z-index:3; display:flex; gap:16px;
+    justify-content:center; align-items:center; padding:0 12px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
   }
-  @keyframes arBloom{
-    0%{ opacity:0; transform:translate(-50%,-50%) scale(.15); filter:brightness(2.4); }
-    14%{ opacity:1; transform:translate(-50%,-50%) scale(.85); filter:brightness(1.7); }
-    42%{ opacity:1; transform:translate(-50%,-50%) scale(1.03); filter:brightness(1.1); }
-    100%{ opacity:0; transform:translate(-50%,-50%) scale(1.14); filter:brightness(.75); }
+  .ar-cbtn{
+    width:52px; height:52px; flex:0 0 auto; border:none; border-radius:50%;
+    background:rgba(0,0,0,.5); color:#fff; font-size:23px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
   }
-  .ar-rocket{
-    position:absolute; width:7px; height:7px; border-radius:50%; background:#fff4cf;
-    box-shadow:0 0 12px 4px rgba(255,220,120,.9); pointer-events:none;
-    transform:translate(-50%,-50%);
+  .ar-cbtn:active{ transform:scale(.94); }
+  .ar-cbtn.on{ background:#c8462e; box-shadow:0 0 12px rgba(255,120,80,.75); }
+  .ar-cbtn.ar-shoot{ width:66px; height:66px; font-size:30px; background:#fff; color:#c8462e; box-shadow:0 0 0 3px rgba(255,255,255,.55); }
+  .ar-modal{
+    position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.85);
+    display:flex; align-items:center; justify-content:center; padding:24px;
   }
-  /* 大玉：位置固定・画面いっぱい */
-  img.ar-bloom-full{
-    left:0; top:0; width:100%; height:100%; max-width:none; aspect-ratio:auto;
-    object-fit:contain; transform:translate(0,0) scale(.34);
-    animation:arBloomFull 1.9s ease-out forwards;
+  .ar-modal-inner{ max-width:100%; max-height:100%; display:flex; flex-direction:column; gap:16px; align-items:center; }
+  .ar-modal-inner img{ max-width:100%; max-height:68vh; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  .ar-modal-btns{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .ar-mbtn{
+    padding:11px 20px; border:none; border-radius:10px; background:rgba(255,255,255,.16);
+    color:#fff; font-size:15px; font-weight:700; cursor:pointer;
   }
-  @keyframes arBloomFull{
-    0%{ opacity:0; transform:scale(.34); filter:brightness(2.2); }
-    15%{ opacity:1; transform:scale(.92); filter:brightness(1.6); }
-    46%{ opacity:1; transform:scale(1.0); filter:brightness(1.08); }
-    100%{ opacity:0; transform:scale(1.04); filter:brightness(.78); }
-  }
+  .ar-mbtn.primary{ background:#c8462e; }
+  .ar-mbtn:active{ transform:scale(.97); }
 
   /* ---------- ワープ ---------- */
   .warp-card{ border:2px solid var(--indigo); }
@@ -1421,15 +1420,32 @@
   <canvas id="fw-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:70;display:none;"></canvas>
 
   <div id="ar-view" style="display:none;">
-    <video id="ar-video" autoplay playsinline muted></video>
-    <div id="ar-fx"></div>
+    <video id="ar-video" playsinline muted autoplay></video>
+    <canvas id="ar-canvas"></canvas>
     <div class="ar-msg" id="ar-msg" style="display:none;"></div>
     <div class="ar-topbar">
       <button class="ar-btn" id="ar-close" aria-label="閉じる">✕</button>
-      <div class="ar-hint">画面をタップで花火 🎆</div>
+      <div class="ar-hint" id="ar-hint">画面をタップで花火 🎆</div>
       <button class="ar-btn" id="ar-flip" aria-label="カメラ切替">🔄</button>
     </div>
     <div class="ar-picker" id="ar-picker"></div>
+    <div class="ar-controls">
+      <button class="ar-cbtn" id="ar-char" aria-label="キャラを出す">🦙</button>
+      <button class="ar-cbtn" id="ar-auto" aria-label="自動花火">🎇</button>
+      <button class="ar-cbtn ar-shoot" id="ar-shoot" aria-label="写真を撮る">📷</button>
+      <button class="ar-cbtn" id="ar-bg" aria-label="背景に写真">🖼</button>
+      <input type="file" accept="image/*" id="ar-bgfile" style="display:none;">
+    </div>
+    <div class="ar-modal" id="ar-modal" style="display:none;">
+      <div class="ar-modal-inner">
+        <img id="ar-shot" alt="撮影した写真">
+        <div class="ar-modal-btns">
+          <button class="ar-mbtn primary" id="ar-share">共有する</button>
+          <button class="ar-mbtn" id="ar-save">保存</button>
+          <button class="ar-mbtn" id="ar-modal-close">閉じる</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -2899,42 +2915,53 @@
     layer.appendChild(img);
   }
 
-  /* ---------- ARカメラ花火（カメラ映像の上に、集めた花火をタップで打ち上げ） ---------- */
+  /* ---------- ARカメラ花火（canvas合成：背景[カメラ/写真/夜空]→花火→キャラ、撮影・自動モード対応） ---------- */
   var arStream = null, arFacing = "environment", arSelFw = null;
   // 大玉（スターマイン/正三尺玉/フェニックス）は位置固定・画面いっぱいに打ち上げる
   var AR_BIG = { starmine:true, shakudama:true, phoenix:true };
+  var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
+  var arActive = [];            // 打ち上げ中の花火
+  var arFwImg = {};             // id -> Image（開花画像キャッシュ）
+  var arBgMode = "camera";      // "camera" | "photo"
+  var arBgImg = null;           // 背景写真
+  var arCharOn = false, arCharImg = null;
+  var arAuto = false, arAutoTimer = 0;
+  var arVideoReady = false;
+  var arShotBlob = null, arShotUrl = null;
 
+  function arLoadFwImg(f){
+    if(arFwImg[f.id]) return arFwImg[f.id];
+    var im = new Image(); im.src = f.img; arFwImg[f.id] = im; return im;
+  }
   function arStopCamera(){
     if(arStream){ try{ arStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} arStream = null; }
-    var v = document.getElementById("ar-video"); if(v) v.srcObject = null;
+    arVideoReady = false;
+    if(arVideo) arVideo.srcObject = null;
   }
   function arShowMsg(html){
     var m = document.getElementById("ar-msg");
     if(m){ if(html){ m.innerHTML = html; m.style.display = "flex"; } else { m.style.display = "none"; } }
   }
   function arStartCamera(){
-    var video = document.getElementById("ar-video");
     arShowMsg("");
     arStopCamera();
+    arBgMode = "camera";
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      arShowMsg("この端末ではカメラを使えませんでした🙏"); return;
+      arShowMsg("この端末ではカメラを使えませんでした🙏<br><small>（そのまま夜空を背景に花火は楽しめます）</small>"); return;
     }
     navigator.mediaDevices.getUserMedia({ video:{ facingMode: arFacing }, audio:false }).then(function(stream){
       arStream = stream;
-      video.srcObject = stream;
-      video.classList.toggle("mirror", arFacing === "user");
-      var pp = video.play && video.play(); if(pp && pp.catch) pp.catch(function(){});
-      // 開いた瞬間に1発、真ん中あたりに打ち上げて“動く”のを見せる
-      setTimeout(function(){
-        var fx = document.getElementById("ar-fx"); if(!fx) return;
-        arLaunch(fx.clientWidth * 0.5, fx.clientHeight * 0.38);
-      }, 650);
+      arVideo.srcObject = stream;
+      arVideo.onloadedmetadata = function(){ arVideoReady = true; };
+      var pp = arVideo.play && arVideo.play(); if(pp && pp.catch) pp.catch(function(){});
+      setTimeout(function(){ if(arRunning) arLaunch(arCanvas.clientWidth*0.5, arCanvas.clientHeight*0.4); }, 600);
     }).catch(function(err){
       var name = (err && err.name) || "error";
-      arShowMsg("カメラを起動できませんでした🙏<br>設定でカメラの許可をオンにしてね。<br><small>(" + name + ")</small>");
+      arShowMsg("カメラを起動できませんでした🙏<br>設定でカメラの許可をオンにしてね。<br><small>（このままでも夜空を背景に花火は楽しめます）<br>(" + name + ")</small>");
     });
   }
   function arFlip(){
+    arBgMode = "camera";
     arFacing = (arFacing === "environment") ? "user" : "environment";
     arStartCamera();
   }
@@ -2951,70 +2978,231 @@
       p.appendChild(b);
     });
   }
-  function arLaunch(x, y){
-    var fx = document.getElementById("ar-fx"); if(!fx) return;
-    var f = fwById(arSelFw) || fwById(FW_ORDER[0]); if(!f) return;
-    var W = fx.clientWidth || window.innerWidth, H = fx.clientHeight || window.innerHeight;
+  function arPushFw(f, x, y){
     var big = !!AR_BIG[f.id];
-    // 大玉はタップ位置に関係なく中央固定・画面いっぱい
-    var tx = big ? W * 0.5 : x;
-    var ty = big ? H * 0.5 : y;
-    var rocket = document.createElement("div");
-    rocket.className = "ar-rocket";
-    rocket.style.left = tx + "px"; rocket.style.top = ty + "px";
-    fx.appendChild(rocket);
-    var startY = Math.max(0, H - ty);
-    var done = function(){ if(rocket.parentNode) rocket.parentNode.removeChild(rocket); arBloom(fx, f, tx, ty, big); };
-    if(rocket.animate){
-      var a = rocket.animate([
-        { transform:"translate(-50%,-50%) translateY(" + startY + "px)", opacity:0.25 },
-        { transform:"translate(-50%,-50%) translateY(" + (startY*0.14) + "px)", opacity:1, offset:0.85 },
-        { transform:"translate(-50%,-50%) translateY(0px)", opacity:1 }
-      ], { duration:470, easing:"ease-in" });
-      a.onfinish = done;
-      a.oncancel = done;
-    } else {
-      done();
+    var W = arCanvas.clientWidth, H = arCanvas.clientHeight;
+    arActive.push({ f:f, img:arLoadFwImg(f), big:big,
+      x: big ? W*0.5 : x, y: big ? H*0.5 : y,
+      born: performance.now(), rocketDur:460, bloomDur: big ? 1900 : 1700 });
+  }
+  function arLaunch(x, y){
+    var f = fwById(arSelFw) || fwById(FW_ORDER[0]); if(!f) return;
+    arPushFw(f, x, y);
+  }
+
+  function arEaseIn(p){ return p*p; }
+  function arKey(frames, p){
+    for(var i=1;i<frames.length;i++){
+      if(p <= frames[i][0]){ var a=frames[i-1], b=frames[i]; var t=(p-a[0])/((b[0]-a[0])||1); return a[1]+(b[1]-a[1])*t; }
+    }
+    return frames[frames.length-1][1];
+  }
+  var AR_S_OP=[[0,0],[0.14,1],[0.42,1],[1,0]], AR_S_SC=[[0,0.15],[0.14,0.85],[0.42,1.03],[1,1.14]], AR_S_BR=[[0,2.4],[0.14,1.7],[0.42,1.1],[1,0.75]];
+  var AR_B_OP=[[0,0],[0.15,1],[0.46,1],[1,0]], AR_B_SC=[[0,0.34],[0.15,0.92],[0.46,1.0],[1,1.04]], AR_B_BR=[[0,2.2],[0.15,1.6],[0.46,1.08],[1,0.78]];
+
+  function arDrawFirework(ctx, o, now){
+    var el = now - o.born;
+    var W = arCanvas.clientWidth, H = arCanvas.clientHeight;
+    if(el < o.rocketDur){
+      var p = el / o.rocketDur;
+      var startY = Math.max(0, H - o.y);
+      var ry = o.y + startY * (1 - arEaseIn(p));
+      ctx.save(); ctx.globalCompositeOperation = "lighter";
+      var g = ctx.createRadialGradient(o.x, ry, 0, o.x, ry, 9);
+      g.addColorStop(0, "rgba(255,244,207,0.95)"); g.addColorStop(1, "rgba(255,220,120,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, ry, 9, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+      return true;
+    }
+    var p2 = (el - o.rocketDur) / o.bloomDur;
+    if(p2 >= 1) return false;
+    var img = o.img; if(!img.complete || !img.naturalWidth) return true;
+    var op = arKey(o.big?AR_B_OP:AR_S_OP, p2);
+    var sc = arKey(o.big?AR_B_SC:AR_S_SC, p2);
+    var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
+    var side = o.big ? Math.min(W, H) : Math.min(W*0.72, 400);
+    var w = side*sc, h = side*sc;
+    var cx = o.big ? W*0.5 : o.x, cy = o.big ? H*0.5 : o.y;
+    op = Math.max(0, Math.min(1, op));
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = op;
+    ctx.drawImage(img, cx - w/2, cy - h/2, w, h);
+    if(br > 1){ ctx.globalAlpha = op * Math.min(1, (br-1)*0.6); ctx.drawImage(img, cx - w/2, cy - h/2, w, h); }
+    ctx.restore();
+    return true;
+  }
+  function arDrawCover(ctx, src, sw, sh, W, H, mirror){
+    if(!sw || !sh) return;
+    var scale = Math.max(W/sw, H/sh);
+    var dw = sw*scale, dh = sh*scale, dx = (W-dw)/2, dy = (H-dh)/2;
+    ctx.save();
+    if(mirror){ ctx.translate(W,0); ctx.scale(-1,1); }
+    ctx.drawImage(src, dx, dy, dw, dh);
+    ctx.restore();
+  }
+  function arDrawBackground(ctx, W, H){
+    if(arBgMode === "photo" && arBgImg && arBgImg.complete && arBgImg.naturalWidth){
+      arDrawCover(ctx, arBgImg, arBgImg.naturalWidth, arBgImg.naturalHeight, W, H, false); return;
+    }
+    if(arBgMode === "camera" && arVideoReady && arVideo.videoWidth){
+      arDrawCover(ctx, arVideo, arVideo.videoWidth, arVideo.videoHeight, W, H, arFacing === "user"); return;
+    }
+    var g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#070b18"); g.addColorStop(1,"#161f36");
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
+  function arDrawCharacter(ctx, W, H){
+    if(!arCharOn || !arCharImg || !arCharImg.complete || !arCharImg.naturalWidth) return;
+    var ratio = arCharImg.naturalWidth / arCharImg.naturalHeight;
+    var ch = H*0.44, cw = ch*ratio;
+    ctx.drawImage(arCharImg, W*0.5 - cw/2, H - ch - H*0.02, cw, ch);
+  }
+  function arDrawWatermark(ctx, W, H){
+    var s = Math.max(12, Math.round(Math.min(W,H)*0.032));
+    ctx.save();
+    ctx.font = "700 " + s + "px system-ui,-apple-system,'Hiragino Kaku Gothic ProN',sans-serif";
+    ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+    ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = s*0.4; ctx.shadowOffsetY = 1;
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fillText("ながおか探検録 🎆", W - s*0.7, H - s*0.7);
+    ctx.restore();
+  }
+  function arFrame(){
+    if(!arRunning) return;
+    var W = arCanvas.clientWidth, H = arCanvas.clientHeight, ctx = arCtx, now = performance.now();
+    ctx.setTransform(arDpr,0,0,arDpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    arDrawBackground(ctx, W, H);
+    for(var i=arActive.length-1;i>=0;i--){ if(!arDrawFirework(ctx, arActive[i], now)) arActive.splice(i,1); }
+    arDrawCharacter(ctx, W, H);
+    arRAF = requestAnimationFrame(arFrame);
+  }
+  function arResize(){
+    if(!arCanvas) return;
+    arDpr = Math.min(window.devicePixelRatio || 1, 2);
+    arCanvas.width = Math.round(arCanvas.clientWidth * arDpr);
+    arCanvas.height = Math.round(arCanvas.clientHeight * arDpr);
+  }
+  function arSetChar(on){
+    arCharOn = on;
+    var btn = document.getElementById("ar-char"); if(btn) btn.classList.toggle("on", on);
+    if(on && (!arCharImg || arCharImg.dataset_mood !== "1")){
+      arCharImg = new Image(); arCharImg.dataset_mood = "1"; arCharImg.src = guideAssetPath("happy");
     }
   }
-  function arBloom(fx, f, x, y, big){
-    if(!fx) return;
-    var img = document.createElement("img");
-    img.className = big ? "ar-bloom ar-bloom-full" : "ar-bloom";
-    img.src = f.img; img.alt = f.name;
-    if(!big){ img.style.left = x + "px"; img.style.top = y + "px"; }
-    img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
-    fx.appendChild(img);
+  function arStopAuto(){
+    arAuto = false; if(arAutoTimer){ clearTimeout(arAutoTimer); arAutoTimer = 0; }
+    var b = document.getElementById("ar-auto"); if(b) b.classList.remove("on");
+  }
+  function arAutoTick(){
+    if(!arAuto || !arRunning) return;
+    var pool = FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id]; });
+    if(pool.length){
+      var id = pool[Math.floor(Math.random()*pool.length)];
+      if(AR_BIG[id] && Math.random() > 0.35){
+        var small = pool.filter(function(i){ return !AR_BIG[i]; });
+        if(small.length) id = small[Math.floor(Math.random()*small.length)];
+      }
+      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, f = fwById(id);
+      arPushFw(f, W*(0.2+Math.random()*0.6), H*(0.2+Math.random()*0.3));
+    }
+    arAutoTimer = setTimeout(arAutoTick, 650 + Math.random()*900);
+  }
+  function arToggleAuto(){
+    if(arAuto){ arStopAuto(); }
+    else { arAuto = true; var b=document.getElementById("ar-auto"); if(b) b.classList.add("on"); arAutoTick(); }
+  }
+  function arPickBgPhoto(){ var inp = document.getElementById("ar-bgfile"); if(inp) inp.click(); }
+  function arBgFileChosen(e){
+    var file = e.target.files && e.target.files[0]; if(!file) return;
+    var url = URL.createObjectURL(file);
+    var im = new Image();
+    im.onload = function(){ arBgImg = im; arBgMode = "photo"; arStopCamera(); URL.revokeObjectURL(url); };
+    im.src = url; e.target.value = "";
+  }
+  function arCapture(){
+    var ec = document.createElement("canvas");
+    ec.width = arCanvas.width; ec.height = arCanvas.height;
+    var ectx = ec.getContext("2d");
+    ectx.drawImage(arCanvas, 0, 0);
+    ectx.setTransform(arDpr,0,0,arDpr,0,0);
+    arDrawWatermark(ectx, arCanvas.clientWidth, arCanvas.clientHeight);
+    ec.toBlob(function(blob){ if(blob) arShowPreview(blob); }, "image/jpeg", 0.92);
+  }
+  function arShowPreview(blob){
+    arShotBlob = blob;
+    if(arShotUrl) URL.revokeObjectURL(arShotUrl);
+    arShotUrl = URL.createObjectURL(blob);
+    var img = document.getElementById("ar-shot"); if(img) img.src = arShotUrl;
+    var modal = document.getElementById("ar-modal"); if(modal) modal.style.display = "flex";
+  }
+  function arClosePreview(){ var m = document.getElementById("ar-modal"); if(m) m.style.display = "none"; }
+  function arShare(){
+    if(!arShotBlob) return;
+    var file = new File([arShotBlob], "nagaoka-hanabi.jpg", { type:"image/jpeg" });
+    if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+      navigator.share({ files:[file], text:"ながおか探検録で花火を打ち上げた！ #ながおか探検録" }).catch(function(){});
+    } else { arSaveShot(); }
+  }
+  function arSaveShot(){
+    if(!arShotUrl) return;
+    var a = document.createElement("a");
+    a.href = arShotUrl; a.download = "nagaoka-hanabi.jpg";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
   function arOpen(){
     var view = document.getElementById("ar-view"); if(!view) return;
+    arCanvas = document.getElementById("ar-canvas");
+    arVideo = document.getElementById("ar-video");
+    arCtx = arCanvas.getContext("2d");
     arSelFw = grandestUnlockedFw() || FW_ORDER[0];
     arRenderPicker();
+    arActive = []; arBgMode = "camera"; arBgImg = null;
+    arCharOn = false; var cbn = document.getElementById("ar-char"); if(cbn) cbn.classList.remove("on");
+    arStopAuto();
     view.style.display = "block";
+    arResize();
     arFacing = "environment";
+    arRunning = true;
+    arRAF = requestAnimationFrame(arFrame);
     arStartCamera();
     view.onclick = function(e){
-      if(e.target.closest && (e.target.closest(".ar-btn") || e.target.closest(".ar-pick"))) return;
-      arLaunch(e.clientX, e.clientY);
+      if(e.target.closest && (e.target.closest(".ar-btn") || e.target.closest(".ar-pick") ||
+         e.target.closest(".ar-cbtn") || e.target.closest(".ar-modal"))) return;
+      var r = arCanvas.getBoundingClientRect();
+      arLaunch(e.clientX - r.left, e.clientY - r.top);
     };
   }
   function arClose(){
     var view = document.getElementById("ar-view");
+    arRunning = false;
+    if(arRAF){ cancelAnimationFrame(arRAF); arRAF = 0; }
+    arStopAuto();
     arStopCamera();
+    arActive = [];
+    arClosePreview();
     if(view){ view.style.display = "none"; view.onclick = null; }
-    var fx = document.getElementById("ar-fx"); if(fx) fx.innerHTML = "";
     arShowMsg("");
   }
   (function bindAR(){
-    var ob = document.getElementById("ar-open-btn"); if(ob) ob.addEventListener("click", arOpen);
-    var cb = document.getElementById("ar-close");    if(cb) cb.addEventListener("click", arClose);
-    var fb = document.getElementById("ar-flip");     if(fb) fb.addEventListener("click", arFlip);
-    // アプリが背面/非表示になったらカメラを止める（電池と権限のため）
+    var g = function(id){ return document.getElementById(id); };
+    var ob = g("ar-open-btn"); if(ob) ob.addEventListener("click", arOpen);
+    var cb = g("ar-close");    if(cb) cb.addEventListener("click", arClose);
+    var fb = g("ar-flip");     if(fb) fb.addEventListener("click", arFlip);
+    var ch = g("ar-char");     if(ch) ch.addEventListener("click", function(){ arSetChar(!arCharOn); });
+    var au = g("ar-auto");     if(au) au.addEventListener("click", arToggleAuto);
+    var sh = g("ar-shoot");    if(sh) sh.addEventListener("click", arCapture);
+    var bg = g("ar-bg");       if(bg) bg.addEventListener("click", arPickBgPhoto);
+    var bf = g("ar-bgfile");   if(bf) bf.addEventListener("change", arBgFileChosen);
+    var sp = g("ar-share");    if(sp) sp.addEventListener("click", arShare);
+    var sv = g("ar-save");     if(sv) sv.addEventListener("click", arSaveShot);
+    var mc = g("ar-modal-close"); if(mc) mc.addEventListener("click", arClosePreview);
+    window.addEventListener("resize", function(){ if(arRunning) arResize(); });
     document.addEventListener("visibilitychange", function(){
-      if(document.hidden && arStream){ arStopCamera(); }
-      else if(!document.hidden){
-        var v = document.getElementById("ar-view");
-        if(v && v.style.display === "block" && !arStream){ arStartCamera(); }
+      if(document.hidden){ if(arStream) arStopCamera(); }
+      else {
+        var v = g("ar-view");
+        if(v && v.style.display === "block" && arBgMode === "camera" && !arStream){ arStartCamera(); }
       }
     });
   })();
