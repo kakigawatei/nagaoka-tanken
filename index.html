@@ -2893,7 +2893,7 @@
     { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" },
     { id:"date",      name:"日付（2段）",  img:"",  dynamic:true, dateMode:"stack", blurb:"今日という日が、西暦と月日の2段で夜空に打ち上がる特別な花火。" },
     { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" },
-    { id:"saturn",    name:"土星",         img:"",  procedural:"saturn",            blurb:"輪をまとった惑星。中央の玉の光が右から左へ流れる、動く花火。" }
+    { id:"saturn",    name:"土星",         img:"assets/fw_saturn1.png", variants:["assets/fw_saturn1.png","assets/fw_saturn2.png","assets/fw_saturn3.png","assets/fw_saturn4.png"], blurb:"輪をまとった惑星の花火。上がるたびに輪の向きが変わる。" }
   ];
   // 動的花火の画像srcを返す。dynamic(日付)は毎日その日の日付、procedural(土星)は静止1コマをcanvasで描く。
   var arDateUrl = {};   // "YYYY-M-D-mode" -> dataURL
@@ -3017,6 +3017,11 @@
     if(arFwImg[f.id]) return arFwImg[f.id];
     var im = new Image(); im.src = fwImgSrc(f); arFwImg[f.id] = im; return im;
   }
+  var arSrcImg = {};   // src文字列 -> Image（バリエーション画像のキャッシュ）
+  function arLoadImgSrc(src){
+    if(arSrcImg[src]) return arSrcImg[src];
+    var im = new Image(); im.src = src; arSrcImg[src] = im; return im;
+  }
   function arStopCamera(){
     if(arStream){ try{ arStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} arStream = null; }
     arVideoReady = false;
@@ -3105,7 +3110,8 @@
     var big = !!AR_BIG[f.id];
     var rotMax = AR_ROT_LIM[f.id] || AR_ROT_MAX;
     // 大玉もタップ位置で開く（位置固定なし・サイズだけ大きい）
-    arActive.push({ f:f, img:arLoadFwImg(f), big:big, x:x, y:y,
+    var img = f.variants ? arLoadImgSrc(f.variants[Math.floor(Math.random()*f.variants.length)]) : arLoadFwImg(f);
+    arActive.push({ f:f, img:img, big:big, x:x, y:y,
       rot: (big || AR_NOROT[f.id]) ? 0 : (Math.random()*2-1)*rotMax,
       tint: !!AR_TINT[f.id], pal: arPickPalette(), tinted: null,
       hue: AR_HUE[f.id] ? Math.floor(Math.random()*360) : 0, hued: null,
