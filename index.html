@@ -982,6 +982,12 @@
   .ar-cbtn:active{ transform:scale(.94); }
   .ar-cbtn.on{ background:#c8462e; box-shadow:0 0 12px rgba(255,120,80,.75); }
   .ar-cbtn.ar-shoot{ width:66px; height:66px; font-size:30px; background:#fff; color:#c8462e; box-shadow:0 0 0 3px rgba(255,255,255,.55); }
+  /* キャラ呼び出しボタン＝そのキャラの顔をアップで表示 */
+  .ar-cbtn.ar-char-btn{
+    background-color:#12203c; background-repeat:no-repeat; background-size:210%;
+    background-position:center 14%; overflow:hidden; color:transparent; font-size:0;
+  }
+  .ar-cbtn.ar-char-btn.on-ring{ box-shadow:0 0 0 3px #ffd24d, 0 0 13px rgba(255,210,77,.85); }
   .ar-modal{
     position:absolute; inset:0; z-index:5; background:rgba(0,0,0,.85);
     display:flex; align-items:center; justify-content:center; padding:24px;
@@ -1430,7 +1436,7 @@
     </div>
     <div class="ar-picker" id="ar-picker"></div>
     <div class="ar-controls">
-      <button class="ar-cbtn" id="ar-char" aria-label="キャラを出す">🦙</button>
+      <button class="ar-cbtn ar-char-btn" id="ar-char" aria-label="キャラを出す"></button>
       <button class="ar-cbtn" id="ar-auto" aria-label="自動花火">🎇</button>
       <button class="ar-cbtn ar-shoot" id="ar-shoot" aria-label="写真を撮る">📷</button>
       <button class="ar-cbtn" id="ar-bg" aria-label="背景に写真">🖼</button>
@@ -3103,9 +3109,13 @@
     arCanvas.width = Math.round(arCanvas.clientWidth * arDpr);
     arCanvas.height = Math.round(arCanvas.clientHeight * arDpr);
   }
+  function arUpdateCharBtn(){
+    var btn = document.getElementById("ar-char"); if(!btn) return;
+    btn.style.backgroundImage = "url('" + guideAssetPath("happy") + "')";
+  }
   function arSetChar(on){
     arCharOn = on;
-    var btn = document.getElementById("ar-char"); if(btn) btn.classList.toggle("on", on);
+    var btn = document.getElementById("ar-char"); if(btn) btn.classList.toggle("on-ring", on);
     var hint = document.getElementById("ar-hint");
     if(on){
       arCharMood = "happy"; arCharScale = 1;
@@ -3186,7 +3196,8 @@
     arRenderPicker();
     arActive = []; arBgMode = "camera"; arBgImg = null;
     arCharOn = false; arCharImgs = {}; arCharMood = "happy"; arCharScale = 1; arDrag = null; arPtrs = {};
-    var cbn = document.getElementById("ar-char"); if(cbn) cbn.classList.remove("on");
+    var cbn = document.getElementById("ar-char"); if(cbn) cbn.classList.remove("on-ring");
+    arUpdateCharBtn();
     var hint = document.getElementById("ar-hint"); if(hint) hint.textContent = "画面をタップで花火 🎆";
     arStopAuto();
     view.style.display = "block";
