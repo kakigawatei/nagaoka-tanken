@@ -2892,16 +2892,29 @@
     { id:"heart",     name:"ハート",       img:"assets/fw_heart.png",     blurb:"夜空に咲く、恋のかたち。型物花火。" },
     { id:"smile",     name:"スマイル",     img:"assets/fw_smile.png",     blurb:"金の光で描くニコニコ笑顔。型物花火。" },
     { id:"date",      name:"日付（2段）",  img:"",  dynamic:true, dateMode:"stack", blurb:"今日という日が、西暦と月日の2段で夜空に打ち上がる特別な花火。" },
-    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" }
+    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" },
+    { id:"saturn",    name:"土星",         img:"",  procedural:"saturn",            blurb:"輪をまとった惑星。中央の玉の光が右から左へ流れる、動く花火。" }
   ];
-  // 動的花火（日付）の画像srcを返す。dynamic花火は毎日その日の日付をcanvasで描く（modeで2段/横1段）。
+  // 動的花火の画像srcを返す。dynamic(日付)は毎日その日の日付、procedural(土星)は静止1コマをcanvasで描く。
   var arDateUrl = {};   // "YYYY-M-D-mode" -> dataURL
+  var arProcUrl = {};   // id -> dataURL（一覧サムネ用の静止画。ARでは毎フレーム動く別描画）
   function fwImgSrc(f){
+    if(f.procedural){
+      if(!arProcUrl[f.id]) arProcUrl[f.id] = arBuildSaturnCanvas().toDataURL();
+      return arProcUrl[f.id];
+    }
     if(!f.dynamic) return f.img;
     var n = new Date(), mode = f.dateMode || "stack";
     var key = n.getFullYear() + "-" + (n.getMonth()+1) + "-" + n.getDate() + "-" + mode;
     if(!arDateUrl[key]) arDateUrl[key] = arBuildDateCanvas(mode).toDataURL();
     return arDateUrl[key];
+  }
+  // 土星の静止サムネ（512×512透過）。ARの動く描画と同じarDrawSaturnを1コマ分呼ぶ。
+  function arBuildSaturnCanvas(){
+    var S = 512, c = document.createElement("canvas"); c.width = S; c.height = S;
+    var cx = c.getContext("2d");
+    arDrawSaturn(cx, S/2, S/2, S*0.92, 1, 400);
+    return c;
   }
   // 今日の日付を「光のドット」で描いた512×512の透過canvasを作る。
   //  mode="stack"：上段=西暦／下段=月.日（2段）。mode="row"：西暦.月.日を横1列・全部同じサイズ。
@@ -2980,10 +2993,10 @@
   var AR_BIG = { shakudama:true, phoenix:true };
   var AR_ROT_MAX = Math.PI;              // 打ち上げごとのランダム回転（±180°＝完全自由）。形が毎回違う向きに
   var AR_ROT_LIM = { smile: Math.PI*0.28 }; // 向きのある型物は控えめに傾ける（スマイル＝±約50°で笑顔を保ちつつ角度を変える）
-  var AR_NOROT = { yanagi:true, date:true, date_row:true }; // 向きが完全固定の花火（柳＝下垂れ／日付＝数字が読めるよう）は回転させない
+  var AR_NOROT = { yanagi:true, date:true, date_row:true, saturn:true }; // 向きが完全固定の花火（柳／日付／土星＝輪の向き固定）は回転させない
   var AR_TINT  = { heart:true };         // 単色型物：打ち上げごとに全体を2色グラデで塗り替える
   var AR_HUE   = { smile:true, date:true, date_row:true }; // 多色型物：部分ごとの色を保ったまま色相を毎回回転（スマイル＝目/口／日付＝数字のレインボー）
-  var AR_SIZE  = { heart:0.6, smile:0.6, date:1.0, date_row:1.0 }; // 標準サイズ倍率（ハート/スマイル/日付ともに小さめ）
+  var AR_SIZE  = { heart:0.6, smile:0.6, date:1.0, date_row:1.0, saturn:0.9 }; // 標準サイズ倍率
   var AR_NOAUTO = { date:true, date_row:true }; // 自動花火モードでは打ち上げない（日付花火は手動で選んだ時だけ）
   var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
@@ -3130,10 +3143,6 @@
     }
     var p2 = (el - o.rocketDur) / o.bloomDur;
     if(p2 >= 1) return false;
-    var img = o.img; if(!img.complete || !img.naturalWidth) return true;
-    if(o.tint && !o.tinted) o.tinted = arMakeTinted(img, o.pal);
-    if(o.hue && !o.hued) o.hued = arMakeHued(img, o.hue);
-    var src = o.tinted || o.hued || img;
     var op = arKey(o.big?AR_B_OP:AR_S_OP, p2);
     var sc = arKey(o.big?AR_B_SC:AR_S_SC, p2);
     var br = arKey(o.big?AR_B_BR:AR_S_BR, p2);
@@ -3142,6 +3151,18 @@
     var w = side*sc, h = side*sc;
     var cx = o.x, cy = o.y;
     op = Math.max(0, Math.min(1, op));
+    // 手続き描画の花火（土星＝中央の玉のグラデが右→左に流れるアニメ）
+    if(o.f.procedural === "saturn"){
+      ctx.save();
+      if(o.rot){ ctx.translate(cx, cy); ctx.rotate(o.rot); ctx.translate(-cx, -cy); }
+      arDrawSaturn(ctx, cx, cy, side*sc, op, now);
+      ctx.restore();
+      return true;
+    }
+    var img = o.img; if(!img.complete || !img.naturalWidth) return true;
+    if(o.tint && !o.tinted) o.tinted = arMakeTinted(img, o.pal);
+    if(o.hue && !o.hued) o.hued = arMakeHued(img, o.hue);
+    var src = o.tinted || o.hued || img;
     ctx.save(); ctx.globalCompositeOperation = "lighter";
     if(o.rot){ ctx.translate(cx, cy); ctx.rotate(o.rot); ctx.translate(-cx, -cy); }
     ctx.globalAlpha = op;
@@ -3149,6 +3170,65 @@
     if(br > 1){ ctx.globalAlpha = op * Math.min(1, (br-1)*0.6); ctx.drawImage(src, cx - w/2, cy - h/2, w, h); }
     ctx.restore();
     return true;
+  }
+  // 土星の花火：傾いた輪（後半→玉→前半で立体感）＋中央の玉。玉のグラデ光が右→左へ流れる。
+  //  ctx: 描画先, (cx,cy): 中心, D: 全体直径, op: 不透明度(0-1), now: 時刻(ms)
+  function arDrawSaturn(ctx, cx, cy, D, op, now){
+    var rb = D*0.23;                       // 玉の半径
+    var rx = D*0.49, ry = D*0.17;          // 輪の外側半径（横長の楕円）
+    var tilt = -0.30;                      // 輪の傾き
+    var ph = ((now % 2600) / 2600);        // 0→1 で1周する位相（グラデの流れ）
+    ctx.save();
+    ctx.globalAlpha = op;
+    // --- 輪を点で描く。前後で分けて玉に重なる立体感を出す ---
+    function ringArc(back){
+      ctx.globalCompositeOperation = "lighter";
+      for(var band=0; band<2; band++){
+        var er = rx - band*(D*0.055), er2 = ry - band*(D*0.02);
+        var N = 54;
+        for(var i=0;i<N;i++){
+          var a = i/N*Math.PI*2;
+          if(back ? (Math.sin(a) >= 0) : (Math.sin(a) < 0)) continue; // 上半分=奥、下半分=手前
+          var ex = Math.cos(a)*er, ey = Math.sin(a)*er2;
+          var px = cx + ex*Math.cos(tilt) - ey*Math.sin(tilt);
+          var py = cy + ex*Math.sin(tilt) + ey*Math.cos(tilt);
+          var hue = (a/Math.PI*180 - ph*360) % 360; if(hue<0) hue+=360; // 輪も淡く色が回る
+          var dr = D*0.022;
+          var gg = ctx.createRadialGradient(px,py,0,px,py,dr);
+          gg.addColorStop(0,"#ffffff");
+          gg.addColorStop(0.35,"hsl("+hue+",90%,72%)");
+          gg.addColorStop(1,"hsla("+hue+",90%,60%,0)");
+          ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(px,py,dr,0,Math.PI*2); ctx.fill();
+        }
+      }
+    }
+    ringArc(true);                         // 奥の輪
+    // --- 中央の玉：右→左に流れるレインボーグラデ ---
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,rb,0,Math.PI*2); ctx.clip();
+    ctx.globalCompositeOperation = "source-over";
+    var grad = ctx.createLinearGradient(cx-rb, cy, cx+rb, cy);
+    for(var s=0;s<=10;s++){
+      var t=s/10;
+      var h=(t*360 - ph*360) % 360; if(h<0) h+=360; // ph増加で色が左へ移動＝右から入れ替わる
+      grad.addColorStop(t,"hsl("+h+",92%,56%)");
+    }
+    ctx.fillStyle=grad; ctx.fillRect(cx-rb,cy-rb,rb*2,rb*2);
+    // 球体シェーディング（左上ハイライト＋周辺減光）で立体感
+    var sh = ctx.createRadialGradient(cx-rb*0.32,cy-rb*0.32,rb*0.1, cx,cy,rb);
+    sh.addColorStop(0,"rgba(255,255,255,0.5)");
+    sh.addColorStop(0.55,"rgba(255,255,255,0)");
+    sh.addColorStop(1,"rgba(0,0,0,0.4)");
+    ctx.fillStyle=sh; ctx.fillRect(cx-rb,cy-rb,rb*2,rb*2);
+    ctx.restore();
+    // 玉のまわりの淡いグロー
+    ctx.globalCompositeOperation = "lighter";
+    var glow = ctx.createRadialGradient(cx,cy,rb*0.6, cx,cy,rb*1.5);
+    glow.addColorStop(0,"rgba(255,255,255,0.28)");
+    glow.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(cx,cy,rb*1.5,0,Math.PI*2); ctx.fill();
+    ringArc(false);                        // 手前の輪
+    ctx.restore();
   }
   function arDrawCover(ctx, src, sw, sh, W, H, mirror){
     if(!sw || !sh) return;
