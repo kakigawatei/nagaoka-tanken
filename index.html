@@ -389,6 +389,13 @@
   .book-card .info{ padding:8px 10px 10px; }
   .book-card .title{ font-size:12.5px; font-weight:700; line-height:1.3; margin-bottom:2px; }
   .book-card .era{ font-size:10.5px; color:var(--ink-soft); }
+  .book-district-head{
+    grid-column:1 / -1; display:flex; align-items:baseline; justify-content:space-between;
+    gap:8px; padding:4px 4px 5px; margin-top:6px; border-bottom:2px solid var(--indigo);
+  }
+  .book-district-head:first-child{ margin-top:0; }
+  .book-district-head .bd-name{ font-size:15px; font-weight:800; color:var(--indigo); letter-spacing:.02em; }
+  .book-district-head .bd-count{ font-size:11.5px; font-weight:700; color:var(--ink-soft); white-space:nowrap; }
   /* 図鑑グレード（おみやげ収集で枠がアップ）＋訪問回数で★ */
   .thumb-wrap{ position:relative; overflow:hidden; }
   .card-stars{ position:absolute; top:4px; right:5px; color:#ffd24d; font-size:12px; letter-spacing:-1px; text-shadow:0 1px 2px rgba(0,0,0,0.55); }
@@ -3816,7 +3823,7 @@
       gradeLine.innerHTML = "図鑑グレード：" + badge + " あと <b>" + need + "</b> 個のおみやげで" + GRADE_NAMES[g+1] + "へ";
     }
 
-    DATA.pois.forEach(function(poi){
+    function appendCard(poi){
       var found = save.found.indexOf(poi.id) !== -1;
       var card = document.createElement("div");
       card.className = "book-card" + (found ? " found" : "") + (found && g > 0 ? " grade-" + g : "");
@@ -3838,7 +3845,30 @@
       }
       card.addEventListener("click", function(){ showBookDetail(poi, found); });
       grid.appendChild(card);
+    }
+
+    // エリア（地区）ごとにまとめて表示。順序は地図タブと同じ DATA.districts 順。
+    var shown = {};
+    DATA.districts.forEach(function(d){
+      var dpois = DATA.pois.filter(function(p){ return p.districtId === d.id; });
+      if(!dpois.length) return;
+      var foundCount = dpois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
+      var head = document.createElement("div");
+      head.className = "book-district-head";
+      head.innerHTML = '<span class="bd-name">' + d.name + '</span><span class="bd-count">' + foundCount + ' / ' + dpois.length + '</span>';
+      grid.appendChild(head);
+      dpois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
     });
+    // 念のため：どの地区にも属さないスポットがあれば末尾にまとめる
+    var orphans = DATA.pois.filter(function(p){ return !shown[p.id]; });
+    if(orphans.length){
+      var oh = document.createElement("div");
+      oh.className = "book-district-head";
+      oh.innerHTML = '<span class="bd-name">その他</span><span class="bd-count">' +
+        orphans.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length + ' / ' + orphans.length + '</span>';
+      grid.appendChild(oh);
+      orphans.forEach(appendCard);
+    }
   }
 
   function showBookDetail(poi, found){
