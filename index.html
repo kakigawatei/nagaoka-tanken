@@ -926,6 +926,65 @@
     100%{ opacity:0; transform:translate(-50%,-52%) scale(1.14); }
   }
 
+  /* ---------- ARカメラ花火 ---------- */
+  .ar-open-btn{
+    display:block; width:calc(100% - 28px); margin:2px 14px 10px; padding:13px 14px;
+    border:none; border-radius:12px; background:linear-gradient(135deg,#3a2b6b,#7a2b5e);
+    color:#fff; font-size:15px; font-weight:800; letter-spacing:.02em; cursor:pointer;
+    box-shadow:0 3px 12px rgba(90,40,110,.4);
+  }
+  .ar-open-btn:active{ transform:scale(.98); }
+  #ar-view{ position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; }
+  #ar-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; }
+  #ar-video.mirror{ transform:scaleX(-1); }
+  #ar-fx{ position:absolute; inset:0; pointer-events:none; z-index:2; }
+  .ar-topbar{
+    position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center;
+    justify-content:space-between; gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
+    background:linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,0));
+  }
+  .ar-btn{
+    width:44px; height:44px; flex:0 0 auto; border:none; border-radius:50%;
+    background:rgba(0,0,0,.45); color:#fff; font-size:19px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+  }
+  .ar-btn:active{ transform:scale(.94); }
+  .ar-hint{ color:#fff; font-size:13px; font-weight:700; text-shadow:0 1px 4px rgba(0,0,0,.85); }
+  .ar-msg{
+    position:absolute; inset:0; z-index:4; display:flex; align-items:center; justify-content:center;
+    text-align:center; color:#fff; font-size:15px; line-height:1.8; padding:34px;
+    text-shadow:0 1px 4px rgba(0,0,0,.7);
+  }
+  .ar-picker{
+    position:absolute; left:0; right:0; z-index:3; display:flex; gap:8px; justify-content:center;
+    flex-wrap:wrap; padding:0 12px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+  }
+  .ar-pick{
+    width:46px; height:46px; flex:0 0 auto; border-radius:10px; padding:3px; cursor:pointer;
+    background:rgba(0,0,0,.4); border:2px solid transparent;
+  }
+  .ar-pick img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .ar-pick.sel{ border-color:#ffd24d; box-shadow:0 0 10px rgba(255,210,77,.75); }
+  .ar-bloom{
+    position:absolute; width:72vw; max-width:400px; aspect-ratio:1/1; margin:0;
+    transform:translate(-50%,-50%) scale(.15); opacity:0; pointer-events:none;
+    will-change:transform,opacity,filter; animation:arBloom 1.7s ease-out forwards;
+  }
+  @keyframes arBloom{
+    0%{ opacity:0; transform:translate(-50%,-50%) scale(.15); filter:brightness(2.4); }
+    14%{ opacity:1; transform:translate(-50%,-50%) scale(.85); filter:brightness(1.7); }
+    42%{ opacity:1; transform:translate(-50%,-50%) scale(1.03); filter:brightness(1.1); }
+    100%{ opacity:0; transform:translate(-50%,-50%) scale(1.14); filter:brightness(.75); }
+  }
+  .ar-rocket{
+    position:absolute; width:7px; height:7px; border-radius:50%; background:#fff4cf;
+    box-shadow:0 0 12px 4px rgba(255,220,120,.9); pointer-events:none;
+    transform:translate(-50%,-50%);
+  }
+
   /* ---------- ワープ ---------- */
   .warp-card{ border:2px solid var(--indigo); }
   #warp-modal{
@@ -1112,6 +1171,7 @@
     </div>
     <div id="book-panel-fw" style="display:none;">
       <div class="book-progress" id="fw-progress">あつめた花火：0 / 6</div>
+      <button class="ar-open-btn" id="ar-open-btn">🎆 ARカメラで打ち上げる</button>
       <div class="fw-grid" id="fw-grid"></div>
       <div class="settings-note" style="padding:0 14px 14px;">実績を達成すると花火が増えます。タップでもう一度打ち上げ！🎆</div>
     </div>
@@ -1347,6 +1407,18 @@
   </div>
 
   <canvas id="fw-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:70;display:none;"></canvas>
+
+  <div id="ar-view" style="display:none;">
+    <video id="ar-video" autoplay playsinline muted></video>
+    <div id="ar-fx"></div>
+    <div class="ar-msg" id="ar-msg" style="display:none;"></div>
+    <div class="ar-topbar">
+      <button class="ar-btn" id="ar-close" aria-label="閉じる">✕</button>
+      <div class="ar-hint">画面をタップで花火 🎆</div>
+      <button class="ar-btn" id="ar-flip" aria-label="カメラ切替">🔄</button>
+    </div>
+    <div class="ar-picker" id="ar-picker"></div>
+  </div>
 
   <div class="toast" id="toast"></div>
 </div>
@@ -2814,6 +2886,119 @@
     img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
     layer.appendChild(img);
   }
+
+  /* ---------- ARカメラ花火（カメラ映像の上に、集めた花火をタップで打ち上げ） ---------- */
+  var arStream = null, arFacing = "environment", arSelFw = null;
+
+  function arStopCamera(){
+    if(arStream){ try{ arStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} arStream = null; }
+    var v = document.getElementById("ar-video"); if(v) v.srcObject = null;
+  }
+  function arShowMsg(html){
+    var m = document.getElementById("ar-msg");
+    if(m){ if(html){ m.innerHTML = html; m.style.display = "flex"; } else { m.style.display = "none"; } }
+  }
+  function arStartCamera(){
+    var video = document.getElementById("ar-video");
+    arShowMsg("");
+    arStopCamera();
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      arShowMsg("この端末ではカメラを使えませんでした🙏"); return;
+    }
+    navigator.mediaDevices.getUserMedia({ video:{ facingMode: arFacing }, audio:false }).then(function(stream){
+      arStream = stream;
+      video.srcObject = stream;
+      video.classList.toggle("mirror", arFacing === "user");
+      var pp = video.play && video.play(); if(pp && pp.catch) pp.catch(function(){});
+      // 開いた瞬間に1発、真ん中あたりに打ち上げて“動く”のを見せる
+      setTimeout(function(){
+        var fx = document.getElementById("ar-fx"); if(!fx) return;
+        arLaunch(fx.clientWidth * 0.5, fx.clientHeight * 0.38);
+      }, 650);
+    }).catch(function(err){
+      var name = (err && err.name) || "error";
+      arShowMsg("カメラを起動できませんでした🙏<br>設定でカメラの許可をオンにしてね。<br><small>(" + name + ")</small>");
+    });
+  }
+  function arFlip(){
+    arFacing = (arFacing === "environment") ? "user" : "environment";
+    arStartCamera();
+  }
+  function arRenderPicker(){
+    var p = document.getElementById("ar-picker"); if(!p) return;
+    p.innerHTML = "";
+    FW_ORDER.forEach(function(id){
+      if(!save.fireworks.unlocked[id]) return;
+      var f = fwById(id); if(!f) return;
+      var b = document.createElement("div");
+      b.className = "ar-pick" + (id === arSelFw ? " sel" : "");
+      b.innerHTML = "<img src=\"" + f.img + "\" alt=\"" + f.name + "\">";
+      b.addEventListener("click", function(ev){ ev.stopPropagation(); arSelFw = id; arRenderPicker(); });
+      p.appendChild(b);
+    });
+  }
+  function arLaunch(x, y){
+    var fx = document.getElementById("ar-fx"); if(!fx) return;
+    var f = fwById(arSelFw) || fwById(FW_ORDER[0]); if(!f) return;
+    var H = fx.clientHeight || window.innerHeight;
+    var rocket = document.createElement("div");
+    rocket.className = "ar-rocket";
+    rocket.style.left = x + "px"; rocket.style.top = y + "px";
+    fx.appendChild(rocket);
+    var startY = Math.max(0, H - y);
+    var done = function(){ if(rocket.parentNode) rocket.parentNode.removeChild(rocket); arBloom(fx, f, x, y); };
+    if(rocket.animate){
+      var a = rocket.animate([
+        { transform:"translate(-50%,-50%) translateY(" + startY + "px)", opacity:0.25 },
+        { transform:"translate(-50%,-50%) translateY(" + (startY*0.14) + "px)", opacity:1, offset:0.85 },
+        { transform:"translate(-50%,-50%) translateY(0px)", opacity:1 }
+      ], { duration:470, easing:"ease-in" });
+      a.onfinish = done;
+      a.oncancel = done;
+    } else {
+      done();
+    }
+  }
+  function arBloom(fx, f, x, y){
+    if(!fx) return;
+    var img = document.createElement("img");
+    img.className = "ar-bloom"; img.src = f.img; img.alt = f.name;
+    img.style.left = x + "px"; img.style.top = y + "px";
+    img.addEventListener("animationend", function(){ if(img.parentNode) img.parentNode.removeChild(img); });
+    fx.appendChild(img);
+  }
+  function arOpen(){
+    var view = document.getElementById("ar-view"); if(!view) return;
+    arSelFw = grandestUnlockedFw() || FW_ORDER[0];
+    arRenderPicker();
+    view.style.display = "block";
+    arFacing = "environment";
+    arStartCamera();
+    view.onclick = function(e){
+      if(e.target.closest && (e.target.closest(".ar-btn") || e.target.closest(".ar-pick"))) return;
+      arLaunch(e.clientX, e.clientY);
+    };
+  }
+  function arClose(){
+    var view = document.getElementById("ar-view");
+    arStopCamera();
+    if(view){ view.style.display = "none"; view.onclick = null; }
+    var fx = document.getElementById("ar-fx"); if(fx) fx.innerHTML = "";
+    arShowMsg("");
+  }
+  (function bindAR(){
+    var ob = document.getElementById("ar-open-btn"); if(ob) ob.addEventListener("click", arOpen);
+    var cb = document.getElementById("ar-close");    if(cb) cb.addEventListener("click", arClose);
+    var fb = document.getElementById("ar-flip");     if(fb) fb.addEventListener("click", arFlip);
+    // アプリが背面/非表示になったらカメラを止める（電池と権限のため）
+    document.addEventListener("visibilitychange", function(){
+      if(document.hidden && arStream){ arStopCamera(); }
+      else if(!document.hidden){
+        var v = document.getElementById("ar-view");
+        if(v && v.style.display === "block" && !arStream){ arStartCamera(); }
+      }
+    });
+  })();
 
   // 再訪カウントのクールダウン：前回の訪問からこの時間が経つと「次の1回」としてカウント（コイン再訪報酬も）。
   var REVISIT_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2時間
