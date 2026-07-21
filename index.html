@@ -948,6 +948,37 @@
   .makino-tribute-btn{ width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:8px;
     padding:7px 0; font-size:12.5px; font-weight:800; cursor:pointer; font-family:inherit; }
   .makino-tribute-btn:active{ transform:scale(0.96); }
+  /* 御殿タブ内・殿の吹き出し（年貢リアクション） */
+  .makino-tono-bubble{ position:absolute; top:8%; left:50%; transform:translateX(-50%) scale(.8);
+    background:#fffdf5; color:#2a1c0e; border:2px solid var(--gold); border-radius:14px;
+    padding:8px 14px; font-size:13px; font-weight:800; max-width:78%; text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.3); opacity:0; pointer-events:none; z-index:3; transition:opacity .2s; }
+  .makino-tono-bubble.show{ opacity:1; }
+  .makino-tono-bubble.pop{ animation:msBub .3s ease-out; }
+  .makino-tono-bubble::after{ content:""; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
+    border:7px solid transparent; border-top-color:var(--gold); }
+  /* 殿のカットシーン（フルスクリーン・吹き出しコマ送り） */
+  .makino-scene{ position:absolute; inset:0; z-index:300; display:none; flex-direction:column;
+    align-items:center; justify-content:flex-end; padding:0 0 10%;
+    background:#241708 center/cover no-repeat; cursor:pointer; }
+  .makino-scene.show{ display:flex; animation:msFade .3s ease; }
+  .makino-scene::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.6)); }
+  .ms-banner{ position:absolute; top:7%; left:50%; transform:translateX(-50%); z-index:2;
+    background:var(--vermillion); color:#fff; font-weight:900; font-size:15px; padding:8px 20px;
+    border-radius:22px; box-shadow:0 4px 14px rgba(0,0,0,.45); white-space:nowrap; }
+  .ms-tono{ position:relative; z-index:1; max-height:52%; max-width:76%; object-fit:contain;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.55)); margin-bottom:-1%; }
+  .ms-bubble{ position:relative; z-index:2; background:#fffdf5; color:#2a1c0e; border:2px solid var(--gold);
+    border-radius:16px; padding:15px 18px; margin:0 22px; max-width:340px; font-size:16px; font-weight:700;
+    line-height:1.62; box-shadow:0 6px 18px rgba(0,0,0,.45); }
+  .ms-bubble::after{ content:""; position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-bottom-color:var(--gold); }
+  .ms-bubble.pop{ animation:msBub .28s ease-out; }
+  @keyframes msBub{ 0%{ transform:scale(.9); opacity:.3; } 100%{ transform:scale(1); opacity:1; } }
+  .ms-next{ position:relative; z-index:2; color:#fff; font-size:12px; margin-top:12px;
+    animation:msBlink 1.2s ease-in-out infinite; }
+  @keyframes msBlink{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+  @keyframes msFade{ from{ opacity:0; } to{ opacity:1; } }
   /* 花火館 */
   .fw-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:6px 14px 4px; }
   .fw-cell{ background:var(--card-bg); border-radius:12px; padding:8px 6px 10px; text-align:center; box-shadow:var(--shadow); opacity:0.55; }
@@ -1458,6 +1489,14 @@
       <button class="gacha-spin-btn" id="gacha-spin-btn">回す</button>
       <div class="gacha-note" id="gacha-note"></div>
     </div>
+  </div>
+
+  <!-- 牧野家の殿・カットシーン（吹き出しをタップで送る） -->
+  <div id="makino-scene" class="makino-scene">
+    <div class="ms-banner" id="ms-banner"></div>
+    <img class="ms-tono" id="ms-tono" src="assets/makino_tono.png" alt="牧野の殿">
+    <div class="ms-bubble" id="ms-bubble"></div>
+    <div class="ms-next" id="ms-next">タップで次へ ▶</div>
   </div>
 
   <!-- ワープ先ピッカー -->
@@ -2924,8 +2963,8 @@
   // 基本進行（称号・エリアコンプ・全制覇）はボーナスを含めない＝既存の進行を壊さない
   function basePois(){ return (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return !poiBonus(p); }) : []; }
 
-  // 好感度に達したボーナススポットを解禁。新規解禁したpoiId配列を返す（お祝い演出付き）。
-  function syncMakinoUnlocks(silent){
+  // 好感度に達したボーナススポットを解禁。新規解禁したpoiId配列を返す（演出は呼び出し側で）。
+  function applyMakinoUnlocks(){
     var newly = [];
     MAKINO_UNLOCKS.forEach(function(u){
       if(save.makino.favor < u.favor) return;
@@ -2935,29 +2974,93 @@
       save.makino.unlockedSpots.push(u.poiId);
       newly.push(u.poiId);
     });
-    if(newly.length && !silent){
-      newly.forEach(function(id){
-        var poi = DATA.pois.filter(function(p){ return p.id === id; })[0];
-        toast("🏯 新しいスポットが解禁！「" + (poi ? poi.name : id) + "」を探しに行こう", { achievement:true });
-      });
-      if(typeof launchFireworks === "function") launchFireworks(3);
-    }
     return newly;
   }
-
-  // 家臣ランクの昇進チェック（favor増加後に呼ぶ）。昇進したらお祝い。
-  function syncMakinoRank(silent){
+  // 家臣ランクの昇進を反映。昇進したら新ランクindex、しなければ -1（演出は呼び出し側で）。
+  function applyMakinoRank(){
     var idx = makinoRankIndex();
     if(idx > save.makino.favorRankSeen){
-      save.makino.rank = idx;
-      save.makino.favorRankSeen = idx;
-      if(!silent){
-        toast("🎖️ 牧野家での格が上がった！「" + MAKINO_RANKS[idx].name + "」に昇進", { achievement:true });
-        if(typeof launchFireworks === "function") launchFireworks(2);
-      }
-    } else {
-      save.makino.rank = Math.max(save.makino.rank, idx);
+      save.makino.rank = idx; save.makino.favorRankSeen = idx;
+      return idx;
     }
+    save.makino.rank = Math.max(save.makino.rank, idx);
+    return -1;
+  }
+
+  /* ---- 殿のカットシーン（吹き出しをタップで送るコマ送り演出） ---- */
+  var msQueue = [], msIdx = 0, msDone = null, msBusy = false;
+  var MS_TONO = { normal:"assets/makino_tono.png", happy:"assets/makino_tono_happy.png", glad:"assets/makino_tono_glad.png" };
+  // scenes: [{banner, lines:[{text,mood,fx}]}] を順番に再生。全部終わったら finalDone。
+  function playMakinoScenes(scenes, finalDone){
+    if(!scenes || !scenes.length){ if(finalDone) finalDone(); return; }
+    var s = scenes.shift();
+    playMakinoScene(s.lines, s.banner, function(){ playMakinoScenes(scenes, finalDone); });
+  }
+  function playMakinoScene(lines, banner, onDone){
+    var scene = document.getElementById("makino-scene");
+    if(!scene){ if(onDone) onDone(); return; }
+    msQueue = lines.slice(); msIdx = 0; msDone = onDone || null; msBusy = true;
+    scene.style.backgroundImage = "url(assets/makino_hall.png)";
+    var b = document.getElementById("ms-banner");
+    b.textContent = banner || ""; b.style.display = banner ? "block" : "none";
+    scene.classList.add("show");
+    msRender();
+  }
+  function msRender(){
+    var line = msQueue[msIdx]; if(!line) return;
+    document.getElementById("ms-tono").src = MS_TONO[line.mood || "normal"] || MS_TONO.normal;
+    var bub = document.getElementById("ms-bubble");
+    bub.textContent = line.text;
+    bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop");
+    if(line.fx && typeof launchFireworks === "function") launchFireworks(3);
+    var more = document.getElementById("ms-next");
+    if(more) more.textContent = (msIdx < msQueue.length - 1) ? "タップで次へ ▶" : "タップで閉じる ✦";
+  }
+  function msAdvance(){
+    if(!msBusy) return;
+    msIdx++;
+    if(msIdx >= msQueue.length){ msClose(); return; }
+    msRender();
+  }
+  function msClose(){
+    msBusy = false;
+    var scene = document.getElementById("makino-scene");
+    if(scene) scene.classList.remove("show");
+    var cb = msDone; msDone = null;
+    if(cb) cb();
+  }
+
+  // 御殿タブ内・殿の吹き出しリアクション（軽め・年貢を1個納めた時）
+  var TONO_TRIBUTE_LINES = ["うむ、大儀である！","おお、これは良い品じゃ！","そなた、なかなか見どころがあるのう。","うむうむ、励んでおるな！","かたじけない、頂戴するぞ。"];
+  function tonoReact(text){
+    var box = document.getElementById("makino-tono-box"); if(!box) return;
+    var img = box.querySelector("img"); if(img) img.src = MS_TONO.happy;
+    var bub = document.getElementById("makino-tono-bubble");
+    if(bub){
+      bub.textContent = text; bub.classList.add("show");
+      bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop");
+      clearTimeout(tonoReact._t);
+      tonoReact._t = setTimeout(function(){ var b2 = document.getElementById("makino-tono-bubble"); if(b2) b2.classList.remove("show"); renderMakino(); }, 1700);
+    }
+  }
+
+  // 昇進のカットシーン
+  function makinoRankScene(idx){
+    return { banner:"✦ 昇進 ✦", lines:[
+      { text:"よう励んでおるな。そなたを『" + MAKINO_RANKS[idx].name + "』に取り立てるぞ！", mood:"glad", fx:true },
+      { text:"これからも牧野家のために励めよ。", mood:"happy" }
+    ]};
+  }
+  // 土地解禁のカットシーン（「殿からのお呼び」→めくって→解放！）
+  function makinoUnlockScene(pid){
+    var poi = (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return p.id === pid; })[0] : null;
+    var name = poi ? poi.name : pid;
+    return { banner:"🏯 殿からのお呼び 🏯", lines:[
+      { text:"おお、よう参った。年貢の働き、まことに大儀であった。", mood:"happy" },
+      { text:"約束じゃ。そなたに、まだ知られておらぬ土地への道を教えよう。", mood:"normal" },
+      { text:"新しい土地「" + name + "」を解放したぞーーっ！！", mood:"glad", fx:true },
+      { text:"図鑑に加わった。さっそく現地へ探しに参れ！", mood:"happy" }
+    ]};
   }
 
   // おみやげを1個、年貢として納める（ダブり＝2個以上のときのみ。図鑑用に最低1個は残す）。
@@ -2970,29 +3073,36 @@
     save.makino.favor += MAKINO_FAVOR_PER;
     save.coins += MAKINO_TRIBUTE_COIN;
     save.totalCoinsEarned += MAKINO_TRIBUTE_COIN;
-    var o = omiById(id);
-    toast("殿「うむ、大儀である」（" + (o ? o.name : id) + " を納めた：好感度+" + MAKINO_FAVOR_PER + "）");
-    syncMakinoRank(false);
-    syncMakinoUnlocks(false);
+    var rankUp = applyMakinoRank();
+    var newly = applyMakinoUnlocks();
     persist();
     if(typeof checkAchievements === "function") checkAchievements();
     var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
     renderMakino();
+    // 演出：昇進や土地解禁があればカットシーン（吹き出しをめくる）、なければ殿の軽いリアクション
+    var scenes = [];
+    if(rankUp >= 0) scenes.push(makinoRankScene(rankUp));
+    newly.forEach(function(pid){ scenes.push(makinoUnlockScene(pid)); });
+    if(scenes.length){ playMakinoScenes(scenes, function(){ renderMakino(); }); }
+    else { tonoReact(TONO_TRIBUTE_LINES[(Math.random()*TONO_TRIBUTE_LINES.length)|0]); }
   }
 
   // 牧野家の登場イベント（発見数が条件に達したら1回だけ）。boot・発見後に呼ぶ。
   function maybeMakinoIntro(){
     if(!makinoActive() || save.makino.seenIntro) return;
     save.makino.seenIntro = true;
-    syncMakinoRank(true);
-    syncMakinoUnlocks(true);
+    applyMakinoRank();
     persist();
     updateMakinoTabVisibility();
     setTimeout(function(){
-      toast("🏯 長岡藩主・牧野の殿がそなたをお呼びだ…！", { achievement:true });
-      toast("集めたおみやげを『年貢』として納めると、殿が新たな土地を教えてくれるぞ（図鑑→御殿）", { achievement:true });
-      if(typeof launchFireworks === "function") launchFireworks(3);
-    }, 900);
+      playMakinoScene([
+        { text:"………はっ、そこな者。よう参った。", mood:"normal" },
+        { text:"わしは牧野。この長岡の地を預かる殿じゃ。そなたが長岡の宝をよう集めておること、聞き及んでおるぞ。", mood:"normal" },
+        { text:"実はの…この御殿、集めた「おみやげ」を年貢として納めてくれる者を探しておってな。", mood:"normal" },
+        { text:"納めてくれれば、わしの覚えもめでたくなる。励みによっては…まだそなたの知らぬ土地を教えてやろうぞ！", mood:"happy" },
+        { text:"さあ、御殿へ参れ。（図鑑 → 御殿タブ）", mood:"glad", fx:true }
+      ], "🏯 殿からのお呼び 🏯", function(){ updateMakinoTabVisibility(); });
+    }, 800);
   }
 
   // 御殿タブの表示/非表示（牧野家が登場するまでは隠す）
@@ -3040,6 +3150,7 @@
     var tonoImg = moodIdx >= 4 ? "assets/makino_tono_glad.png"
                 : (moodIdx >= 2 ? "assets/makino_tono_happy.png" : "assets/makino_tono.png");
     var tono = '<div class="makino-tono" id="makino-tono-box" style="background-image:url(assets/makino_hall.png)">' +
+      '<div class="makino-tono-bubble" id="makino-tono-bubble"></div>' +
       '<img src="' + tonoImg + '" alt="牧野の殿" onerror="this.style.display=\'none\';var ph=this.parentNode.querySelector(\'.makino-tono-ph\');if(ph)ph.style.display=\'flex\';">' +
       '<div class="makino-tono-ph" style="display:none;">🏯<span>殿（絵は準備中）</span></div>' +
       '</div>';
@@ -5565,6 +5676,8 @@
   }
 
   function wireEvents(){
+    var msScene = document.getElementById("makino-scene");
+    if(msScene) msScene.addEventListener("click", msAdvance);
     document.getElementById("btn-start").addEventListener("click", function(){
       showScreen("home");
       document.getElementById("bottom-nav").style.display = "flex";
@@ -5732,7 +5845,7 @@
     applyMode();
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     syncCostumeUnlocks();                 // 既に発見済みスポットの衣装を遡及解放（後から追加した衣装も反映）
-    syncMakinoRank(true); syncMakinoUnlocks(true); // 牧野家：既存セーブへの遡及（通知なし）
+    applyMakinoRank(); applyMakinoUnlocks(); // 牧野家：既存セーブへの遡及（通知なし）
     updateMakinoTabVisibility();          // 御殿タブの表示/非表示
     maybeMakinoIntro();                   // 発見数が既に条件を満たしていれば登場イベント
     maybeFireworkFestivalNotice();        // 長岡花火の3日間は花火館を全開放＋お知らせ（その日1回）
