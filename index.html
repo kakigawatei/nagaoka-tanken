@@ -884,6 +884,19 @@
   .g-prize{ position:absolute; left:36%; top:84%; z-index:4; font-size:36px; display:none; transform:translate(-50%,-50%); filter:drop-shadow(0 2px 5px rgba(0,0,0,.4)); }
   .g-prize.pop{ animation: prizePop .55s ease-out forwards; }
   @keyframes prizePop{ 0%{ transform:translate(-50%,10%) scale(0.2); opacity:0; } 55%{ transform:translate(-50%,-95%) scale(1.4); opacity:1; } 100%{ transform:translate(-50%,-115%) scale(1.15); opacity:1; } }
+  .g-prize-emoji{ font-size:40px; line-height:1; display:block; }
+  .g-prize-img{ width:92px; height:92px; object-fit:contain; display:block; }
+  /* "パーン"の光バースト（景品の背後で放射状に光ってフェード） */
+  .g-prize-fx{ position:absolute; left:50%; top:50%; width:150px; height:150px; z-index:-1;
+    transform:translate(-50%,-50%) scale(.2); opacity:0; pointer-events:none; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,248,222,.95) 0%, rgba(255,214,110,.5) 34%, rgba(255,200,90,0) 64%); }
+  .g-prize-fx::after{ content:""; position:absolute; inset:-14%; border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,236,150,.9) 0deg 6deg, rgba(255,236,150,0) 6deg 20deg);
+    -webkit-mask:radial-gradient(circle, #000 26%, rgba(0,0,0,0) 66%); mask:radial-gradient(circle, #000 26%, rgba(0,0,0,0) 66%); }
+  .g-prize.pop .g-prize-fx{ animation: gPrizeFx .64s ease-out .04s forwards; }
+  .g-prize.pop .g-prize-fx.jackpot{ animation-duration:.9s; width:190px; height:190px; }
+  @keyframes gPrizeFx{ 0%{ transform:translate(-50%,-50%) scale(.2) rotate(0deg); opacity:0; }
+    26%{ opacity:1; } 100%{ transform:translate(-50%,-50%) scale(1.85) rotate(42deg); opacity:0; } }
   .gacha-dup{ font-size:12px; color:var(--ink-soft); font-weight:400; }
   .gacha-spin-btn{
     width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:12px;
@@ -900,6 +913,8 @@
   }
   .omiyage-cell.has{ opacity:1; }
   .omiyage-emoji{ font-size:30px; line-height:1.1; }
+  .omiyage-thumb img{ width:58px; height:58px; object-fit:contain; display:block; margin:0 auto; }
+  .gacha-res-thumb{ width:32px; height:32px; object-fit:contain; vertical-align:middle; }
   .omiyage-name{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
   .omiyage-cell.has .omiyage-name{ color:var(--ink); }
   .omiyage-count{ font-size:11px; font-weight:800; color:var(--gold); margin-top:2px; }
@@ -2626,20 +2641,22 @@
   // 発見済みスポットに再訪（圏内）すると回せる。1日1回無料、追加はコイン。
   var GACHA_COST = 100;
   // ご当地おみやげ（絵文字＋名前ベース）。集めて図鑑「おみやげ」タブでコンプ。
+  // 絵文字はイラスト読み込み前のフォールバック。img があればイラストを優先表示。
   var OMIYAGE = [
-    { id:"hanabi",    emoji:"🎆", name:"花火のうちわ" },
-    { id:"koi",       emoji:"🐟", name:"錦鯉の根付" },
-    { id:"jizake",    emoji:"🍶", name:"摂田屋の地酒ボトル" },
-    { id:"abura",     emoji:"🍢", name:"栃尾のあぶらげ" },
-    { id:"komehyo",   emoji:"🌾", name:"米百俵せんべい" },
-    { id:"himono",    emoji:"🐡", name:"寺泊の干物セット" },
-    { id:"kabuto",    emoji:"🗡️", name:"兼続の兜キーホルダー" },
-    { id:"kitsune",   emoji:"🦊", name:"宝徳山のきつね土鈴" },
-    { id:"omamori",   emoji:"⛩️", name:"秋葉神社のお守り" },
-    { id:"hagaki",    emoji:"🏯", name:"長岡城の絵はがき" },
-    { id:"shiori",    emoji:"🌸", name:"悠久山の桜のしおり" },
-    { id:"medal",     emoji:"🧭", name:"探検隊メダル" }
+    { id:"hanabi",    emoji:"🎆", name:"花火のうちわ",           img:"assets/omi_hanabi.png" },
+    { id:"koi",       emoji:"🐟", name:"錦鯉の根付",             img:"assets/omi_koi.png" },
+    { id:"jizake",    emoji:"🍶", name:"摂田屋の地酒ボトル",     img:"assets/omi_jizake.png" },
+    { id:"abura",     emoji:"🍢", name:"栃尾のあぶらげ",         img:"assets/omi_abura.png" },
+    { id:"komehyo",   emoji:"🌾", name:"米百俵せんべい",         img:"assets/omi_komehyo.png" },
+    { id:"himono",    emoji:"🐡", name:"寺泊の干物セット",       img:"assets/omi_himono.png" },
+    { id:"kabuto",    emoji:"🗡️", name:"兼続の兜キーホルダー",   img:"assets/omi_kabuto.png" },
+    { id:"kitsune",   emoji:"🦊", name:"宝徳山のきつね土鈴",     img:"assets/omi_kitsune.png" },
+    { id:"omamori",   emoji:"⛩️", name:"秋葉神社のお守り",       img:"assets/omi_omamori.png" },
+    { id:"hagaki",    emoji:"🏯", name:"長岡城の絵はがき",       img:"assets/omi_hagaki.png" },
+    { id:"shiori",    emoji:"🌸", name:"悠久山の桜のしおり",     img:"assets/omi_shiori.png" },
+    { id:"medal",     emoji:"🧭", name:"探検隊メダル",           img:"assets/omi_medal.png" }
   ];
+  function omiById(id){ for(var i=0;i<OMIYAGE.length;i++){ if(OMIYAGE[i].id === id) return OMIYAGE[i]; } return null; }
   // 排出テーブル（wは重み）。数値・確率はここで一括調整可。
   // ※コインは出さない（回し得を防ぐため）。おみやげ＆アイテム＆レア(券×3)のみ。
   var GACHA_TABLE = [
@@ -2682,6 +2699,23 @@
     return "🎁";
   }
 
+  // 開封時に g-prize に入れる中身：背後の光バースト(g-prize-fx)＋イラスト or 絵文字。
+  function gachaPrizeInner(res){
+    var fx = '<span class="g-prize-fx' + (res.jackpot ? ' jackpot' : '') + '"></span>';
+    if(res.type === "omiyage"){
+      var o = omiById(res.id);
+      if(o && o.img) return fx + '<img class="g-prize-img" src="' + o.img + '" alt="' + res.name + '">';
+    }
+    return fx + '<span class="g-prize-emoji">' + gachaPrizeEmoji(res) + '</span>';
+  }
+
+  // 結果テキストに添えるおみやげの小サムネ（イラストがあれば画像、無ければ絵文字）。
+  function omiResultVisual(res){
+    var o = omiById(res.id);
+    if(o && o.img) return '<img class="gacha-res-thumb" src="' + o.img + '" alt=""> ';
+    return res.emoji + " ";
+  }
+
   // ガチャマシン演出：ハンドルをぐるぐる回す→カプセルが出てバウンド→開いて景品ドーン。
   function playGachaAnimation(res, done){
     var stage = document.getElementById("gacha-stage");
@@ -2704,9 +2738,9 @@
       cap.style.display = "block"; void cap.offsetWidth; cap.classList.add("drop");
       if(typeof sfxCoin === "function") sfxCoin();
       setTimeout(function(){
-        // ③カプセルが開いて景品ドーン
+        // ③カプセルが開いて景品ドーン（おみやげはイラスト＋"パーン"の光の演出）
         cap.src = "assets/gacha_capsule_open.png";
-        prize.textContent = gachaPrizeEmoji(res);
+        prize.innerHTML = gachaPrizeInner(res);
         prize.style.display = "block"; void prize.offsetWidth; prize.classList.add("pop");
         if(typeof sfxDiscoveryFanfare === "function") sfxDiscoveryFanfare();
         gachaSpinning = false;
@@ -2736,8 +2770,8 @@
 
   function gachaResultText(res){
     if(res.type === "item") return (res.jackpot ? "大当たり！ " : "") + res.label + " ×" + (res.qty || 1);
-    if(res.isNew) return "🎁 新しいおみやげ！<br>" + res.emoji + " " + res.name;
-    return res.emoji + " " + res.name + "<br><span class=\"gacha-dup\">（×" + res.count + "になった！）</span>";
+    if(res.isNew) return "🎁 新しいおみやげ！<br>" + omiResultVisual(res) + res.name;
+    return omiResultVisual(res) + res.name + "<br><span class=\"gacha-dup\">（×" + res.count + "になった！）</span>";
   }
 
   function showGachaResultInModal(res){
@@ -2782,8 +2816,11 @@
       var has = cnt > 0;
       var cell = document.createElement("div");
       cell.className = "omiyage-cell" + (has ? " has" : "");
+      var visual = o.img
+        ? ("<div class=\"omiyage-thumb\"><img src=\"" + o.img + "\" alt=\"" + o.name + "\"></div>")
+        : ("<div class=\"omiyage-emoji\">" + o.emoji + "</div>");
       cell.innerHTML = has
-        ? ("<div class=\"omiyage-emoji\">" + o.emoji + "</div><div class=\"omiyage-name\">" + o.name + "</div><div class=\"omiyage-count\">×" + cnt + "</div>")
+        ? (visual + "<div class=\"omiyage-name\">" + o.name + "</div><div class=\"omiyage-count\">×" + cnt + "</div>")
         : ("<div class=\"omiyage-emoji\">？</div><div class=\"omiyage-name\">？？？</div>");
       grid.appendChild(cell);
     });
