@@ -919,6 +919,35 @@
   .omiyage-name{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
   .omiyage-cell.has .omiyage-name{ color:var(--ink); }
   .omiyage-count{ font-size:11px; font-weight:800; color:var(--gold); margin-top:2px; }
+  /* 御殿（牧野家・年貢システム） */
+  #book-panel-makino{ padding:8px 0 14px; }
+  .makino-tono{ position:relative; width:100%; max-width:340px; margin:4px auto 8px; aspect-ratio:4/3;
+    background:#e5d3ad center/cover no-repeat; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
+    display:flex; align-items:flex-end; justify-content:center; }
+  .makino-tono img{ max-width:66%; max-height:92%; object-fit:contain; display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.28)); }
+  .makino-tono-ph{ width:100%; height:100%; flex-direction:column; align-items:center; justify-content:center; gap:6px; font-size:52px; color:var(--ink-soft); }
+  .makino-tono-ph span{ font-size:13px; font-weight:700; }
+  .makino-status{ background:var(--card-bg); border-radius:12px; box-shadow:var(--shadow); margin:0 14px 10px; padding:12px 14px; }
+  .makino-rank{ font-size:14px; margin-bottom:4px; }
+  .makino-rank b{ color:var(--vermillion); font-size:16px; }
+  .makino-favor{ font-size:12.5px; color:var(--ink-soft); margin-bottom:8px; }
+  .makino-favor b{ color:var(--gold); }
+  .makino-bar{ height:10px; background:var(--paper-dark); border-radius:6px; overflow:hidden; }
+  .makino-bar-fill{ height:100%; background:var(--indigo); border-radius:6px; transition:width .4s; }
+  .makino-bar-fill.gold{ background:var(--gold); }
+  .makino-bar-label{ font-size:11px; color:var(--ink-soft); margin-top:4px; }
+  .makino-unlock{ background:var(--card-bg); border:1.5px dashed var(--gold); border-radius:12px; margin:0 14px 12px; padding:11px 14px; }
+  .makino-unlock-title{ font-size:13px; font-weight:800; margin-bottom:7px; }
+  .makino-tribute-title{ font-size:14px; font-weight:800; color:var(--indigo); margin:6px 14px 8px; }
+  .makino-tribute-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 14px; }
+  .makino-tribute-cell{ background:var(--card-bg); border-radius:12px; padding:10px 6px; text-align:center; box-shadow:var(--shadow); }
+  .makino-tribute-cell img{ width:52px; height:52px; object-fit:contain; display:block; margin:0 auto 2px; }
+  .makino-tribute-cell .omiyage-emoji{ font-size:34px; }
+  .makino-tribute-name{ font-size:10.5px; color:var(--ink); margin-top:2px; line-height:1.25; }
+  .makino-tribute-count{ font-size:10.5px; color:var(--ink-soft); margin:2px 0 6px; }
+  .makino-tribute-btn{ width:100%; background:var(--vermillion); color:#fff; border:none; border-radius:8px;
+    padding:7px 0; font-size:12.5px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .makino-tribute-btn:active{ transform:scale(0.96); }
   /* 花火館 */
   .fw-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:6px 14px 4px; }
   .fw-cell{ background:var(--card-bg); border-radius:12px; padding:8px 6px 10px; text-align:center; box-shadow:var(--shadow); opacity:0.55; }
@@ -1184,6 +1213,7 @@
       <div class="book-subtab" data-sub="title">称号</div>
       <div class="book-subtab" data-sub="omiyage">おみやげ</div>
       <div class="book-subtab" data-sub="fw">花火館</div>
+      <div class="book-subtab" data-sub="makino" id="book-subtab-makino" style="display:none;">御殿</div>
     </div>
     <div id="book-panel-book">
       <div class="book-progress" id="book-progress">発見数：0 / 0</div>
@@ -1208,6 +1238,7 @@
       <div class="fw-grid" id="fw-grid"></div>
       <div class="settings-note" style="padding:0 14px 14px;">実績を達成すると花火が増えます。タップでもう一度打ち上げ！🎆</div>
     </div>
+    <div id="book-panel-makino" style="display:none;"></div>
   </div>
 
   <!-- SHOP -->
@@ -1480,7 +1511,7 @@
   /* ============================================================
    * 0. データ（fetch失敗時のインラインフォールバック）
    * ========================================================== */
-  var INLINE_POI_DATA = {"_note":"緯度経度は実測値（国土地理院アドレスマッチング＋各施設公式サイト等で確認）。史実解説はWebSearchで各施設公式サイト・自治体観光サイト等を確認して記載（2026-07時点）。","districts":[{"id":"chuo","name":"長岡（中心部）","center":{"lat":37.450403,"lng":138.852175},"unlockLevel":1},{"id":"settaya","name":"摂田屋","center":{"lat":37.416123,"lng":138.840705},"unlockLevel":1},{"id":"yamakoshi","name":"山古志","center":{"lat":37.324604,"lng":138.882782},"unlockLevel":1},{"id":"teradomari","name":"寺泊","center":{"lat":37.644131,"lng":138.767471},"unlockLevel":1},{"id":"tochio","name":"栃尾","center":{"lat":37.472698,"lng":138.994683},"unlockLevel":1},{"id":"yoita","name":"与板","center":{"lat":37.537002,"lng":138.807238},"unlockLevel":1},{"id":"koshiji","name":"越路","center":{"lat":37.385444,"lng":138.759087},"unlockLevel":1},{"id":"yomogihira","name":"蓬平","center":{"lat":37.369111,"lng":138.896419},"unlockLevel":1}],"pois":[{"id":"aore","districtId":"chuo","name":"アオーレ長岡","lat":37.446645,"lng":138.851112,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":30,"category":"建築・公共","treasure":{"title":"アオーレ長岡（シティホールプラザ）","era":"2012年開館","blurb":"2012年開館。建築家・隈研吾が設計した、市役所本庁舎とアリーナ、屋根付き広場「ナカドマ」が一体になった全国初の複合施設。愛称は長岡弁で「会いましょう」を意味する「会おうれ」に由来し、市民が日常的に集う交流拠点となっている。","image":"card_aore.png"}},{"id":"yamamoto","districtId":"chuo","name":"山本五十六記念館","lat":37.452419,"lng":138.851395,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"山本五十六記念館","era":"生誕1884年（長岡出身）","blurb":"長岡出身の海軍軍人・山本五十六の遺品や資料を通じてその人柄と生涯を伝える記念館。日本海海戦で被弾した際の軍服や搭乗機の一部などが並ぶ。近くの生家跡には、空襲で焼失した生家を復元した建物と胸像が建てられている。","image":"card_yamamoto.png"}},{"id":"kawai","districtId":"chuo","name":"河井継之助記念館","lat":37.452145,"lng":138.854019,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"河井継之助記念館","era":"幕末（長岡藩家老）","blurb":"2006年開館。幕末の長岡藩首席家老・河井継之助の生涯を伝える記念館で、ゆかりの品約30点を展示する。武装中立を掲げながらも北越戊辰戦争へと進んだ継之助の足跡を、愛用のガトリング砲や旅日記「塵壺」などから辿ることができる。","image":"card_kawai.png"}},{"id":"sensai","districtId":"chuo","name":"長岡戦災資料館","lat":37.450802,"lng":138.849777,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"歴史・資料館","treasure":{"title":"長岡戦災資料館","era":"2003年開館","blurb":"1945年8月1日深夜の長岡空襲による被害の実相と復興の歩みを伝える資料館。2003年に開館し、2026年5月には長岡市坂之上町の旧・互尊文庫の建物へ移転した。戦災の記憶を語り継ぐ市民活動の拠点として、資料や証言を通じて平和の大切さを伝えている。","image":"card_sensai.png"}},{"id":"nyozekura","districtId":"chuo","name":"如是蔵博物館","lat":37.448601,"lng":138.854935,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":28,"category":"歴史・資料館","treasure":{"title":"如是蔵博物館","era":"実業家・野本恭八郎ゆかり","blurb":"長岡の市立図書館の前身「互尊文庫」を寄贈した実業家・野本恭八郎ゆかりの資料を中心に、河井継之助や山本五十六など長岡ゆかりの先人たちの資料を紹介する博物館。歴史的価値のある収蔵資料を大切に保管・公開する、まちなかの小さな学びの蔵。","image":"card_nyozekura.png"}},{"id":"honmaru","districtId":"chuo","name":"長岡城本丸跡","lat":37.4462,"lng":138.8515,"radius":75,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"城跡・史跡","treasure":{"title":"長岡城本丸跡","era":"江戸〜明治（長岡藩の居城）","blurb":"江戸時代、牧野家が治めた長岡藩の居城・長岡城の本丸があった場所。天守は持たず、高さ約23mの三階櫓（御三階）が代用された平城だったが、慶応4年（1868年）の北越戊辰戦争で焼失し廃城となった。明治31年の鉄道開業でJR長岡駅が建設され遺構は完全に失われたが、現在は駅前に城址を伝える碑が立つ。","image":"card_honmaru.png"}},{"id":"yukyuzan","districtId":"chuo","name":"悠久山公園（郷土史料館）","lat":37.428562,"lng":138.880157,"radius":75,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"公園・史跡","treasure":{"title":"長岡市郷土史料館（悠久山公園）","era":"市制60周年記念","blurb":"約2500本の桜が彩り「日本さくら名所100選」にも選ばれた悠久山公園。市制60周年記念事業として高台に建てられた天守閣風の建物が長岡市郷土史料館で、河井継之助や山本五十六ら郷土出身の先人38人の業績を紹介するほか、豪雪地帯の暮らしを伝える民俗資料も展示している。","image":"card_yukyuzan.png"}},{"id":"sakanoue","districtId":"chuo","name":"阪之上小学校","lat":37.447475,"lng":138.856995,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・史跡","treasure":{"title":"阪之上小学校（米百俵ゆかりの地）","era":"創立1874年／米百俵は明治3年(1870)","blurb":"戊辰戦争で焦土となった長岡藩に支藩・三根山藩から見舞いとして送られた百俵の米。大参事・小林虎三郎は困窮する藩士へ分け与えず売却し、その代金で人材育成のための学校「国漢学校」を開設することを主張した。「米百俵の精神」として知られるこの逸話ゆかりの地に建つ阪之上小学校には、伝統館が設けられている。","image":"card_sakanoue.png"}},{"id":"kina_saffron","districtId":"settaya","name":"機那サフラン酒本舗（鏝絵の蔵）","lat":37.415909,"lng":138.840512,"radius":75,"rarity":"rare","coinsFirst":220,"coinsRepeat":10,"xp":50,"category":"醸造・文化財","treasure":{"title":"機那サフラン酒本舗","era":"明治期〜","blurb":"創業者・吉澤仁太郎が薬用酒「機那サフラン酒」で財を成し、その富を注いで築いた土蔵群が残る史跡。左官職人・河上伊吉が手がけた極彩色の鏝絵で飾られた蔵は「日本一の鏝絵」と讃えられ、国の登録有形文化財に指定されている。","image":"card_kina_saffron.png"}},{"id":"yoshinogawa","districtId":"settaya","name":"吉乃川 醸蔵","lat":37.416336,"lng":138.840897,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"吉乃川 醸蔵","era":"創業1548年と伝わる","blurb":"1548年（天文17年）創業と伝わる老舗酒蔵・吉乃川の酒ミュージアム。大正期に建てられた瓶詰め工場「常倉」（国登録有形文化財）を改装し、2019年にオープンした。三角形に組まれたトラス構造の天井が特徴で、酒造りの歴史を学べる展示やSAKEバーが楽しめる。","image":"card_yoshinogawa.png"}},{"id":"koshimurasaki","districtId":"settaya","name":"越のむらさき（醤油蔵）","lat":37.417236,"lng":138.842575,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"越のむらさき","era":"創業1831年","blurb":"天保2年（1831年）創業、190年以上の歴史を持つ摂田屋の老舗醤油蔵。看板商品「越のむらさき」は厳選した鰹節から取っただしを合わせた再仕込み醤油で、新潟の食卓に欠かせない味として親しまれている。趣のある社屋や煉瓦煙突は長岡市都市景観賞を受賞した。","image":"card_koshimurasaki.png"}},{"id":"hasegawa","districtId":"settaya","name":"長谷川酒造（酒蔵）","lat":37.412571,"lng":138.845093,"radius":75,"rarity":"common","coinsFirst":140,"coinsRepeat":10,"xp":32,"category":"醸造・文化財","treasure":{"title":"長谷川酒造","era":"創業1842年","blurb":"天保13年（1842年）創業、屋号「信州屋」の摂田屋の酒蔵。杜氏・蔵人がほぼ全工程を手作業で醸す少量生産にこだわり、代表銘柄「越後雪紅梅」は作曲家・遠藤実にちなんで名付けられた。明治19年築の母屋と大正8年築の醸造蔵は国の登録有形文化財に指定されている。","image":"card_hasegawa.png"}},{"id":"yamakoshi","districtId":"yamakoshi","name":"やまこし復興交流館おらたる","lat":37.324604,"lng":138.882782,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"伝統産業・自然","treasure":{"title":"やまこし復興交流館おらたる","era":"中越地震（2004）からの復興拠点","blurb":"「おらたる」は山古志の方言で「わたしたちの場所」。2004年の中越地震からの復興の歩みを伝える震災メモリアルであり、山古志全体をフィールドミュージアムに見立てた探検の出発拠点。錦鯉発祥の地・山古志の玄関口で、館内では気軽に錦鯉と触れ合える。周囲には棚田・棚池が織りなす美しい山里の風景が広がる。","image":"card_yamakoshi.png"}},{"id":"teradomari","districtId":"teradomari","name":"寺泊 魚の市場通り","lat":37.644131,"lng":138.767471,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"港町・食文化","treasure":{"title":"寺泊 魚の市場通り","era":"通称「魚のアメ横」","blurb":"長岡市寺泊、日本海沿いの国道402号沿いに鮮魚店・土産物店が軒を連ねる「魚の市場通り」。その賑わいから「魚のアメ横」の愛称で親しまれ、寺泊港に水揚げされた新鮮な魚介類や干物、焼き魚などを求めて多くの観光客が訪れる。営業時間は8時30分から17時までで、年中無休で営業している。","image":"card_teradomari.png"}},{"id":"tochio","districtId":"tochio","name":"栃尾 秋葉神社","lat":37.472698,"lng":138.994683,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・城下町","treasure":{"title":"栃尾 秋葉神社","era":"天文20年(1551)上杉謙信ゆかり","blurb":"上杉謙信（当時は長尾景虎）が旗揚げしたと伝わる栃尾城跡の対岸、秋葉公園内に鎮座する神社。天文20年（1551）、常安寺の守護神として楡原の蔵王堂から遷されたのが始まりと伝わり、火伏せの神「秋葉三尺坊大権現」として篤く信仰されている。栃尾は名物「栃尾あぶらげ」でも知られ、謙信ゆかりの城下町らしい趣を今に伝える。","image":"card_tochio.png"}},{"id":"yoita","districtId":"yoita","name":"与板 都野神社","lat":37.537002,"lng":138.807238,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・城下町","treasure":{"title":"与板 都野神社","era":"延長5年(927)延喜式内社／直江兼続ゆかり","blurb":"延長5年（927）の『延喜式神名帳』にも記載される、信濃川舟運の要衝・与板の総鎮守。与板城主・直江兼続が九州の宇佐八幡宮から祭神を勧請して以来「八幡宮」とも呼ばれるようになった。直江兼続ゆかりの与板は、兼続が城を構えた城下町として今も歴史の面影を残している。","image":"card_yoita.png"}},{"id":"hotokusan","districtId":"koshiji","name":"宝徳山稲荷大社","lat":37.385444,"lng":138.759087,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・信仰","treasure":{"title":"宝徳山稲荷大社","era":"文政年間(1820頃)現在地に遷営","blurb":"祭神に天照白菊宝徳稲荷大神など三柱をまつる神社で、創祀は縄文の昔にまで遡ると伝わる。文政年間（1820年頃）、中之岳の銀が峰からこの地・奥之院長者原へ遷営されたとされ、以来全国から年間30万人余りの参拝者を集める信仰の地となっている。長岡市南西、旧越路町飯塚の丘陵地に鎮座する。","image":"card_hotokusan.png"}},{"id":"toushijou","districtId":"yamakoshi","name":"山古志闘牛場","lat":37.3274,"lng":138.9099,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"伝統文化・祭","treasure":{"title":"山古志闘牛場（牛の角突き）","era":"国重要無形民俗文化財","blurb":"「牛の角突き」で知られる山古志の闘牛場。二頭の巨牛が角を突き合わせて力比べをする勇壮な行事で、決着をつけず引き分けにするのが山古志流の作法とされる。約1000年の歴史を持つと伝わり、国の重要無形民俗文化財に指定。例年5月から11月にかけて取組が行われ、勢子（せこ）と呼ばれる男たちが牛を操る。","image":"card_toushijou.png"}},{"id":"nakayama","districtId":"yamakoshi","name":"中山隧道","lat":37.3028,"lng":138.9291,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"土木遺産・史跡","treasure":{"title":"中山隧道","era":"1933〜1949年 手掘り","blurb":"山古志（旧東竹沢）と小松倉を結ぶ、手掘りとしては日本一長いトンネル。豪雪で孤立しがちだった村人たちが、医療や生活のために昭和8年（1933）から16年をかけてツルハシで掘り抜いた延長877mの隧道で、国の登録有形文化財・近代化産業遺産に選定されている。すぐ脇を現道の新中山トンネルが通る。","image":"card_nakayama.png"}},{"id":"kogomo","districtId":"yamakoshi","name":"木籠メモリアルパーク","lat":37.3098,"lng":138.9096,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"震災遺構・史跡","treasure":{"title":"木籠メモリアルパーク","era":"2004年 中越地震","blurb":"2004年（平成16年）の新潟県中越地震で、芋川がせき止められてできた天然ダムに水没した木籠（こごも）集落。屋根まで水に浸かった家屋がそのまま保存され、災害の記憶と教訓を伝えるメモリアルパークとして整備された。高台に移転した新しい木籠集落の住民が語り部となり、震災の体験を今に伝えている。","image":"card_kogomo.png"}},{"id":"tanesuhara","districtId":"yamakoshi","name":"種苧原アルパカ牧場","lat":37.3517,"lng":138.9316,"radius":80,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"アルパカ牧場・ふれあい","treasure":{"title":"種苧原アルパカ牧場","era":"中越地震からの復興のシンボル","blurb":"棚田・棚池が山あいに幾重にも連なる、山古志有数の米どころ・種苧原。復興のシンボルとして山古志にやってきたアルパカが数を増やし、この美しい里の牧場でものんびりと暮らすようになった。ふわふわの毛をまとった愛らしい姿は訪れる人の心を和ませ、餌やりやふれあいも楽しめる“天空の牧場”。棚田の緑を背にアルパカが草をはむ風景は、山古志ならではの癒やしの一枚。","image":"card_tanesuhara.png"}},{"id":"yubu","districtId":"yamakoshi","name":"油夫アルパカ牧場","lat":37.329563,"lng":138.888188,"radius":80,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"アルパカ牧場・ふれあい","treasure":{"title":"油夫アルパカ牧場","era":"アルパカがはじめて来た地（2009年）","blurb":"2004年の中越地震で被災した山古志を励まそうと、2009年11月、アメリカ・コロラド州のアルパカ牧場オーナーから3頭のアルパカが贈られた。その最初の3頭を迎えたのが、ここ油夫（ゆぶ）の牧場。以来アルパカは山古志の復興のシンボルとして愛され、少しずつ数を増やしていった。“すべてはここから始まった”はじまりの牧場で、ふわふわのアルパカたちがのんびりと暮らし、訪れる人を出迎えてくれる。","image":"card_yubu.png"}},{"id":"koryu","districtId":"yomogihira","name":"高龍神社","lat":37.369111,"lng":138.896419,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・信仰","treasure":{"title":"高龍神社","era":"南北朝時代 創建と伝わる","blurb":"蓬平（よもぎひら）温泉の奥、山の中腹に鎮座する商売繁盛の神様。南北朝時代、この地で病に倒れた武将を助けた白蛇の化身をまつったのが始まりと伝わり、全国から多くの経営者や商売人が参拝に訪れる。長い石段のほかエレベーターでも社殿へ上がれ、生玉子をお供えする独特の信仰でも知られる。","image":"card_koryu.png"}},{"id":"hakusan","districtId":"teradomari","name":"白山媛神社","lat":37.64204,"lng":138.768284,"radius":60,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・港町","treasure":{"title":"白山媛神社","era":"寺泊の総鎮守","blurb":"日本海に臨む港町・寺泊の総鎮守。御影石の鳥居から社殿へ125段の石段が続き、高台からは町と海を一望できる。北前船で栄えた時代に廻船問屋や船主が奉献した「船絵馬」52点を所蔵し、国の重要文化財に指定。海の安全と繁栄を祈った人々の信仰を今に伝える。","image":"card_hakusan.png"}},{"id":"shomyoji","districtId":"teradomari","name":"照明寺・密蔵院","lat":37.64082,"lng":138.767259,"radius":60,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"寺院・良寛ゆかり","treasure":{"title":"照明寺・密蔵院（良寛ゆかり）","era":"永承2年(1047)開創と伝わる","blurb":"平安後期の永承2年（1047）、高野山竜光院の栄秀和尚が開いたと伝わる真言宗の古刹。境内の「密蔵院」は、越後の名僧・良寛が45歳の頃をはじめ生涯に3度仮住まいした庵として知られ、良寛を慕う人々が訪れる巡礼の地となっている。趣ある山門と杉木立の参道が迎える。","image":"card_shomyoji.png"}},{"id":"jukanen","districtId":"teradomari","name":"聚感園","lat":37.6415,"lng":138.7678,"radius":60,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"庭園・史跡","treasure":{"title":"聚感園","era":"豪族・五十嵐家の旧宅","blurb":"寺泊の豪族・五十嵐家の旧宅を保存した庭園で、園名は「昔をしのぶさまざまな感情が聚（あつ）まる庭」の意。日本海を望む景勝地で、園内には弁慶が掘ったとも伝わる古井戸「硯水（すずりみず）」が残る。佐渡へ流される日蓮上人が渡航の舟を待つ間、この地で説法したとも語り継がれている。","image":"card_jukanen.png"}},{"id":"suizoku","districtId":"teradomari","name":"寺泊水族博物館","lat":37.6296,"lng":138.7605,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"水族館・名所","treasure":{"title":"寺泊水族博物館","era":"1983年開館","blurb":"三方を日本海に囲まれた花立の岬に建つ、円柱形が印象的な水族館。日本海の魚を中心におよそ400種の生きものを展示し、海に浮かぶようなロケーションと屋上からの眺望が人気。ラッコやペンギンのお食事タイムなども楽しめる、寺泊のシンボル的施設。","image":"card_suizoku.png"}},{"id":"kaisui","districtId":"teradomari","name":"寺泊中央海水浴場","lat":37.6375,"lng":138.7625,"radius":80,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"海岸・景勝","treasure":{"title":"寺泊中央海水浴場","era":"寺泊海岸のシンボルビーチ","blurb":"寺泊海岸のほぼ中央に位置する海水浴場。防波堤に守られた砂浜は波が穏やかで遠浅、夏は家族連れや海水浴客でにぎわう。すぐそばに魚市場「魚のアメ横」があり、海遊びと海の幸を一日で楽しめるのが寺泊ならでは。日本海に沈む夕日は格別で、晴れた日には沖に佐渡島を望む夕景の名所として親しまれている。","image":"card_kaisui.png"}}]};
+  var INLINE_POI_DATA = {"_note":"緯度経度は実測値（国土地理院アドレスマッチング＋各施設公式サイト等で確認）。史実解説はWebSearchで各施設公式サイト・自治体観光サイト等を確認して記載（2026-07時点）。","districts":[{"id":"chuo","name":"長岡（中心部）","center":{"lat":37.450403,"lng":138.852175},"unlockLevel":1},{"id":"settaya","name":"摂田屋","center":{"lat":37.416123,"lng":138.840705},"unlockLevel":1},{"id":"yamakoshi","name":"山古志","center":{"lat":37.324604,"lng":138.882782},"unlockLevel":1},{"id":"teradomari","name":"寺泊","center":{"lat":37.644131,"lng":138.767471},"unlockLevel":1},{"id":"tochio","name":"栃尾","center":{"lat":37.472698,"lng":138.994683},"unlockLevel":1},{"id":"yoita","name":"与板","center":{"lat":37.537002,"lng":138.807238},"unlockLevel":1},{"id":"koshiji","name":"越路","center":{"lat":37.385444,"lng":138.759087},"unlockLevel":1},{"id":"yomogihira","name":"蓬平","center":{"lat":37.369111,"lng":138.896419},"unlockLevel":1}],"pois":[{"id":"aore","districtId":"chuo","name":"アオーレ長岡","lat":37.446645,"lng":138.851112,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":30,"category":"建築・公共","treasure":{"title":"アオーレ長岡（シティホールプラザ）","era":"2012年開館","blurb":"2012年開館。建築家・隈研吾が設計した、市役所本庁舎とアリーナ、屋根付き広場「ナカドマ」が一体になった全国初の複合施設。愛称は長岡弁で「会いましょう」を意味する「会おうれ」に由来し、市民が日常的に集う交流拠点となっている。","image":"card_aore.png"}},{"id":"yamamoto","districtId":"chuo","name":"山本五十六記念館","lat":37.452419,"lng":138.851395,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"山本五十六記念館","era":"生誕1884年（長岡出身）","blurb":"長岡出身の海軍軍人・山本五十六の遺品や資料を通じてその人柄と生涯を伝える記念館。日本海海戦で被弾した際の軍服や搭乗機の一部などが並ぶ。近くの生家跡には、空襲で焼失した生家を復元した建物と胸像が建てられている。","image":"card_yamamoto.png"}},{"id":"kawai","districtId":"chuo","name":"河井継之助記念館","lat":37.452145,"lng":138.854019,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・記念館","treasure":{"title":"河井継之助記念館","era":"幕末（長岡藩家老）","blurb":"2006年開館。幕末の長岡藩首席家老・河井継之助の生涯を伝える記念館で、ゆかりの品約30点を展示する。武装中立を掲げながらも北越戊辰戦争へと進んだ継之助の足跡を、愛用のガトリング砲や旅日記「塵壺」などから辿ることができる。","image":"card_kawai.png"}},{"id":"sensai","districtId":"chuo","name":"長岡戦災資料館","lat":37.450802,"lng":138.849777,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"歴史・資料館","treasure":{"title":"長岡戦災資料館","era":"2003年開館","blurb":"1945年8月1日深夜の長岡空襲による被害の実相と復興の歩みを伝える資料館。2003年に開館し、2026年5月には長岡市坂之上町の旧・互尊文庫の建物へ移転した。戦災の記憶を語り継ぐ市民活動の拠点として、資料や証言を通じて平和の大切さを伝えている。","image":"card_sensai.png"}},{"id":"nyozekura","districtId":"chuo","name":"如是蔵博物館","lat":37.448601,"lng":138.854935,"radius":75,"rarity":"common","coinsFirst":120,"coinsRepeat":10,"xp":28,"category":"歴史・資料館","treasure":{"title":"如是蔵博物館","era":"実業家・野本恭八郎ゆかり","blurb":"長岡の市立図書館の前身「互尊文庫」を寄贈した実業家・野本恭八郎ゆかりの資料を中心に、河井継之助や山本五十六など長岡ゆかりの先人たちの資料を紹介する博物館。歴史的価値のある収蔵資料を大切に保管・公開する、まちなかの小さな学びの蔵。","image":"card_nyozekura.png"}},{"id":"honmaru","districtId":"chuo","name":"長岡城本丸跡","lat":37.4462,"lng":138.8515,"radius":75,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"城跡・史跡","treasure":{"title":"長岡城本丸跡","era":"江戸〜明治（長岡藩の居城）","blurb":"江戸時代、牧野家が治めた長岡藩の居城・長岡城の本丸があった場所。天守は持たず、高さ約23mの三階櫓（御三階）が代用された平城だったが、慶応4年（1868年）の北越戊辰戦争で焼失し廃城となった。明治31年の鉄道開業でJR長岡駅が建設され遺構は完全に失われたが、現在は駅前に城址を伝える碑が立つ。","image":"card_honmaru.png"}},{"id":"yukyuzan","districtId":"chuo","name":"悠久山公園（郷土史料館）","lat":37.428562,"lng":138.880157,"radius":75,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"公園・史跡","treasure":{"title":"長岡市郷土史料館（悠久山公園）","era":"市制60周年記念","blurb":"約2500本の桜が彩り「日本さくら名所100選」にも選ばれた悠久山公園。市制60周年記念事業として高台に建てられた天守閣風の建物が長岡市郷土史料館で、河井継之助や山本五十六ら郷土出身の先人38人の業績を紹介するほか、豪雪地帯の暮らしを伝える民俗資料も展示している。","image":"card_yukyuzan.png"}},{"id":"sakanoue","districtId":"chuo","name":"阪之上小学校","lat":37.447475,"lng":138.856995,"radius":75,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"偉人・史跡","treasure":{"title":"阪之上小学校（米百俵ゆかりの地）","era":"創立1874年／米百俵は明治3年(1870)","blurb":"戊辰戦争で焦土となった長岡藩に支藩・三根山藩から見舞いとして送られた百俵の米。大参事・小林虎三郎は困窮する藩士へ分け与えず売却し、その代金で人材育成のための学校「国漢学校」を開設することを主張した。「米百俵の精神」として知られるこの逸話ゆかりの地に建つ阪之上小学校には、伝統館が設けられている。","image":"card_sakanoue.png"}},{"id":"kina_saffron","districtId":"settaya","name":"機那サフラン酒本舗（鏝絵の蔵）","lat":37.415909,"lng":138.840512,"radius":75,"rarity":"rare","coinsFirst":220,"coinsRepeat":10,"xp":50,"category":"醸造・文化財","treasure":{"title":"機那サフラン酒本舗","era":"明治期〜","blurb":"創業者・吉澤仁太郎が薬用酒「機那サフラン酒」で財を成し、その富を注いで築いた土蔵群が残る史跡。左官職人・河上伊吉が手がけた極彩色の鏝絵で飾られた蔵は「日本一の鏝絵」と讃えられ、国の登録有形文化財に指定されている。","image":"card_kina_saffron.png"}},{"id":"yoshinogawa","districtId":"settaya","name":"吉乃川 醸蔵","lat":37.416336,"lng":138.840897,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"吉乃川 醸蔵","era":"創業1548年と伝わる","blurb":"1548年（天文17年）創業と伝わる老舗酒蔵・吉乃川の酒ミュージアム。大正期に建てられた瓶詰め工場「常倉」（国登録有形文化財）を改装し、2019年にオープンした。三角形に組まれたトラス構造の天井が特徴で、酒造りの歴史を学べる展示やSAKEバーが楽しめる。","image":"card_yoshinogawa.png"}},{"id":"koshimurasaki","districtId":"settaya","name":"越のむらさき（醤油蔵）","lat":37.417236,"lng":138.842575,"radius":75,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"醸造・文化財","treasure":{"title":"越のむらさき","era":"創業1831年","blurb":"天保2年（1831年）創業、190年以上の歴史を持つ摂田屋の老舗醤油蔵。看板商品「越のむらさき」は厳選した鰹節から取っただしを合わせた再仕込み醤油で、新潟の食卓に欠かせない味として親しまれている。趣のある社屋や煉瓦煙突は長岡市都市景観賞を受賞した。","image":"card_koshimurasaki.png"}},{"id":"hasegawa","districtId":"settaya","name":"長谷川酒造（酒蔵）","lat":37.412571,"lng":138.845093,"radius":75,"rarity":"common","coinsFirst":140,"coinsRepeat":10,"xp":32,"category":"醸造・文化財","treasure":{"title":"長谷川酒造","era":"創業1842年","blurb":"天保13年（1842年）創業、屋号「信州屋」の摂田屋の酒蔵。杜氏・蔵人がほぼ全工程を手作業で醸す少量生産にこだわり、代表銘柄「越後雪紅梅」は作曲家・遠藤実にちなんで名付けられた。明治19年築の母屋と大正8年築の醸造蔵は国の登録有形文化財に指定されている。","image":"card_hasegawa.png"}},{"id":"yamakoshi","districtId":"yamakoshi","name":"やまこし復興交流館おらたる","lat":37.324604,"lng":138.882782,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"伝統産業・自然","treasure":{"title":"やまこし復興交流館おらたる","era":"中越地震（2004）からの復興拠点","blurb":"「おらたる」は山古志の方言で「わたしたちの場所」。2004年の中越地震からの復興の歩みを伝える震災メモリアルであり、山古志全体をフィールドミュージアムに見立てた探検の出発拠点。錦鯉発祥の地・山古志の玄関口で、館内では気軽に錦鯉と触れ合える。周囲には棚田・棚池が織りなす美しい山里の風景が広がる。","image":"card_yamakoshi.png"}},{"id":"teradomari","districtId":"teradomari","name":"寺泊 魚の市場通り","lat":37.644131,"lng":138.767471,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"港町・食文化","treasure":{"title":"寺泊 魚の市場通り","era":"通称「魚のアメ横」","blurb":"長岡市寺泊、日本海沿いの国道402号沿いに鮮魚店・土産物店が軒を連ねる「魚の市場通り」。その賑わいから「魚のアメ横」の愛称で親しまれ、寺泊港に水揚げされた新鮮な魚介類や干物、焼き魚などを求めて多くの観光客が訪れる。営業時間は8時30分から17時までで、年中無休で営業している。","image":"card_teradomari.png"}},{"id":"tochio","districtId":"tochio","name":"栃尾 秋葉神社","lat":37.472698,"lng":138.994683,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・城下町","treasure":{"title":"栃尾 秋葉神社","era":"天文20年(1551)上杉謙信ゆかり","blurb":"上杉謙信（当時は長尾景虎）が旗揚げしたと伝わる栃尾城跡の対岸、秋葉公園内に鎮座する神社。天文20年（1551）、常安寺の守護神として楡原の蔵王堂から遷されたのが始まりと伝わり、火伏せの神「秋葉三尺坊大権現」として篤く信仰されている。栃尾は名物「栃尾あぶらげ」でも知られ、謙信ゆかりの城下町らしい趣を今に伝える。","image":"card_tochio.png"}},{"id":"yoita","districtId":"yoita","name":"与板 都野神社","lat":37.537002,"lng":138.807238,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・城下町","treasure":{"title":"与板 都野神社","era":"延長5年(927)延喜式内社／直江兼続ゆかり","blurb":"延長5年（927）の『延喜式神名帳』にも記載される、信濃川舟運の要衝・与板の総鎮守。与板城主・直江兼続が九州の宇佐八幡宮から祭神を勧請して以来「八幡宮」とも呼ばれるようになった。直江兼続ゆかりの与板は、兼続が城を構えた城下町として今も歴史の面影を残している。","image":"card_yoita.png"}},{"id":"hotokusan","districtId":"koshiji","name":"宝徳山稲荷大社","lat":37.385444,"lng":138.759087,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・信仰","treasure":{"title":"宝徳山稲荷大社","era":"文政年間(1820頃)現在地に遷営","blurb":"祭神に天照白菊宝徳稲荷大神など三柱をまつる神社で、創祀は縄文の昔にまで遡ると伝わる。文政年間（1820年頃）、中之岳の銀が峰からこの地・奥之院長者原へ遷営されたとされ、以来全国から年間30万人余りの参拝者を集める信仰の地となっている。長岡市南西、旧越路町飯塚の丘陵地に鎮座する。","image":"card_hotokusan.png"}},{"id":"toushijou","districtId":"yamakoshi","name":"山古志闘牛場","lat":37.3274,"lng":138.9099,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"伝統文化・祭","treasure":{"title":"山古志闘牛場（牛の角突き）","era":"国重要無形民俗文化財","blurb":"「牛の角突き」で知られる山古志の闘牛場。二頭の巨牛が角を突き合わせて力比べをする勇壮な行事で、決着をつけず引き分けにするのが山古志流の作法とされる。約1000年の歴史を持つと伝わり、国の重要無形民俗文化財に指定。例年5月から11月にかけて取組が行われ、勢子（せこ）と呼ばれる男たちが牛を操る。","image":"card_toushijou.png"}},{"id":"nakayama","districtId":"yamakoshi","name":"中山隧道","lat":37.3028,"lng":138.9291,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"土木遺産・史跡","treasure":{"title":"中山隧道","era":"1933〜1949年 手掘り","blurb":"山古志（旧東竹沢）と小松倉を結ぶ、手掘りとしては日本一長いトンネル。豪雪で孤立しがちだった村人たちが、医療や生活のために昭和8年（1933）から16年をかけてツルハシで掘り抜いた延長877mの隧道で、国の登録有形文化財・近代化産業遺産に選定されている。すぐ脇を現道の新中山トンネルが通る。","image":"card_nakayama.png"}},{"id":"kogomo","districtId":"yamakoshi","name":"木籠メモリアルパーク","lat":37.3098,"lng":138.9096,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"震災遺構・史跡","treasure":{"title":"木籠メモリアルパーク","era":"2004年 中越地震","blurb":"2004年（平成16年）の新潟県中越地震で、芋川がせき止められてできた天然ダムに水没した木籠（こごも）集落。屋根まで水に浸かった家屋がそのまま保存され、災害の記憶と教訓を伝えるメモリアルパークとして整備された。高台に移転した新しい木籠集落の住民が語り部となり、震災の体験を今に伝えている。","image":"card_kogomo.png"}},{"id":"tanesuhara","districtId":"yamakoshi","name":"種苧原アルパカ牧場","lat":37.3517,"lng":138.9316,"radius":80,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"アルパカ牧場・ふれあい","treasure":{"title":"種苧原アルパカ牧場","era":"中越地震からの復興のシンボル","blurb":"棚田・棚池が山あいに幾重にも連なる、山古志有数の米どころ・種苧原。復興のシンボルとして山古志にやってきたアルパカが数を増やし、この美しい里の牧場でものんびりと暮らすようになった。ふわふわの毛をまとった愛らしい姿は訪れる人の心を和ませ、餌やりやふれあいも楽しめる“天空の牧場”。棚田の緑を背にアルパカが草をはむ風景は、山古志ならではの癒やしの一枚。","image":"card_tanesuhara.png"}},{"id":"yubu","districtId":"yamakoshi","name":"油夫アルパカ牧場","lat":37.329563,"lng":138.888188,"radius":80,"rarity":"uncommon","coinsFirst":150,"coinsRepeat":10,"xp":35,"category":"アルパカ牧場・ふれあい","treasure":{"title":"油夫アルパカ牧場","era":"アルパカがはじめて来た地（2009年）","blurb":"2004年の中越地震で被災した山古志を励まそうと、2009年11月、アメリカ・コロラド州のアルパカ牧場オーナーから3頭のアルパカが贈られた。その最初の3頭を迎えたのが、ここ油夫（ゆぶ）の牧場。以来アルパカは山古志の復興のシンボルとして愛され、少しずつ数を増やしていった。“すべてはここから始まった”はじまりの牧場で、ふわふわのアルパカたちがのんびりと暮らし、訪れる人を出迎えてくれる。","image":"card_yubu.png"}},{"id":"koryu","districtId":"yomogihira","name":"高龍神社","lat":37.369111,"lng":138.896419,"radius":80,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・信仰","treasure":{"title":"高龍神社","era":"南北朝時代 創建と伝わる","blurb":"蓬平（よもぎひら）温泉の奥、山の中腹に鎮座する商売繁盛の神様。南北朝時代、この地で病に倒れた武将を助けた白蛇の化身をまつったのが始まりと伝わり、全国から多くの経営者や商売人が参拝に訪れる。長い石段のほかエレベーターでも社殿へ上がれ、生玉子をお供えする独特の信仰でも知られる。","image":"card_koryu.png"}},{"id":"hakusan","districtId":"teradomari","name":"白山媛神社","lat":37.64204,"lng":138.768284,"radius":60,"rarity":"rare","coinsFirst":200,"coinsRepeat":10,"xp":45,"category":"神社・港町","treasure":{"title":"白山媛神社","era":"寺泊の総鎮守","blurb":"日本海に臨む港町・寺泊の総鎮守。御影石の鳥居から社殿へ125段の石段が続き、高台からは町と海を一望できる。北前船で栄えた時代に廻船問屋や船主が奉献した「船絵馬」52点を所蔵し、国の重要文化財に指定。海の安全と繁栄を祈った人々の信仰を今に伝える。","image":"card_hakusan.png"}},{"id":"shomyoji","districtId":"teradomari","name":"照明寺・密蔵院","lat":37.64082,"lng":138.767259,"radius":60,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"寺院・良寛ゆかり","treasure":{"title":"照明寺・密蔵院（良寛ゆかり）","era":"永承2年(1047)開創と伝わる","blurb":"平安後期の永承2年（1047）、高野山竜光院の栄秀和尚が開いたと伝わる真言宗の古刹。境内の「密蔵院」は、越後の名僧・良寛が45歳の頃をはじめ生涯に3度仮住まいした庵として知られ、良寛を慕う人々が訪れる巡礼の地となっている。趣ある山門と杉木立の参道が迎える。","image":"card_shomyoji.png"}},{"id":"jukanen","districtId":"teradomari","name":"聚感園","lat":37.6415,"lng":138.7678,"radius":60,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"庭園・史跡","treasure":{"title":"聚感園","era":"豪族・五十嵐家の旧宅","blurb":"寺泊の豪族・五十嵐家の旧宅を保存した庭園で、園名は「昔をしのぶさまざまな感情が聚（あつ）まる庭」の意。日本海を望む景勝地で、園内には弁慶が掘ったとも伝わる古井戸「硯水（すずりみず）」が残る。佐渡へ流される日蓮上人が渡航の舟を待つ間、この地で説法したとも語り継がれている。","image":"card_jukanen.png"}},{"id":"suizoku","districtId":"teradomari","name":"寺泊水族博物館","lat":37.6296,"lng":138.7605,"radius":80,"rarity":"uncommon","coinsFirst":160,"coinsRepeat":10,"xp":38,"category":"水族館・名所","treasure":{"title":"寺泊水族博物館","era":"1983年開館","blurb":"三方を日本海に囲まれた花立の岬に建つ、円柱形が印象的な水族館。日本海の魚を中心におよそ400種の生きものを展示し、海に浮かぶようなロケーションと屋上からの眺望が人気。ラッコやペンギンのお食事タイムなども楽しめる、寺泊のシンボル的施設。","image":"card_suizoku.png"}},{"id":"kaisui","districtId":"teradomari","name":"寺泊中央海水浴場","lat":37.6375,"lng":138.7625,"radius":80,"rarity":"common","coinsFirst":130,"coinsRepeat":10,"xp":30,"category":"海岸・景勝","treasure":{"title":"寺泊中央海水浴場","era":"寺泊海岸のシンボルビーチ","blurb":"寺泊海岸のほぼ中央に位置する海水浴場。防波堤に守られた砂浜は波が穏やかで遠浅、夏は家族連れや海水浴客でにぎわう。すぐそばに魚市場「魚のアメ横」があり、海遊びと海の幸を一日で楽しめるのが寺泊ならでは。日本海に沈む夕日は格別で、晴れた日には沖に佐渡島を望む夕景の名所として親しまれている。","image":"card_kaisui.png"}},{"id":"aoshi","districtId":"chuo","name":"蒼柴神社","lat":37.4324,"lng":138.8824,"radius":75,"rarity":"rare","coinsFirst":210,"coinsRepeat":10,"xp":48,"category":"神社・史跡","unlockVia":"makino","unlockFavor":30,"treasure":{"title":"蒼柴神社（悠久山）","era":"享保7年(1722)創建・天明元年(1781)悠久山へ遷座","blurb":"かつて長岡藩の居城・長岡城の本丸に鎮座していた神社。享保7年（1722）に四代藩主・牧野忠壽が長岡城本丸に社殿を建立し、天明元年（1781）に九代・忠精が現在の悠久山へ遷座した。ご祭神は「長岡中興の祖」と敬慕された三代藩主・牧野忠辰（蒼柴大明神）で、牧野家の家紋と同じ三つ葉柏を神紋とする。戊辰戦争・長岡空襲・中越地震と幾多の危機をくぐり抜けて社殿は焼失も倒壊も免れ、国の登録有形文化財に指定。今も「お山」の杜から越後長岡の人々を見まもり続けている。","image":"card_aoshi.png"}}]};
 
   var DISTRICT_MAP_IMG = { chuo:"assets/map_chuo.png", settaya:"assets/map_settaya.png", yamakoshi:"assets/map_yamakoshi.png", teradomari:"assets/map_teradomari.png", tochio:"assets/map_tochio.png", yoita:"assets/map_yoita.png", koshiji:"assets/map_koshiji.png", yomogihira:"assets/map_yomogihira.png" };
 
@@ -1676,7 +1707,11 @@
       referral: { myCode: null, enteredCode: null, referrerUid: null, milestoneReached: false, credited: false, count: 0 },
       // 花火館（後方互換：欠けていてもdefaultSave()の値で補完される）
       // unlocked: 手に入れた花火id { id: true }（実績達成で順番に解放）
-      fireworks: { unlocked: {} }
+      fireworks: { unlocked: {} },
+      // 牧野家（年貢システム）（後方互換：欠けていてもdefaultSave()の値で補完される）
+      // seenIntro:登場イベント既読／favor:好感度累計／rank:家臣ランクindex／tributes:{omiyageId:納品累計}
+      // unlockedSpots:本システム経由で解禁したpoiId／order:お達し（Phase2）／favorRankSeen:昇進演出の多重防止
+      makino: { seenIntro:false, favor:0, rank:0, tributesTotal:0, tributes:{}, unlockedSpots:[], order:{ need:{}, issuedDate:null, claimed:false }, favorRankSeen:0 }
     };
   }
 
@@ -1704,7 +1739,20 @@
       })(),
       gacha: Object.assign(d.gacha, parsed.gacha || {}),
       referral: Object.assign(d.referral, parsed.referral || {}),
-      fireworks: { unlocked: Object.assign({}, (parsed.fireworks && parsed.fireworks.unlocked) || {}) }
+      fireworks: { unlocked: Object.assign({}, (parsed.fireworks && parsed.fireworks.unlocked) || {}) },
+      makino: (function(){
+        var pm = parsed.makino || {}, dm = d.makino;
+        return {
+          seenIntro: !!pm.seenIntro,
+          favor: +pm.favor || 0,
+          rank: +pm.rank || 0,
+          tributesTotal: +pm.tributesTotal || 0,
+          tributes: pm.tributes || {},
+          unlockedSpots: pm.unlockedSpots || [],
+          order: Object.assign(dm.order, pm.order || {}),
+          favorRankSeen: +pm.favorRankSeen || 0
+        };
+      })()
     });
   }
 
@@ -2838,6 +2886,193 @@
     });
   }
 
+  /* ---------- 牧野家（年貢システム：おみやげを納めて図鑑を広げる育成） ---------- */
+  // 牧野家が登場する発見数（称号ロジックとは独立。史実尊重で家臣ランクの頂点は藩職「家老」）
+  var MAKINO_UNLOCK_FOUND = 10;
+  var MAKINO_FAVOR_PER = 2;      // おみやげ1個あたりの好感度
+  var MAKINO_TRIBUTE_COIN = 15;  // 納品1個あたりのお礼コイン
+  // 家臣ランク（好感度=favorの累計で昇進）。最高位は実在の藩職「家老」、その上は創作の名誉称号。
+  var MAKINO_RANKS = [
+    { name:"中間",         favor:0 },
+    { name:"足軽",         favor:20 },
+    { name:"徒士",         favor:50 },
+    { name:"馬廻役",       favor:100 },
+    { name:"番頭",         favor:170 },
+    { name:"用人",         favor:260 },
+    { name:"家老",         favor:380 },
+    { name:"殿の御意見番", favor:520 }   // 創作の名誉称号
+  ];
+  // 好感度で解禁される隠しスポット（poiIdはpois.jsonに unlockVia:"makino" で追加）。favor昇順で。
+  var MAKINO_UNLOCKS = [
+    { poiId:"aoshi", favor:30 }   // 蒼柴神社（Phase1第1号・実データ投入待ち）
+  ];
+
+  function makinoActive(){ return save.makino.seenIntro || save.found.length >= MAKINO_UNLOCK_FOUND; }
+  function makinoRankIndex(){
+    var f = save.makino.favor, idx = 0;
+    for(var i=0;i<MAKINO_RANKS.length;i++){ if(f >= MAKINO_RANKS[i].favor) idx = i; }
+    return idx;
+  }
+  function makinoRankName(){ return MAKINO_RANKS[makinoRankIndex()].name; }
+  function makinoNextRank(){ var i = makinoRankIndex(); return (i < MAKINO_RANKS.length-1) ? MAKINO_RANKS[i+1] : null; }
+
+  // ボーナススポット（牧野家経由でのみ解禁）判定。既存の32スポットには unlockVia が無いので常に表示・進行に影響しない。
+  function poiBonus(p){ return !!(p && p.unlockVia === "makino"); }
+  function makinoSpotUnlocked(p){ return save.makino.unlockedSpots.indexOf(p.id) !== -1; }
+  // 表示・発見の対象か（ボーナスは解禁済みのみ、通常スポットは常に対象）
+  function poiUnlocked(p){ return !poiBonus(p) || makinoSpotUnlocked(p); }
+  // 基本進行（称号・エリアコンプ・全制覇）はボーナスを含めない＝既存の進行を壊さない
+  function basePois(){ return (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return !poiBonus(p); }) : []; }
+
+  // 好感度に達したボーナススポットを解禁。新規解禁したpoiId配列を返す（お祝い演出付き）。
+  function syncMakinoUnlocks(silent){
+    var newly = [];
+    MAKINO_UNLOCKS.forEach(function(u){
+      if(save.makino.favor < u.favor) return;
+      if(save.makino.unlockedSpots.indexOf(u.poiId) !== -1) return;
+      var poi = (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return p.id === u.poiId; })[0] : null;
+      if(!poi) return;   // まだpoisにデータが無ければ解禁保留（データ投入後に解禁される）
+      save.makino.unlockedSpots.push(u.poiId);
+      newly.push(u.poiId);
+    });
+    if(newly.length && !silent){
+      newly.forEach(function(id){
+        var poi = DATA.pois.filter(function(p){ return p.id === id; })[0];
+        toast("🏯 新しいスポットが解禁！「" + (poi ? poi.name : id) + "」を探しに行こう", { achievement:true });
+      });
+      if(typeof launchFireworks === "function") launchFireworks(3);
+    }
+    return newly;
+  }
+
+  // 家臣ランクの昇進チェック（favor増加後に呼ぶ）。昇進したらお祝い。
+  function syncMakinoRank(silent){
+    var idx = makinoRankIndex();
+    if(idx > save.makino.favorRankSeen){
+      save.makino.rank = idx;
+      save.makino.favorRankSeen = idx;
+      if(!silent){
+        toast("🎖️ 牧野家での格が上がった！「" + MAKINO_RANKS[idx].name + "」に昇進", { achievement:true });
+        if(typeof launchFireworks === "function") launchFireworks(2);
+      }
+    } else {
+      save.makino.rank = Math.max(save.makino.rank, idx);
+    }
+  }
+
+  // おみやげを1個、年貢として納める（ダブり＝2個以上のときのみ。図鑑用に最低1個は残す）。
+  function tributeOmiyage(id){
+    var cnt = save.omiyage[id] || 0;
+    if(cnt < 2){ toast("それは1個しかないので納められません（図鑑用に残そう）"); return; }
+    save.omiyage[id] = cnt - 1;
+    save.makino.tributes[id] = (save.makino.tributes[id] || 0) + 1;
+    save.makino.tributesTotal += 1;
+    save.makino.favor += MAKINO_FAVOR_PER;
+    save.coins += MAKINO_TRIBUTE_COIN;
+    save.totalCoinsEarned += MAKINO_TRIBUTE_COIN;
+    var o = omiById(id);
+    toast("殿「うむ、大儀である」（" + (o ? o.name : id) + " を納めた：好感度+" + MAKINO_FAVOR_PER + "）");
+    syncMakinoRank(false);
+    syncMakinoUnlocks(false);
+    persist();
+    if(typeof checkAchievements === "function") checkAchievements();
+    var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
+    renderMakino();
+  }
+
+  // 牧野家の登場イベント（発見数が条件に達したら1回だけ）。boot・発見後に呼ぶ。
+  function maybeMakinoIntro(){
+    if(!makinoActive() || save.makino.seenIntro) return;
+    save.makino.seenIntro = true;
+    syncMakinoRank(true);
+    syncMakinoUnlocks(true);
+    persist();
+    updateMakinoTabVisibility();
+    setTimeout(function(){
+      toast("🏯 長岡藩主・牧野の殿がそなたをお呼びだ…！", { achievement:true });
+      toast("集めたおみやげを『年貢』として納めると、殿が新たな土地を教えてくれるぞ（図鑑→御殿）", { achievement:true });
+      if(typeof launchFireworks === "function") launchFireworks(3);
+    }, 900);
+  }
+
+  // 御殿タブの表示/非表示（牧野家が登場するまでは隠す）
+  function updateMakinoTabVisibility(){
+    var tab = document.getElementById("book-subtab-makino");
+    if(tab) tab.style.display = makinoActive() ? "" : "none";
+  }
+
+  function renderMakino(){
+    var panel = document.getElementById("book-panel-makino");
+    if(!panel) return;
+    var favor = save.makino.favor;
+    var rankName = makinoRankName();
+    var next = makinoNextRank();
+    var rankIdx = makinoRankIndex();
+    // 好感度5段階（御殿の賑わい表現用の見出し）
+    var moodStages = ["初対面","打ち解け中","信頼あり","目をかけられている","お気に入り"];
+    var moodIdx = Math.min(moodStages.length-1, Math.floor(favor / 110));
+    // ランク進捗バー
+    var rankBar = "";
+    if(next){
+      var cur = MAKINO_RANKS[rankIdx].favor, span = next.favor - cur;
+      var pct = Math.max(0, Math.min(100, Math.round((favor - cur) / span * 100)));
+      rankBar = '<div class="makino-bar"><div class="makino-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="makino-bar-label">次の格「' + next.name + '」まで あと ' + (next.favor - favor) + '</div>';
+    } else {
+      rankBar = '<div class="makino-bar-label">最高位に到達！殿の御意見番</div>';
+    }
+    // 次の解禁スポット（伏せ字で期待感）
+    var nextUnlock = null;
+    for(var i=0;i<MAKINO_UNLOCKS.length;i++){
+      if(save.makino.unlockedSpots.indexOf(MAKINO_UNLOCKS[i].poiId) === -1){ nextUnlock = MAKINO_UNLOCKS[i]; break; }
+    }
+    var unlockHtml = "";
+    if(nextUnlock){
+      var remain = Math.max(0, nextUnlock.favor - favor);
+      var upct = Math.max(0, Math.min(100, Math.round(favor / nextUnlock.favor * 100)));
+      unlockHtml = '<div class="makino-unlock"><div class="makino-unlock-title">🗺️ 次に解禁される土地：？？？</div>' +
+        '<div class="makino-bar"><div class="makino-bar-fill gold" style="width:' + upct + '%"></div></div>' +
+        '<div class="makino-bar-label">あと 好感度 ' + remain + ' で解禁</div></div>';
+    } else {
+      unlockHtml = '<div class="makino-unlock"><div class="makino-unlock-title">🎉 いまの土地はすべて解禁済み！次の御達しを待とう</div></div>';
+    }
+    // 殿ビジュアル（好感度で表情が変化：ふつう→喜び→大喜び）。御殿の広間を背景に。
+    var tonoImg = moodIdx >= 4 ? "assets/makino_tono_glad.png"
+                : (moodIdx >= 2 ? "assets/makino_tono_happy.png" : "assets/makino_tono.png");
+    var tono = '<div class="makino-tono" id="makino-tono-box" style="background-image:url(assets/makino_hall.png)">' +
+      '<img src="' + tonoImg + '" alt="牧野の殿" onerror="this.style.display=\'none\';var ph=this.parentNode.querySelector(\'.makino-tono-ph\');if(ph)ph.style.display=\'flex\';">' +
+      '<div class="makino-tono-ph" style="display:none;">🏯<span>殿（絵は準備中）</span></div>' +
+      '</div>';
+    // 納品グリッド（ダブり＝2個以上を持つおみやげのみ納品可）
+    var tributeCells = "";
+    OMIYAGE.forEach(function(o){
+      var cnt = save.omiyage[o.id] || 0;
+      if(cnt < 2) return;
+      var visual = o.img ? ('<img src="' + o.img + '" alt="' + o.name + '">') : ('<span class="omiyage-emoji">' + o.emoji + '</span>');
+      tributeCells += '<div class="makino-tribute-cell">' + visual +
+        '<div class="makino-tribute-name">' + o.name + '</div>' +
+        '<div class="makino-tribute-count">手持ち ×' + cnt + '</div>' +
+        '<button class="makino-tribute-btn" data-omi="' + o.id + '">納める</button></div>';
+    });
+    if(!tributeCells){
+      tributeCells = '<div class="settings-note" style="grid-column:1/-1;">納められるおみやげ（ダブり＝2個以上）がまだありません。スポットを再訪してガチャでおみやげを集めよう！</div>';
+    }
+    panel.innerHTML =
+      tono +
+      '<div class="makino-status">' +
+        '<div class="makino-rank">家臣の格：<b>' + rankName + '</b></div>' +
+        '<div class="makino-favor">殿の信頼（好感度）：<b>' + favor + '</b> ／ ' + moodStages[moodIdx] + '</div>' +
+        rankBar +
+      '</div>' +
+      unlockHtml +
+      '<div class="makino-tribute-title">年貢を納める（おみやげのダブりを献上）</div>' +
+      '<div class="makino-tribute-grid">' + tributeCells + '</div>' +
+      '<div class="settings-note" style="padding:0 14px 14px;">おみやげを納めると殿の信頼が上がり、家臣の格が上がったり、新しい土地が解禁されて図鑑が広がります。</div>';
+    Array.prototype.slice.call(panel.querySelectorAll(".makino-tribute-btn")).forEach(function(btn){
+      btn.addEventListener("click", function(){ tributeOmiyage(btn.getAttribute("data-omi")); });
+    });
+  }
+
   function renderFireworks(){
     var grid = document.getElementById("fw-grid");
     if(!grid) return;
@@ -3696,6 +3931,7 @@
         serialPending: serialPending });
       checkAchievements();
       checkCostumeUnlock(poi.id);
+      maybeMakinoIntro();   // 発見数が条件に達したら牧野家が登場
       renderAll();
       // 友達紹介：実GPSでの初カード取得が「紹介成立」の条件（ワープ/シミュレーションは対象外）
       if(isRealVisit){
@@ -3940,7 +4176,7 @@
 
     if(!currentPos || !DATA){ proximityDist = null; return; }
 
-    var distances = DATA.pois.map(function(p){
+    var distances = DATA.pois.filter(poiUnlocked).map(function(p){
       return { poi: p, dist: haversine(currentPos.lat, currentPos.lng, p.lat, p.lng) };
     });
     distances.sort(function(a,b){ return a.dist - b.dist; });
@@ -4299,7 +4535,7 @@
     // 既存ピン・現在地マーカーを除去（背景imgは残す）
     Array.prototype.slice.call(zone.querySelectorAll(".map-pin, .you-are-here")).forEach(function(el){ el.remove(); });
 
-    var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict; });
+    var pois = DATA.pois.filter(function(p){ return p.districtId === currentDistrict && poiUnlocked(p); });
     var bbox = BBOX[currentDistrict];
 
     if(mapLayerState.treasure){
@@ -4608,7 +4844,7 @@
     document.getElementById("book-detail").style.display = "none";
     var grid = document.getElementById("book-grid");
     grid.innerHTML = "";
-    document.getElementById("book-progress").textContent = "発見数：" + save.found.length + " / " + DATA.pois.length;
+    document.getElementById("book-progress").textContent = "発見数：" + save.found.length + " / " + DATA.pois.filter(poiUnlocked).length;
 
     var g = bookGrade(), oc = omiyageCount();
     var gradeLine = document.getElementById("book-grade-line");
@@ -4647,7 +4883,7 @@
     // エリア（地区）ごとにまとめて表示。順序は地図タブと同じ DATA.districts 順。
     var shown = {};
     DATA.districts.forEach(function(d){
-      var dpois = DATA.pois.filter(function(p){ return p.districtId === d.id; });
+      var dpois = DATA.pois.filter(function(p){ return p.districtId === d.id && poiUnlocked(p); });
       if(!dpois.length) return;
       var foundCount = dpois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
       var head = document.createElement("div");
@@ -4657,7 +4893,7 @@
       dpois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
     });
     // 念のため：どの地区にも属さないスポットがあれば末尾にまとめる
-    var orphans = DATA.pois.filter(function(p){ return !shown[p.id]; });
+    var orphans = DATA.pois.filter(function(p){ return !shown[p.id] && poiUnlocked(p); });
     if(orphans.length){
       var oh = document.createElement("div");
       oh.className = "book-district-head";
@@ -4736,11 +4972,13 @@
     document.getElementById("book-panel-title").style.display = (name === "title") ? "block" : "none";
     document.getElementById("book-panel-omiyage").style.display = (name === "omiyage") ? "block" : "none";
     document.getElementById("book-panel-fw").style.display = (name === "fw") ? "block" : "none";
+    document.getElementById("book-panel-makino").style.display = (name === "makino") ? "block" : "none";
     if(name === "book") renderBook();
     if(name === "ach") renderAchievements();
     if(name === "title") renderTitlesList();
     if(name === "omiyage") renderOmiyage();
     if(name === "fw") renderFireworks();
+    if(name === "makino") renderMakino();
   }
 
   function renderAchievements(){
@@ -4824,7 +5062,7 @@
 
     var list = document.getElementById("teleport-list");
     list.innerHTML = "";
-    DATA.pois.forEach(function(poi){
+    DATA.pois.filter(poiUnlocked).forEach(function(poi){
       var btn = document.createElement("button");
       btn.className = "teleport-btn";
       var districtName = (DATA.districts.filter(function(d){return d.id===poi.districtId;})[0]||{}).name || "";
@@ -5023,7 +5261,7 @@
     var list = document.getElementById("warp-list");
     list.innerHTML = "";
     if(!DATA) return;
-    DATA.pois.forEach(function(poi){
+    DATA.pois.filter(poiUnlocked).forEach(function(poi){
       var districtName = (DATA.districts.filter(function(d){ return d.id === poi.districtId; })[0] || {}).name || "";
       var found = save.found.indexOf(poi.id) !== -1;
       var btn = document.createElement("button");
@@ -5234,7 +5472,8 @@
    * ========================================================== */
   function isDistrictComplete(districtId){
     if(!DATA) return false;
-    var ids = DATA.pois.filter(function(p){ return p.districtId === districtId; }).map(function(p){ return p.id; });
+    // ボーナススポット（牧野家経由の解禁）はエリアコンプ条件に含めない＝既存の進行を壊さない
+    var ids = DATA.pois.filter(function(p){ return p.districtId === districtId && !poiBonus(p); }).map(function(p){ return p.id; });
     if(!ids.length) return false;
     return ids.every(function(id){ return save.found.indexOf(id) !== -1; });
   }
@@ -5250,7 +5489,7 @@
     { id: "yoita_complete", name: "与板コンプ", desc: "与板の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("yoita"); } },
     { id: "koshiji_complete", name: "越路コンプ", desc: "越路の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("koshiji"); } },
     { id: "yomogihira_complete", name: "蓬平コンプ", desc: "蓬平の全スポットを発見した", tier: 2, check: function(){ return isDistrictComplete("yomogihira"); } },
-    { id: "all_complete", name: "全スポット制覇", desc: "すべてのスポットを発見した", tier: 3, check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
+    { id: "all_complete", name: "全スポット制覇", desc: "すべてのスポットを発見した", tier: 3, check: function(s){ return !!DATA && basePois().every(function(p){ return s.found.indexOf(p.id) !== -1; }); } },
     { id: "level5", name: "Lv5到達", desc: "レベル5に到達した", tier: 2, check: function(s){ return s.level >= 5; } },
     { id: "level10", name: "Lv10到達", desc: "レベル10に到達した", tier: 3, check: function(s){ return s.level >= 10; } },
     { id: "coins1000", name: "コイン収集家", desc: "累計コインを1000枚獲得した", tier: 2, check: function(s){ return s.totalCoinsEarned >= 1000; } },
@@ -5299,8 +5538,8 @@
     { id: "t3", name: "摂田屋通", check: function(s){ return s.found.length >= 2; } },
     { id: "t4", name: "長岡さんぽ人", check: function(s){ return s.found.length >= 3; } },
     { id: "t5", name: "郷土史コレクター", check: function(s){ return s.found.length >= 4; } },
-    { id: "t6", name: "長岡探検マスター見習い", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length; } },
-    { id: "t7", name: "長岡マスター", check: function(s){ return !!DATA && s.found.length >= DATA.pois.length && s.streak >= 7; } }
+    { id: "t6", name: "長岡探検マスター見習い", check: function(s){ return !!DATA && basePois().every(function(p){ return s.found.indexOf(p.id) !== -1; }); } },
+    { id: "t7", name: "長岡マスター", check: function(s){ return !!DATA && basePois().every(function(p){ return s.found.indexOf(p.id) !== -1; }) && s.streak >= 7; } }
   ];
 
   /* ============================================================
@@ -5316,7 +5555,7 @@
 
   function initBBoxes(){
     DATA.districts.forEach(function(d){
-      var pois = DATA.pois.filter(function(p){ return p.districtId === d.id; });
+      var pois = DATA.pois.filter(function(p){ return p.districtId === d.id && poiUnlocked(p); });
       // 加盟店（お店）ピンも同じ地図上に投影するため、bbox計算にお店の座標も含める（既存のcomputeBBox/projectをそのまま流用）
       var shops = (SHOP_DATA && SHOP_DATA.shops) ? SHOP_DATA.shops.filter(function(s){ return s.districtId === d.id; }) : [];
       var points = pois.concat(shops);
@@ -5493,6 +5732,9 @@
     applyMode();
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     syncCostumeUnlocks();                 // 既に発見済みスポットの衣装を遡及解放（後から追加した衣装も反映）
+    syncMakinoRank(true); syncMakinoUnlocks(true); // 牧野家：既存セーブへの遡及（通知なし）
+    updateMakinoTabVisibility();          // 御殿タブの表示/非表示
+    maybeMakinoIntro();                   // 発見数が既に条件を満たしていれば登場イベント
     maybeFireworkFestivalNotice();        // 長岡花火の3日間は花火館を全開放＋お知らせ（その日1回）
     renderHomeFull();
     setInterval(tick, 1000);
