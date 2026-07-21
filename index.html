@@ -1737,7 +1737,7 @@
       base: { lastCollect: Date.now(), members: 1, storage: 1 },
       // 現地ガチャ（後方互換：欠けていてもdefaultSave()の値で補完される）
       omiyage: {},                    // 集めたご当地おみやげ { id: 個数 }（ダブりは個数が増える）
-      gacha: { lastFreeDate: null },  // 1日1回無料ガチャの管理（最後に無料を回した日）
+      gacha: { lastFreeDate: null, freeSpins: 1 },  // freeSpins=たまっている無料ガチャ回数（スポット訪問で+1）。初回1回サービス
       // お宝カードのシリアルナンバー（Firebase採番。後方互換：欠けていてもdefaultSave()の値で補完される）
       // serials: poiId -> { no: 通し番号, at: ISO日時 }（採番済み）
       // serialQueue: 採番待ちのpoiId配列（オフライン発見や採番失敗時にここへ積み、オンライン時に確定）
@@ -2731,6 +2731,7 @@
   /* ---------- 現地ガチャ ＆ ご当地おみやげコレクション ---------- */
   // 発見済みスポットに再訪（圏内）すると回せる。1日1回無料、追加はコイン。
   var GACHA_COST = 100;
+  var GACHA_FREE_MAX = 20;   // たまる無料ガチャの上限
   // ご当地おみやげ（絵文字＋名前ベース）。集めて図鑑「おみやげ」タブでコンプ。
   // 絵文字はイラスト読み込み前のフォールバック。img があればイラストを優先表示。
   var OMIYAGE = [
@@ -2757,7 +2758,9 @@
     { w:7,  type:"item", item:"doubleCoinTicket", qty:3, jackpot:true }
   ];
 
-  function gachaFreeAvailable(){ return save.gacha.lastFreeDate !== todayStr(); }
+  function gachaFreeAvailable(){ return (save.gacha.freeSpins || 0) > 0; }
+  // スポット訪問で無料ガチャを1回付与（上限あり）
+  function grantGachaFreeSpin(){ save.gacha.freeSpins = Math.min((save.gacha.freeSpins || 0) + 1, GACHA_FREE_MAX); }
 
   function rollGacha(){
     var total = 0, i;
@@ -2851,8 +2854,8 @@
   function spinGacha(){
     if(gachaSpinning) return;   // 回転中は連打防止
     var free = gachaFreeAvailable();
-    if(!free && save.coins < GACHA_COST){ toast("コインが足りません"); return; }
-    if(free){ save.gacha.lastFreeDate = todayStr(); }
+    if(!free && save.coins < GACHA_COST){ toast("コインが足りません（スポットを訪れると無料で回せます）"); return; }
+    if(free){ save.gacha.freeSpins = Math.max(0, (save.gacha.freeSpins || 0) - 1); }
     else { save.coins -= GACHA_COST; }
     var res = rollGacha();
     applyGachaResult(res);
@@ -2860,6 +2863,7 @@
     // モーダル表示中にホーム全体を再描画すると、ガイド画像のリロードでリフロー→画面がズレるため、
     // ここではcoin表示と拠点ボタンだけ更新する（おみやげ/所持品は図鑑を開いたとき反映）。
     var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
+    updateHomeGachaBtn();
     renderBaseCard();
     playGachaAnimation(res, function(){
       showGachaResultInModal(res);
@@ -2885,19 +2889,20 @@
   function updateGachaSpinBtn(){
     var btn = document.getElementById("gacha-spin-btn");
     var note = document.getElementById("gacha-note");
-    if(gachaFreeAvailable()){
-      btn.textContent = "無料で回す！"; btn.disabled = false;
-      note.textContent = "今日はまだ無料で回せます";
+    var fs = save.gacha.freeSpins || 0;
+    if(fs > 0){
+      btn.textContent = "無料で回す！（残り " + fs + "回）"; btn.disabled = false;
+      note.textContent = "スポットを訪れると無料ガチャがたまります";
     } else {
       btn.textContent = GACHA_COST + "コインで回す";
       btn.disabled = save.coins < GACHA_COST;
-      note.textContent = "所持コイン：" + save.coins;
+      note.textContent = "所持コイン：" + save.coins + " ／ スポットを訪れると無料で回せます";
     }
   }
 
   function openGachaModal(poiId){
-    var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
-    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "";
+    var poi = poiId ? DATA.pois.filter(function(p){ return p.id === poiId; })[0] : null;
+    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "いつでもガチャ";
     document.getElementById("gacha-result").innerHTML = "回すとカプセルが出てくるよ！";
     // ステージを初期状態に戻す
     var cap = document.getElementById("g-capsule"); cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
@@ -4052,6 +4057,7 @@
       var bonusCoins = dailyBonus ? dailyBonus.total : 0;
       save.found.push(poi.id);
       save.visits[poi.id] = { count: 1, lastDate: dateStr, lastAt: now, realVisits: (visit && visit.realVisits) || [] };
+      grantGachaFreeSpin();   // スポット到達で無料ガチャ+1
       var coinsFirst = poi.coinsFirst;
       var doubled = consumeDoubleCoin();
       if(doubled) coinsFirst *= 2;
@@ -4079,6 +4085,7 @@
       if(now - lastAt < REVISIT_COOLDOWN_MS) return; // クールダウン中はアイドル
       var dailyBonus2 = registerDailyActivity(dateStr);
       var bonusCoins2 = dailyBonus2 ? dailyBonus2.total : 0;
+      grantGachaFreeSpin();   // 再訪でも無料ガチャ+1
       var count = (visit ? visit.count : 0) + 1;
       var repeatCoins = Math.max(3, Math.round(poi.coinsRepeat / (1 + 0.25*(count-1))));
       save.coins += repeatCoins + bonusCoins2;
@@ -4331,10 +4338,8 @@
     currentInRangePoi = inRange ? inRange.poi : null;
     if(inRange){
       var alreadyFound = save.found.indexOf(inRange.poi.id) !== -1;
-      // 未発見＝「あやしい気配」バナー／発見済み＝再訪でガチャボタン
+      // 未発見＝「あやしい気配」バナー
       banner.style.display = alreadyFound ? "none" : "block";
-      gachaBtn.style.display = alreadyFound ? "block" : "none";
-      if(alreadyFound) gachaBtn.setAttribute("data-poi", inRange.poi.id);
       // 滞在で発見（初回）／再訪（前回訪問から2時間経過でカウント＆再訪コイン）
       if(!dwellCandidate || dwellCandidate.poiId !== inRange.poi.id){
         dwellCandidate = { poiId: inRange.poi.id, since: Date.now(), prompted: false };
@@ -4350,7 +4355,6 @@
     } else {
       dwellCandidate = null;
       banner.style.display = "none";
-      gachaBtn.style.display = "none";
     }
 
     renderHomeNearest();
@@ -4516,7 +4520,19 @@
     return "2km以上";
   }
 
+  // ホームのガチャボタンは常時表示（いつでも回せる）。無料回数 or コストを表示。
+  function updateHomeGachaBtn(){
+    var btn = document.getElementById("home-gacha-btn");
+    if(!btn) return;
+    btn.style.display = "block";
+    var poi = currentInRangePoi;
+    btn.setAttribute("data-poi", (poi && save.found.indexOf(poi.id) !== -1) ? poi.id : "");
+    var gfs = save.gacha.freeSpins || 0;
+    btn.textContent = gfs > 0 ? ("🎰 ガチャを回す（無料 " + gfs + "回）") : ("🎰 ガチャを回す（" + GACHA_COST + "コイン）");
+  }
+
   function renderHomeNearest(){
+    updateHomeGachaBtn();
     document.getElementById("home-coins").textContent = save.coins;
     document.getElementById("home-level").textContent = save.level;
     document.getElementById("home-level2").textContent = save.level;
