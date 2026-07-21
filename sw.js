@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v137";
+var CACHE_VERSION = "v138";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -163,6 +163,10 @@ var PRECACHE_URLS = [
   "assets/card_aoshi_deluxe.png",
   "assets/card_tokushoji.png",
   "assets/card_tokushoji_deluxe.png",
+  "assets/card_joanji.png",
+  "assets/card_joanji_deluxe.png",
+  "assets/card_kiwatari.png",
+  "assets/card_kiwatari_deluxe.png",
   "assets/card_yamamoto.png",
   "assets/card_kawai.png",
   "assets/card_sensai.png",
