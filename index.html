@@ -2795,7 +2795,7 @@
     document.getElementById("fw-progress").textContent = "あつめた花火：" + fwUnlockedCount() + " / " + FIREWORKS.length;
     grid.innerHTML = "";
     FIREWORKS.forEach(function(f){
-      var has = !!save.fireworks.unlocked[f.id];
+      var has = fwHas(f.id);
       var cell = document.createElement("div");
       cell.className = "fw-cell" + (has ? " has" : "");
       cell.innerHTML = has
@@ -2980,8 +2980,36 @@
   }
   var FW_ORDER = FIREWORKS.map(function(f){ return f.id; });
   function fwById(id){ for(var i=0;i<FIREWORKS.length;i++){ if(FIREWORKS[i].id === id) return FIREWORKS[i]; } return null; }
-  function fwUnlockedCount(){ return FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id]; }).length; }
-  function grandestUnlockedFw(){ var g=null; for(var i=0;i<FW_ORDER.length;i++){ if(save.fireworks.unlocked[FW_ORDER[i]]) g = FW_ORDER[i]; } return g; }
+
+  // 長岡花火の開催3日間（2026-08-01〜03）は、花火館の全花火を全員に解放する特別期間。
+  // セーブは書き換えず「解放されているか」の判定だけを開放するので、期間が過ぎれば
+  // 自動で通常（実績で獲得した花火のみ）に戻る。端末のローカル日付で判定。
+  var FW_FESTIVAL_DAYS = { "2026-8-1": 1, "2026-8-2": 1, "2026-8-3": 1 };
+  function fwFestivalOpen(){
+    try{ var n = new Date(); return !!FW_FESTIVAL_DAYS[n.getFullYear() + "-" + (n.getMonth()+1) + "-" + n.getDate()]; }
+    catch(e){ return false; }
+  }
+  // 花火が解放されているか（実績で獲得済み、または花火大会の特別期間中は全解放）
+  function fwHas(id){ return !!save.fireworks.unlocked[id] || fwFestivalOpen(); }
+
+  function fwUnlockedCount(){ return FW_ORDER.filter(function(id){ return fwHas(id); }).length; }
+  function grandestUnlockedFw(){ var g=null; for(var i=0;i<FW_ORDER.length;i++){ if(fwHas(FW_ORDER[i])) g = FW_ORDER[i]; } return g; }
+
+  // 花火大会期間中の全開放お知らせ（その日1回だけ表示）。boot時に呼ばれる。
+  function maybeFireworkFestivalNotice(){
+    if(!fwFestivalOpen()) return;
+    try{
+      var n = new Date();
+      var key = "nagaoka_fw_festival_notice_" + n.getFullYear() + "-" + (n.getMonth()+1) + "-" + n.getDate();
+      if(localStorage.getItem(key)) return;   // 同じ日はもう出さない
+      localStorage.setItem(key, "1");
+    }catch(e){}
+    setTimeout(function(){
+      toast("🎆 花火のシステムを全開放したよ！みんなで楽しんでね", { achievement: true });
+      toast("📸 花火の合間に写真を撮ったりして楽しんでね", { achievement: true });
+      if(typeof launchFireworks === "function") launchFireworks(3);
+    }, 1200);
+  }
 
   // 実績の達成数に合わせて花火を順番に解放。新しく解放したidの配列を返す。
   function syncFireworksUnlock(silent){
@@ -3081,7 +3109,7 @@
     var p = document.getElementById("ar-picker"); if(!p) return;
     p.innerHTML = "";
     FW_ORDER.forEach(function(id){
-      if(!save.fireworks.unlocked[id]) return;
+      if(!fwHas(id)) return;
       var f = fwById(id); if(!f) return;
       var b = document.createElement("div");
       b.className = "ar-pick" + (id === arSelFw ? " sel" : "");
@@ -3370,7 +3398,7 @@
   }
   function arAutoTick(){
     if(!arAuto || !arRunning) return;
-    var pool = FW_ORDER.filter(function(id){ return save.fireworks.unlocked[id] && !AR_NOAUTO[id]; });
+    var pool = FW_ORDER.filter(function(id){ return fwHas(id) && !AR_NOAUTO[id]; });
     if(pool.length){
       var id = pool[Math.floor(Math.random()*pool.length)];
       if(AR_BIG[id] && Math.random() > 0.35){
@@ -5413,6 +5441,7 @@
     applyMode();
     checkAchievements({ silent: true }); // 既存セーブに対する遡及チェック（通知なしで登録のみ）
     syncCostumeUnlocks();                 // 既に発見済みスポットの衣装を遡及解放（後から追加した衣装も反映）
+    maybeFireworkFestivalNotice();        // 長岡花火の3日間は花火館を全開放＋お知らせ（その日1回）
     renderHomeFull();
     setInterval(tick, 1000);
     proximityBeat();   // 近接ドキドキ演出（自己スケジュールで鼓動）
