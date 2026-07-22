@@ -966,8 +966,8 @@
     background:#fffdf5; color:#2a1c0e; border:2px solid var(--gold); border-radius:14px;
     padding:8px 14px; font-size:13px; font-weight:800; max-width:78%; text-align:center;
     box-shadow:0 4px 12px rgba(0,0,0,.3); opacity:0; pointer-events:none; z-index:3; transition:opacity .2s; }
-  .makino-tono-bubble.show{ opacity:1; }
-  .makino-tono-bubble.pop{ animation:msBub .3s ease-out; }
+  .makino-tono-bubble.show{ opacity:1; transform:translateX(-50%) scale(1); }
+  .makino-tono-bubble.pop{ animation:msBubTono .3s ease-out; }
   .makino-tono-bubble::after{ content:""; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
     border:7px solid transparent; border-top-color:var(--gold); }
   /* 殿のカットシーン（フルスクリーン・吹き出しコマ送り） */
@@ -988,6 +988,8 @@
     border:8px solid transparent; border-bottom-color:var(--gold); }
   .ms-bubble.pop{ animation:msBub .28s ease-out; }
   @keyframes msBub{ 0%{ transform:scale(.9); opacity:.3; } 100%{ transform:scale(1); opacity:1; } }
+  /* 御殿タブの殿吹き出し専用：中央寄せ(translateX)を保ったままポップ（右にズレる/縮むのを防ぐ） */
+  @keyframes msBubTono{ 0%{ transform:translateX(-50%) scale(.9); opacity:.3; } 100%{ transform:translateX(-50%) scale(1); opacity:1; } }
   .ms-next{ position:relative; z-index:2; color:#fff; font-size:12px; margin-top:12px;
     animation:msBlink 1.2s ease-in-out infinite; }
   @keyframes msBlink{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
