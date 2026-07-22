@@ -551,6 +551,12 @@
   }
   .shop-buy-btn:disabled{ background:#a9a186; color:#eee; }
   .shop-buy-btn.owned{ background:#5a8a4a; }
+  .shop-btn-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .shop-sell-btn{
+    background:transparent; color:var(--vermillion); border:1.5px solid var(--vermillion); border-radius:999px; padding:6.5px 14px;
+    font-weight:700; font-size:12px; display:inline-flex; align-items:center; gap:3px; cursor:pointer;
+  }
+  .shop-sell-btn:disabled{ border-color:#c7bfa8; color:#b3a988; }
   .inline-coin{ width:14px; height:14px; vertical-align:-2px; }
 
   /* ---------- Costume (衣装だんす) ---------- */
@@ -5353,6 +5359,26 @@
     }
   ];
 
+  // 消費アイテムの売却価格＝購入価格の半値（切り捨て）
+  function sellPrice(item){ return Math.floor(item.price / 2); }
+
+  // ダブついた券をコインに戻す（消費アイテムのみ・1個ずつ売却）
+  function sellItem(itemId){
+    var item = SHOP_ITEMS.filter(function(i){ return i.id === itemId; })[0];
+    if(!item || item.type !== "consumable") return;
+    var have = save.inventory[item.id] || 0;
+    if(have <= 0){ toast("売却できる券がありません"); return; }
+    var gain = sellPrice(item);
+    save.inventory[item.id] = have - 1;
+    save.coins += gain;
+    persist();
+    sfxPurchase();
+    checkAchievements();
+    renderShop();
+    renderHomeFull();
+    toast(item.name + " を売却しました（＋" + gain + "コイン）");
+  }
+
   function buyItem(itemId){
     var item = SHOP_ITEMS.filter(function(i){ return i.id === itemId; })[0];
     if(!item) return;
@@ -5387,17 +5413,24 @@
     grid.innerHTML = "";
     SHOP_ITEMS.forEach(function(item){
       var owned = item.type === "permanent" && hasItem(item.id);
+      var have = save.inventory[item.id] || 0;
       var card = document.createElement("div");
       card.className = "shop-card";
       var countHtml = (item.type === "consumable")
-        ? '<div class="shop-count">所持：' + (save.inventory[item.id] || 0) + '個</div>' : '';
-      var btnHtml;
+        ? '<div class="shop-count">所持：' + have + '個</div>' : '';
+      var buyBtn;
       if(owned){
-        btnHtml = '<button class="shop-buy-btn owned" disabled>購入済み</button>';
+        buyBtn = '<button class="shop-buy-btn owned" disabled>購入済み</button>';
       } else {
-        btnHtml = '<button class="shop-buy-btn" data-item="' + item.id + '"' +
+        buyBtn = '<button class="shop-buy-btn" data-item="' + item.id + '"' +
           (save.coins < item.price ? ' disabled' : '') + '>購入（<img src="assets/coin.png" class="inline-coin" alt="coin">' + item.price + '）</button>';
       }
+      // 消費アイテムを1個以上持っていれば、購入価格の半値で売却できる
+      var sellBtn = '';
+      if(item.type === "consumable" && have > 0){
+        sellBtn = '<button class="shop-sell-btn" data-sell="' + item.id + '">売却（+<img src="assets/coin.png" class="inline-coin" alt="coin">' + sellPrice(item) + '）</button>';
+      }
+      var btnHtml = '<div class="shop-btn-row">' + buyBtn + sellBtn + '</div>';
       var nameIcon = item.img ? '<img class="shop-name-icon" src="' + item.img + '" alt=""> ' : '';
       card.innerHTML =
         '<div class="shop-name">' + nameIcon + item.name + '</div>' +
@@ -5407,6 +5440,9 @@
     });
     Array.prototype.slice.call(grid.querySelectorAll(".shop-buy-btn[data-item]")).forEach(function(btn){
       btn.addEventListener("click", function(){ buyItem(btn.getAttribute("data-item")); });
+    });
+    Array.prototype.slice.call(grid.querySelectorAll(".shop-sell-btn[data-sell]")).forEach(function(btn){
+      btn.addEventListener("click", function(){ sellItem(btn.getAttribute("data-sell")); });
     });
   }
 
