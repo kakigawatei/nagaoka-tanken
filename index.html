@@ -820,6 +820,38 @@
     padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
   }
 
+  /* ---------- アプリ内お知らせ（🔔＋一覧モーダル） ---------- */
+  .anno-bell{
+    position:relative; background:none; border:none; cursor:pointer; font-size:20px;
+    line-height:1; padding:2px 4px; margin-right:2px; font-family:inherit;
+  }
+  .anno-dot{
+    position:absolute; top:0; right:2px; width:9px; height:9px; border-radius:50%;
+    background:var(--vermillion); box-shadow:0 0 0 2px var(--paper-dark);
+  }
+  #anno-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  #anno-modal.show{ display:flex; }
+  .anno-card{
+    position:relative; width:100%; max-width:340px; max-height:80vh; overflow-y:auto;
+    background:var(--card-bg); border-radius:18px; padding:20px 18px 18px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.45); border:2px solid var(--gold);
+    animation: shopModalUp .24s ease-out;
+  }
+  .anno-close{
+    position:absolute; top:6px; right:10px; background:none; border:none;
+    font-size:22px; color:var(--ink-soft); cursor:pointer; line-height:1; font-family:inherit;
+  }
+  .anno-head{ font-size:17px; font-weight:900; color:var(--vermillion); margin-bottom:10px; }
+  .anno-item{ text-align:left; padding:12px 0; border-top:1px dashed rgba(0,0,0,.14); }
+  .anno-item:first-child{ border-top:none; padding-top:2px; }
+  .anno-item-title{ font-size:14.5px; font-weight:800; color:var(--ink); margin-bottom:3px; }
+  .anno-item-date{ font-size:11px; color:var(--ink-soft); margin-bottom:6px; }
+  .anno-item-body{ font-size:13px; color:var(--ink); line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .anno-empty{ font-size:13px; color:var(--ink-soft); padding:14px 0; text-align:center; }
+
   /* ---------- 探検隊の拠点 カード ---------- */
   .base-card{
     background:var(--card-bg); border-radius:14px; margin:4px 16px 12px; padding:14px 16px;
@@ -1179,6 +1211,7 @@
     <div class="topbar">
       <h1 id="home-title">ながおか探検録</h1>
       <div class="stat-row">
+        <button class="anno-bell" id="anno-bell" aria-label="お知らせ">🔔<span class="anno-dot" id="anno-dot" style="display:none;"></span></button>
         <div class="stat-pill"><img src="assets/coin.png" alt="coin"><span id="home-coins">0</span></div>
         <div class="stat-pill">Lv <span id="home-level">1</span></div>
       </div>
@@ -1490,6 +1523,15 @@
     </div>
   </div>
 
+  <!-- アプリ内お知らせ -->
+  <div id="anno-modal">
+    <div class="anno-card">
+      <button class="anno-close" id="anno-close" aria-label="とじる">×</button>
+      <div class="anno-head">🔔 お知らせ</div>
+      <div class="anno-list" id="anno-list"></div>
+    </div>
+  </div>
+
   <!-- 現地ガチャ -->
   <div id="gacha-modal">
     <div class="gacha-modal-card">
@@ -1705,6 +1747,84 @@
       })
       .catch(function(e){ console.warn("crowd fetch failed", e); });
   }
+
+  /* ---------- アプリ内お知らせ（Firestore: announcements コレクション） ----------
+   * masaが Firebase コンソールで announcements/{任意id} に
+   *   title(string) / body(string) / date(string "YYYY-MM-DD") / active(bool・省略時は表示)
+   * を追加すると、全ユーザーのアプリに表示される（OSの通知許可は不要）。
+   * 起動時に未読があれば1回だけ自動ポップアップ→以後は🔔から一覧で読める。既読はseenAnnouncementsに保存。
+   * ※Firestoreルールで announcements コレクションの公開読み取り(read)を許可すること（crowdと同様）。 */
+  var ANNOUNCEMENTS = [];
+  var annoAutoShown = false;
+  function annoEsc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function fetchAnnouncements(){
+    if(!fbEnabled()) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false){ updateAnnoBell(); return; }
+    var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId +
+              "/databases/(default)/documents/announcements";
+    fetch(url)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if(!j) return;
+        var list = [];
+        (j.documents || []).forEach(function(d){
+          var f = d.fields || {};
+          // active が明示的に false のときだけ非表示（未設定は表示）
+          if(f.active && f.active.booleanValue === false) return;
+          list.push({
+            id:    d.name.split("/").pop(),
+            title: (f.title && f.title.stringValue) || "お知らせ",
+            body:  (f.body && f.body.stringValue) || "",
+            date:  (f.date && f.date.stringValue) || ""
+          });
+        });
+        list.sort(function(a,b){ return (b.date || "").localeCompare(a.date || ""); }); // 新しい順
+        ANNOUNCEMENTS = list;
+        updateAnnoBell();
+        if(!annoAutoShown && unreadAnnoCount() > 0){ annoAutoShown = true; openAnnoModal(); }
+      })
+      .catch(function(e){ console.warn("announcements fetch failed", e); });
+  }
+  function unreadAnnoCount(){
+    var seen = save.seenAnnouncements || [];
+    return ANNOUNCEMENTS.filter(function(a){ return seen.indexOf(a.id) === -1; }).length;
+  }
+  function updateAnnoBell(){
+    var dot = document.getElementById("anno-dot");
+    if(dot) dot.style.display = unreadAnnoCount() > 0 ? "block" : "none";
+  }
+  function renderAnnouncements(){
+    var wrap = document.getElementById("anno-list");
+    if(!wrap) return;
+    if(!ANNOUNCEMENTS.length){ wrap.innerHTML = '<div class="anno-empty">お知らせはまだありません。</div>'; return; }
+    wrap.innerHTML = ANNOUNCEMENTS.map(function(a){
+      return '<div class="anno-item">' +
+               '<div class="anno-item-title">' + annoEsc(a.title) + '</div>' +
+               (a.date ? '<div class="anno-item-date">' + annoEsc(a.date) + '</div>' : '') +
+               '<div class="anno-item-body">' + annoEsc(a.body) + '</div>' +
+             '</div>';
+    }).join("");
+  }
+  function openAnnoModal(){
+    renderAnnouncements();
+    var m = document.getElementById("anno-modal");
+    if(m) m.classList.add("show");
+    // 表示した全お知らせを既読に
+    if(!save.seenAnnouncements) save.seenAnnouncements = [];
+    var seen = save.seenAnnouncements, changed = false;
+    ANNOUNCEMENTS.forEach(function(a){ if(seen.indexOf(a.id) === -1){ seen.push(a.id); changed = true; } });
+    if(changed) persist();
+    updateAnnoBell();
+  }
+  function closeAnnoModal(){
+    var m = document.getElementById("anno-modal");
+    if(m) m.classList.remove("show");
+  }
+
   var BBOX = {};   // districtId -> bbox for map projection
 
   /* ============================================================
@@ -1768,7 +1888,9 @@
       // 牧野家（年貢システム）（後方互換：欠けていてもdefaultSave()の値で補完される）
       // seenIntro:登場イベント既読／favor:好感度累計／rank:家臣ランクindex／tributes:{omiyageId:納品累計}
       // unlockedSpots:本システム経由で解禁したpoiId／order:お達し（Phase2）／favorRankSeen:昇進演出の多重防止
-      makino: { seenIntro:false, favor:0, rank:0, tributesTotal:0, tributes:{}, unlockedSpots:[], order:{ need:{}, issuedDate:null, claimed:false }, favorRankSeen:0 }
+      makino: { seenIntro:false, favor:0, rank:0, tributesTotal:0, tributes:{}, unlockedSpots:[], order:{ need:{}, issuedDate:null, claimed:false }, favorRankSeen:0 },
+      // アプリ内お知らせ：既読にしたお知らせidの配列（Firestore announcements のドキュメントid）（後方互換：欠けていてもdefaultSave()の値で補完）
+      seenAnnouncements: []
     };
   }
 
@@ -5910,6 +6032,13 @@
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
     });
 
+    var annoBell = document.getElementById("anno-bell");
+    if(annoBell) annoBell.addEventListener("click", openAnnoModal);
+    var annoClose = document.getElementById("anno-close");
+    if(annoClose) annoClose.addEventListener("click", closeAnnoModal);
+    var annoModal = document.getElementById("anno-modal");
+    if(annoModal) annoModal.addEventListener("click", function(e){ if(e.target === annoModal) closeAnnoModal(); });
+
     document.querySelectorAll("#book-subtabs .book-subtab").forEach(function(tab){
       tab.addEventListener("click", function(){ showBookSubtab(tab.getAttribute("data-sub")); });
     });
@@ -5993,6 +6122,7 @@
     maybeMakinoIntro();                   // 発見数が既に条件を満たしていれば登場イベント
     maybeFireworkFestivalNotice();        // 長岡花火の3日間は花火館を全開放＋お知らせ（その日1回）
     maybeEventNotice();                   // イベント限定スポット開催中のお知らせ（その日1回）
+    fetchAnnouncements();                  // アプリ内お知らせ（Firestore）を取得→未読があれば自動表示
     renderHomeFull();
     setInterval(tick, 1000);
     proximityBeat();   // 近接ドキドキ演出（自己スケジュールで鼓動）
