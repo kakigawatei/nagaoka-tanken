@@ -396,6 +396,9 @@
   .book-district-head:first-child{ margin-top:0; }
   .book-district-head .bd-name{ font-size:15px; font-weight:800; color:var(--indigo); letter-spacing:.02em; }
   .book-district-head .bd-count{ font-size:11.5px; font-weight:700; color:var(--ink-soft); white-space:nowrap; }
+  /* 限定ゾーン（イベント限定カード）の見出し＝朱色で特別感 */
+  .book-district-head.limited{ border-bottom-color:var(--vermillion); }
+  .book-district-head.limited .bd-name{ color:var(--vermillion); }
   /* 図鑑グレード（おみやげ収集で枠がアップ）＋訪問回数で★ */
   .thumb-wrap{ position:relative; overflow:hidden; }
   .card-stars{ position:absolute; top:4px; right:5px; color:#ffd24d; font-size:12px; letter-spacing:-1px; text-shadow:0 1px 2px rgba(0,0,0,0.55); }
@@ -5089,9 +5092,10 @@
     }
 
     // エリア（地区）ごとにまとめて表示。順序は地図タブと同じ DATA.districts 順。
+    // ※イベント限定カードは地理エリアには出さず、末尾の「限定」ゾーンにまとめる。
     var shown = {};
     DATA.districts.forEach(function(d){
-      var dpois = DATA.pois.filter(function(p){ return p.districtId === d.id && poiUnlocked(p); });
+      var dpois = DATA.pois.filter(function(p){ return p.districtId === d.id && poiUnlocked(p) && !poiEvent(p); });
       if(!dpois.length) return;
       var foundCount = dpois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
       var head = document.createElement("div");
@@ -5100,6 +5104,16 @@
       grid.appendChild(head);
       dpois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
     });
+    // 限定ゾーン：イベント限定カード（開催時間中 or 取得済みのときだけ現れる特別コーナー）
+    var eventPois = DATA.pois.filter(function(p){ return poiEvent(p) && poiUnlocked(p); });
+    if(eventPois.length){
+      var efound = eventPois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
+      var ehead = document.createElement("div");
+      ehead.className = "book-district-head limited";
+      ehead.innerHTML = '<span class="bd-name">🏮 限定</span><span class="bd-count">' + efound + ' / ' + eventPois.length + '</span>';
+      grid.appendChild(ehead);
+      eventPois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
+    }
     // 念のため：どの地区にも属さないスポットがあれば末尾にまとめる
     var orphans = DATA.pois.filter(function(p){ return !shown[p.id] && poiUnlocked(p); });
     if(orphans.length){
