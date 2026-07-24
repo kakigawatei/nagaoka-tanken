@@ -852,6 +852,29 @@
   .anno-item-body{ font-size:13px; color:var(--ink); line-height:1.6; white-space:pre-wrap; word-break:break-word; }
   .anno-empty{ font-size:13px; color:var(--ink-soft); padding:14px 0; text-align:center; }
 
+  /* ---------- ミニアンケート ---------- */
+  #survey-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:60;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  #survey-modal.show{ display:flex; }
+  .survey-card{
+    width:100%; max-width:320px; background:var(--card-bg); border-radius:18px;
+    padding:20px 20px 16px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.45);
+    border:2px solid var(--gold); animation: shopModalUp .24s ease-out;
+  }
+  .survey-head{ font-size:12.5px; font-weight:800; color:var(--gold); margin-bottom:8px; letter-spacing:.04em; }
+  .survey-q{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:16px; line-height:1.55; }
+  .survey-opts{ display:flex; flex-direction:column; gap:10px; }
+  .survey-opt{
+    background:var(--indigo); color:#fff; border:none; border-radius:12px;
+    padding:12px 16px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .survey-skip{
+    margin-top:14px; background:none; border:none; color:var(--ink-soft);
+    font-size:13px; cursor:pointer; font-family:inherit; text-decoration:underline;
+  }
+
   /* ---------- 探検隊の拠点 カード ---------- */
   .base-card{
     background:var(--card-bg); border-radius:14px; margin:4px 16px 12px; padding:14px 16px;
@@ -1532,6 +1555,16 @@
     </div>
   </div>
 
+  <!-- ミニアンケート -->
+  <div id="survey-modal">
+    <div class="survey-card">
+      <div class="survey-head">かんたんアンケート</div>
+      <div class="survey-q" id="survey-q"></div>
+      <div class="survey-opts" id="survey-opts"></div>
+      <button class="survey-skip" id="survey-skip">あとで</button>
+    </div>
+  </div>
+
   <!-- 現地ガチャ -->
   <div id="gacha-modal">
     <div class="gacha-modal-card">
@@ -1890,7 +1923,9 @@
       // unlockedSpots:本システム経由で解禁したpoiId／order:お達し（Phase2）／favorRankSeen:昇進演出の多重防止
       makino: { seenIntro:false, favor:0, rank:0, tributesTotal:0, tributes:{}, unlockedSpots:[], order:{ need:{}, issuedDate:null, claimed:false }, favorRankSeen:0 },
       // アプリ内お知らせ：既読にしたお知らせidの配列（Firestore announcements のドキュメントid）（後方互換：欠けていてもdefaultSave()の値で補完）
-      seenAnnouncements: []
+      seenAnnouncements: [],
+      // ミニアンケート：回答済みアンケートidの配列（Firestore surveys のドキュメントid）（後方互換）
+      seenSurveys: []
     };
   }
 
@@ -2316,6 +2351,114 @@
         return n;
       });
   }
+
+  /* ---------- 匿名の集計データ（個人に紐付かないカウンタ。Firestoreにアトミック +1） ----------
+   * ・stats_spot/{poiId} … スポット別・時間帯別の来訪数（発見時に該当時間帯フィールドを+1／event限定スポットも同じ仕組み）
+   * ・stats_shop/{shopId} … お店の来店数（圏内に入ったら1日1回+1）
+   * ・survey_results/{surveyId} … ミニアンケートの回答集計（選択肢ごとに+1）
+   * すべて個人ID・位置そのものは保存せず、集計カウンタだけを増やす。採番(cards)と同じ匿名認証+commit方式。
+   * ※Firestoreルールで stats_spot/stats_shop/survey_results は write:if request.auth!=null（cardsと同じ）、read:false。surveys は read:true/write:false。 */
+  function fbIncStat(path, fields){
+    if(!fbEnabled()) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    var docPath = "projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents/" + path;
+    var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents:commit";
+    var transforms = [];
+    for(var k in fields){ if(fields.hasOwnProperty(k)) transforms.push({ fieldPath: k, increment: { integerValue: String(fields[k]) } }); }
+    if(!transforms.length) return;
+    fbAuth().then(function(idToken){
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({ writes: [{ transform: { document: docPath, fieldTransforms: transforms } }] })
+      });
+    }).catch(function(e){ console.warn("stat inc failed", e); });
+  }
+  function statTimeBucket(){
+    var h = new Date().getHours();
+    if(h >= 5 && h <= 10) return "morning";
+    if(h >= 11 && h <= 16) return "day";
+    if(h >= 17 && h <= 19) return "evening";
+    return "night";
+  }
+  // スポット発見時（実GPS）に呼ぶ＝スポット別・時間帯別カウンタ +1（event限定スポットも同じidで集計＝③に相乗り）
+  function recordSpotVisitStat(poiId){
+    var f = {}; f[statTimeBucket()] = 1; f.total = 1;
+    fbIncStat("stats_spot/" + poiId, f);
+  }
+  // お店来店カウンタ：圏内に入ったら1日1回だけ +1（重複防止は端末内localStorage・個人情報なし）
+  var SHOP_STAT_LS = "tekuteku_shopstat";
+  function shopStatState(){
+    var today = todayStr(), st = null;
+    try { st = JSON.parse(localStorage.getItem(SHOP_STAT_LS) || "null"); } catch(e){}
+    if(!st || st.date !== today) st = { date: today, ids: [] };
+    return st;
+  }
+  function checkShopVisitStats(){
+    if(!currentPos || !SHOP_DATA || !SHOP_DATA.shops || !fbEnabled()) return;
+    if(save.settings.mode !== "gps") return;   // 実GPSのときだけ集計（シミュレーションは除外）
+    var st = shopStatState(), changed = false;
+    SHOP_DATA.shops.forEach(function(s){
+      if(st.ids.indexOf(s.id) !== -1) return;
+      var r = s.radius || DEFAULT_SHOP_RADIUS;
+      var d = haversine(currentPos.lat, currentPos.lng, s.lat, s.lng);
+      if(d <= r){ st.ids.push(s.id); changed = true; fbIncStat("stats_shop/" + s.id, { visits: 1 }); }
+    });
+    if(changed){ try { localStorage.setItem(SHOP_STAT_LS, JSON.stringify(st)); } catch(e){} }
+  }
+
+  /* ---------- ミニアンケート（Firestore: surveys コレクション。質問はmasaが後から追加） ----------
+   * surveys/{id} = { question(string), opt1..opt4(string・使う分だけ), active(bool), date(string) }
+   * 起動時に未回答があれば1問だけポップ→選択で survey_results/{id}.optN と total を +1、seenSurveysに記録。 */
+  var SURVEYS = [];
+  function fetchSurveys(){
+    if(!fbEnabled()) return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    var url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents/surveys";
+    fetch(url).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if(!j) return;
+      var list = [];
+      (j.documents || []).forEach(function(d){
+        var f = d.fields || {};
+        if(f.active && f.active.booleanValue === false) return;
+        var q = f.question && f.question.stringValue;
+        var opts = [];
+        ["opt1","opt2","opt3","opt4"].forEach(function(k){ var v = f[k] && f[k].stringValue; if(v) opts.push({ key: k, label: v }); });
+        if(!q || opts.length < 2) return;
+        list.push({ id: d.name.split("/").pop(), question: q, date: (f.date && f.date.stringValue) || "", opts: opts });
+      });
+      list.sort(function(a,b){ return (b.date || "").localeCompare(a.date || ""); });
+      SURVEYS = list;
+      setTimeout(maybeShowSurvey, 1200);   // お知らせと重ならないよう少し遅らせる
+    }).catch(function(e){ console.warn("surveys fetch failed", e); });
+  }
+  function unansweredSurvey(){
+    var seen = save.seenSurveys || [];
+    for(var i=0;i<SURVEYS.length;i++){ if(seen.indexOf(SURVEYS[i].id) === -1) return SURVEYS[i]; }
+    return null;
+  }
+  function maybeShowSurvey(){
+    var anno = document.getElementById("anno-modal");
+    if(anno && anno.classList.contains("show")) return;   // お知らせ表示中は出さない
+    if(currentScreen !== "home") return;
+    var s = unansweredSurvey();
+    if(!s) return;
+    document.getElementById("survey-q").textContent = s.question;
+    var wrap = document.getElementById("survey-opts");
+    wrap.innerHTML = s.opts.map(function(o){ return '<button class="survey-opt" data-key="' + o.key + '">' + annoEsc(o.label) + '</button>'; }).join("");
+    wrap.querySelectorAll(".survey-opt").forEach(function(btn){
+      btn.addEventListener("click", function(){ answerSurvey(s, btn.getAttribute("data-key")); });
+    });
+    document.getElementById("survey-modal").classList.add("show");
+  }
+  function answerSurvey(s, key){
+    var f = {}; f[key] = 1; f.total = 1;
+    fbIncStat("survey_results/" + s.id, f);
+    if(!save.seenSurveys) save.seenSurveys = [];
+    if(save.seenSurveys.indexOf(s.id) === -1){ save.seenSurveys.push(s.id); persist(); }
+    closeSurvey();
+  }
+  function closeSurvey(){ var m = document.getElementById("survey-modal"); if(m) m.classList.remove("show"); }
 
   var serialProcessing = false;
 
@@ -4239,6 +4382,7 @@
       var dailyBonus = registerDailyActivity(dateStr);
       var bonusCoins = dailyBonus ? dailyBonus.total : 0;
       save.found.push(poi.id);
+      if(isRealVisit) recordSpotVisitStat(poi.id);   // 匿名の集計：スポット別・時間帯別の来訪（event限定スポットも同じidで集計）
       save.visits[poi.id] = { count: 1, lastDate: dateStr, lastAt: now, realVisits: (visit && visit.realVisits) || [] };
       grantGachaFreeSpin();   // スポット到達で無料ガチャ+1
       var coinsFirst = poi.coinsFirst;
@@ -4500,6 +4644,8 @@
     renderHomeNearest();
 
     if(!currentPos || !DATA){ proximityDist = null; return; }
+
+    checkShopVisitStats();   // 匿名の集計：お店の圏内に入ったら1日1回カウント
 
     var distances = DATA.pois.filter(poiUnlocked).map(function(p){
       return { poi: p, dist: haversine(currentPos.lat, currentPos.lng, p.lat, p.lng) };
@@ -6039,6 +6185,9 @@
     var annoModal = document.getElementById("anno-modal");
     if(annoModal) annoModal.addEventListener("click", function(e){ if(e.target === annoModal) closeAnnoModal(); });
 
+    var surveySkip = document.getElementById("survey-skip");
+    if(surveySkip) surveySkip.addEventListener("click", closeSurvey);   // 「あとで」＝既読にせず閉じる（次回また出る）
+
     document.querySelectorAll("#book-subtabs .book-subtab").forEach(function(tab){
       tab.addEventListener("click", function(){ showBookSubtab(tab.getAttribute("data-sub")); });
     });
@@ -6123,6 +6272,7 @@
     maybeFireworkFestivalNotice();        // 長岡花火の3日間は花火館を全開放＋お知らせ（その日1回）
     maybeEventNotice();                   // イベント限定スポット開催中のお知らせ（その日1回）
     fetchAnnouncements();                  // アプリ内お知らせ（Firestore）を取得→未読があれば自動表示
+    fetchSurveys();                        // ミニアンケート（Firestore surveys）を取得→未回答があれば1問ポップ
     renderHomeFull();
     setInterval(tick, 1000);
     proximityBeat();   // 近接ドキドキ演出（自己スケジュールで鼓動）
