@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ながおか探検録 加盟店のご案内（リーフレット版）</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --paper:#f1e6c9;
+    --paper-dark:#e3d3ab;
+    --ink:#4a3423;
+    --ink-soft:#7a5c3e;
+    --gold:#c9a227;
+    --navy:#26405e;
+    --line:#cbb98a;
+  }
+  body{
+    font-family:"Yu Gothic UI","Yu Gothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+    color:var(--ink);
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .page{
+    position:relative;
+    width:210mm; height:297mm;
+    background:var(--paper);
+    padding:8.5mm 12mm 8mm;
+    overflow:hidden;
+    page-break-after:always;
+    display:flex; flex-direction:column;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  .eyebrow{ font-size:8.5pt; letter-spacing:.16em; color:var(--ink-soft); font-weight:700; }
+  h2.sec{
+    font-size:12pt; font-weight:800; color:var(--ink);
+    padding-bottom:1.2mm; margin-bottom:2mm;
+    border-bottom:2px solid var(--line);
+    display:flex; align-items:center; gap:2.5mm;
+  }
+  h2.sec::before{
+    content:""; width:3.2mm; height:3.2mm; border-radius:50%;
+    background:var(--gold); flex:none;
+  }
+  .foot{
+    margin-top:auto; padding-top:2.5mm; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:7.5pt; color:var(--ink-soft);
+  }
+
+  /* ---------- FRONT ---------- */
+  .front{ padding:0; }
+  .front-top{
+    background:var(--navy); color:#f6efdc;
+    padding:8mm 12mm 6.5mm; text-align:center; position:relative;
+  }
+  .front-top::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:2mm;
+    background:linear-gradient(90deg,var(--gold),#e8c65a,var(--gold));
+  }
+  .front-head{ display:flex; align-items:center; justify-content:center; gap:6mm; }
+  .front-icon{
+    width:24mm; height:24mm; border-radius:5.5mm; display:block;
+    box-shadow:0 2mm 5mm rgba(0,0,0,.28); flex:none;
+  }
+  .front-ttl .eyebrow{ color:#d8c9a4; }
+  .front-title{ font-size:24pt; font-weight:900; letter-spacing:.04em; margin:1.5mm 0 1mm; }
+  .front-sub{ font-size:10.5pt; color:#e5d9b8; letter-spacing:.05em; }
+
+  .front-body{ padding:5.5mm 12mm 4.5mm; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
+  .catch{
+    font-size:14pt; font-weight:800; line-height:1.6; text-align:center;
+    margin-bottom:2.8mm;
+  }
+  .catch em{ font-style:normal; color:#a5801a; border-bottom:2px solid var(--gold); padding-bottom:1px; }
+  .front-lead{
+    font-size:9pt; line-height:1.75; text-align:center; color:var(--ink-soft);
+    margin-bottom:4mm;
+  }
+
+  .three{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; margin-bottom:4mm; }
+  .three .box{
+    background:#fff; border:1.5px solid var(--line); border-radius:3.5mm;
+    padding:3.8mm 3.5mm; text-align:center;
+  }
+  .three .box img{ width:11mm; height:11mm; object-fit:contain; margin-bottom:1.8mm; }
+  .three .box b{ display:block; font-size:10pt; margin-bottom:1.3mm; }
+  .three .box p{ font-size:8pt; line-height:1.6; color:var(--ink-soft); }
+
+  .factbar{
+    display:flex; justify-content:space-around; align-items:center;
+    background:var(--paper-dark); border-radius:3mm; padding:3.2mm 2mm;
+    margin-bottom:4mm;
+  }
+  .fact{ text-align:center; }
+  .fact .n{ font-size:13.5pt; font-weight:900; color:var(--navy); }
+  .fact .l{ font-size:7.5pt; color:var(--ink-soft); margin-top:.8mm; }
+
+  .campaign{
+    background:#b1452f; color:#fff; border-radius:3mm;
+    padding:3mm 5mm; display:flex; align-items:center; gap:4mm;
+    margin-bottom:4mm;
+  }
+  .campaign > b{
+    flex:none; font-size:8.5pt; background:#fff; color:#b1452f;
+    border-radius:99px; padding:1mm 3.5mm;
+  }
+  .campaign span{ font-size:9.5pt; line-height:1.5; }
+  .campaign span b{ font-size:11pt; }
+
+  .flow-ttl{
+    font-size:12pt; font-weight:800; color:var(--ink);
+    padding-bottom:1.5mm; margin-bottom:3mm;
+    border-bottom:2px solid var(--line);
+    display:flex; align-items:center; gap:2.5mm;
+  }
+  .flow-ttl::before{
+    content:""; width:3mm; height:3mm; border-radius:50%;
+    background:var(--gold); flex:none;
+  }
+  .flow{ display:flex; gap:0; }
+  .step{ flex:1; text-align:center; position:relative; padding:0 2mm; }
+  .step:not(:last-child)::after{
+    content:"▶"; position:absolute; right:-1.8mm; top:6mm;
+    font-size:8pt; color:var(--gold);
+  }
+  .step .circ{
+    width:13mm; height:13mm; border-radius:50%; margin:0 auto 2.5mm;
+    background:var(--navy); color:#fff; font-size:12pt; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step b{ display:block; font-size:9.5pt; margin-bottom:1.3mm; }
+  .step p{ font-size:8pt; line-height:1.6; color:var(--ink-soft); }
+
+  .split{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+  .panel{
+    background:#fff; border:1.5px solid var(--line); border-radius:3.5mm;
+    padding:3.5mm 4mm;
+  }
+  .panel h3{ font-size:10pt; margin-bottom:2mm; color:var(--navy); }
+  .panel ul{ list-style:none; }
+  .panel li{
+    font-size:8pt; line-height:1.55; padding-left:4mm; position:relative; margin-bottom:1.6mm;
+    color:var(--ink-soft);
+  }
+  .panel li:last-child{ margin-bottom:0; }
+  .panel li::before{
+    content:"✓"; position:absolute; left:0; top:0; color:var(--gold); font-weight:900;
+  }
+  .panel li b{ color:var(--ink); }
+
+  .front-foot{
+    margin-top:auto; background:var(--paper-dark); border-top:1px solid var(--line);
+    padding:3.5mm 12mm; font-size:8pt; color:var(--ink-soft);
+    display:flex; justify-content:space-between;
+  }
+
+  /* ---------- BACK ---------- */
+  .tax-note{
+    display:inline-block; background:var(--navy); color:#fff;
+    font-size:8pt; font-weight:700; border-radius:99px; padding:1mm 4mm;
+    margin-bottom:2.5mm;
+  }
+  .plans{ display:grid; grid-template-columns:repeat(3,1fr); gap:3.5mm; margin-bottom:2.5mm; }
+  .plan{
+    background:#fff; border:1.5px solid var(--line); border-radius:3.5mm;
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .plan.rec{ border:2.5px solid var(--gold); box-shadow:0 1.5mm 4mm rgba(201,162,39,.18); }
+  .plan-head{ background:var(--paper-dark); padding:4.4mm 2mm 1.8mm; text-align:center; position:relative; }
+  .plan.rec .plan-head{ background:var(--gold); }
+  .plan.rec .plan-head .pname{ color:#3a2a12; }
+  .ribbon{
+    position:absolute; top:0; left:0; right:0;
+    background:var(--navy); color:#fff; font-size:7pt; font-weight:700;
+    padding:.8mm; letter-spacing:.1em;
+  }
+  .pname{ font-size:11pt; font-weight:900; color:var(--ink); }
+  .plan-price{ padding:1.6mm 2mm; text-align:center; border-bottom:1px dashed var(--line); }
+  .plan-price .amt{ font-size:14.5pt; font-weight:900; color:var(--navy); letter-spacing:-.01em; }
+  .plan-price .yen{ font-size:9.5pt; font-weight:700; }
+  .plan-price .per{ font-size:7.5pt; color:var(--ink-soft); margin-top:.5mm; }
+  .plan-body{ padding:2.4mm 3mm; flex:1; }
+  .plan-body ul{ list-style:none; }
+  .plan-body li{
+    font-size:7.8pt; line-height:1.45; margin-bottom:1.2mm; padding-left:4mm; position:relative;
+    color:var(--ink-soft);
+  }
+  .plan-body li::before{ content:"●"; position:absolute; left:0; top:0; font-size:5.5pt; color:var(--gold); }
+  .plan-body li b{ color:var(--ink); }
+
+  .init{
+    background:#fff; border:1.5px dashed var(--ink-soft); border-radius:3.5mm;
+    padding:2.6mm 4mm; margin-bottom:2.5mm;
+  }
+  .init-top{ display:flex; align-items:baseline; gap:3.5mm; margin-bottom:1.8mm; }
+  .init .ttl{ font-size:9.5pt; font-weight:800; flex:none; }
+  .init .amt{ font-size:11.5pt; font-weight:900; color:var(--navy); flex:none; }
+  .init .note{ font-size:7.5pt; color:var(--ink-soft); }
+  .init .note b{ color:#b1452f; }
+  .tiers{ display:grid; grid-template-columns:repeat(4,1fr); gap:2.5mm; }
+  .tier{
+    border:1.5px solid var(--line); border-radius:2.5mm; padding:1.5mm 1.5mm; text-align:center;
+    background:var(--paper);
+  }
+  .tier.hot{ background:#b1452f; border-color:#b1452f; }
+  .tier .rank{ font-size:7.2pt; font-weight:800; color:var(--ink-soft); margin-bottom:.7mm; }
+  .tier.hot .rank{ color:#f7dcd5; }
+  .tier .off{ font-size:8.5pt; font-weight:900; color:#b1452f; margin-bottom:.6mm; }
+  .tier.hot .off{ color:#fff; }
+  .tier .val{ font-size:10pt; font-weight:900; color:var(--navy); }
+  .tier.hot .val{ color:#fff; font-size:11pt; }
+  .tier .was{ font-size:7pt; color:var(--ink-soft); text-decoration:line-through; }
+  .tier.hot .was{ color:#f0c4ba; }
+
+  .paybox{
+    background:var(--paper-dark); border-radius:3.5mm; padding:2.5mm 4mm;
+    margin-bottom:2.2mm;
+  }
+  .paybox h3{ font-size:9.5pt; margin-bottom:1.5mm; color:var(--navy); }
+  .pay2{ display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
+  .paycard{ background:#fff; border:1.5px solid var(--line); border-radius:2.5mm; padding:2mm 3mm; }
+  .paycard > b{ display:block; font-size:8.5pt; color:var(--navy); margin-bottom:1mm; }
+  .paycard p{ font-size:7.8pt; line-height:1.55; color:var(--ink-soft); }
+  .paycard p b{ color:var(--ink); }
+  .paynote{ font-size:7.3pt; line-height:1.5; color:var(--ink-soft); margin-top:1.5mm; }
+  .paynote b{ color:var(--ink); }
+
+  .steps2{ margin-bottom:2mm; }
+  .s2{
+    display:flex; gap:3mm; align-items:center; padding:1mm 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .s2:last-child{ border-bottom:none; }
+  .s2 .num{
+    flex:none; width:6mm; height:6mm; border-radius:50%;
+    background:var(--navy); color:#fff; font-size:8pt; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .s2 .txt{ font-size:8pt; line-height:1.45; }
+  .s2 .txt b{ color:var(--ink); }
+  .s2 .txt span{ color:var(--ink-soft); }
+  .s2 .tag{
+    margin-left:auto; flex:none; font-size:7pt; font-weight:700;
+    background:var(--paper-dark); color:var(--ink-soft);
+    border-radius:99px; padding:.8mm 2.8mm; white-space:nowrap;
+  }
+  .s2 .tag.free{ background:var(--gold); color:#3a2a12; }
+
+  .faq{ display:grid; grid-template-columns:1fr 1fr; gap:1.3mm 5mm; margin-bottom:2mm; }
+  .qa .q{ font-size:8pt; font-weight:800; margin-bottom:.5mm; }
+  .qa .q::before{ content:"Q. "; color:var(--gold); }
+  .qa .a{ font-size:7.5pt; line-height:1.5; color:var(--ink-soft); }
+  .qa .a::before{ content:"A. "; font-weight:800; color:var(--navy); }
+  .qa .a b{ color:var(--ink); }
+
+  .cta{
+    background:var(--navy); color:#fff; border-radius:4mm;
+    padding:2.5mm 5mm; display:flex; gap:5mm; align-items:center;
+    margin-bottom:1.5mm;
+  }
+  .cta .qr{ width:18mm; height:18mm; border-radius:2mm; background:#fff; padding:1mm; flex:none; }
+  .cta-txt{ flex:1; }
+  .cta-txt b{ display:block; font-size:10.5pt; font-weight:900; margin-bottom:1mm; }
+  .cta-txt p{ font-size:7.5pt; line-height:1.5; color:#dccfae; }
+  .cta-txt .url{ font-size:9pt; color:#fff; font-weight:700; margin-top:1mm; word-break:break-all; }
+  .cta-txt .mail{ font-size:8pt; color:#fff; margin-top:.8mm; }
+
+  .legal{ font-size:7pt; line-height:1.55; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<!-- ===================== FRONT ===================== -->
+<section class="page front">
+  <div class="front-top">
+    <div class="front-head">
+      <img class="front-icon" src="../../assets/app_icon_256.png" alt="">
+      <div class="front-ttl">
+        <div class="eyebrow">加盟店のご案内 ／ 2026</div>
+        <div class="front-title">ながおか探検録</div>
+        <div class="front-sub">まちを歩く楽しさを、お店の集客に。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="front-body">
+    <div class="catch">
+      長岡のまちを歩いて宝を探すゲームに、<br>
+      あなたのお店を<em>「探検先」</em>として載せませんか。
+    </div>
+
+    <p class="front-lead">
+      「ながおか探検録」は、実際にまちを歩いてスポットを巡り、お宝カードを集めるスマホゲームです（iOS／ブラウザ・無料）。<br>
+      加盟店になると地図にお店のピンが表示され、遊びに来た探検者がそのままご来店 —— ゲームの回遊が、そのまま送客になります。
+    </p>
+
+    <div class="three">
+      <div class="box">
+        <img src="../../assets/compass.png" alt="">
+        <b>地図に載る</b>
+        <p>ゲームの地図にお店のピンとお店ページを掲載。歩いている人の目に留まります。</p>
+      </div>
+      <div class="box">
+        <img src="../../assets/chest_open.png" alt="">
+        <b>特典で呼ぶ</b>
+        <p>「ドリンク1杯サービス」等のクーポンを設定。来店の“きっかけ”をつくります。</p>
+      </div>
+      <div class="box">
+        <img src="../../assets/coin.png" alt="">
+        <b>手間はゼロ</b>
+        <p>ピンもカードも運営が制作。お店は写真を送るだけ。あとはお任せください。</p>
+      </div>
+    </div>
+
+    <div class="factbar">
+      <div class="fact"><div class="n">8地区</div><div class="l">長岡・寺泊・栃尾ほか</div></div>
+      <div class="fact"><div class="n">40スポット</div><div class="l">実在の名所・史跡</div></div>
+      <div class="fact"><div class="n">iOS ＋ Web</div><div class="l">App Store 配信中・無料</div></div>
+      <div class="fact"><div class="n">加盟無料</div><div class="l">加盟金・月額 0円</div></div>
+    </div>
+
+    <div class="campaign">
+      <b>いまなら</b>
+      <span>加盟金・月額 <b>0円</b> ではじめられます。まずは無料で地図に載せてみませんか。</span>
+    </div>
+
+    <div class="flow-ttl">探検者がお店に来るまで</div>
+    <div class="flow">
+      <div class="step">
+        <div class="circ">1</div>
+        <b>まちを歩く</b>
+        <p>プレイヤーはGPSで実際に現地へ。スポットを巡ってお宝カードを集めます。</p>
+      </div>
+      <div class="step">
+        <div class="circ">2</div>
+        <b>お店を見つける</b>
+        <p>地図の加盟店ピンをタップ。写真・紹介文・特典が表示されます。</p>
+      </div>
+      <div class="step">
+        <div class="circ">3</div>
+        <b>クーポンを獲得</b>
+        <p>お店の近くでクーポンを獲得。そのまま店頭へ足を運びます。</p>
+      </div>
+      <div class="step">
+        <div class="circ">4</div>
+        <b>店頭で利用</b>
+        <p>スタッフが画面を確認し、専用PINで「使用済み」に。特典を提供します。</p>
+      </div>
+    </div>
+
+    <div class="split" style="margin-top:4mm">
+      <div class="panel">
+        <h3>お店にとってのメリット</h3>
+        <ul>
+          <li>まちを<b>歩いている人</b>＝いま近くにいる人に届く広告</li>
+          <li>お店カードは<b>3回通うと豪華版に昇格</b>＝リピートの仕組み</li>
+          <li>特典は<b>お店が決められる</b>（一杯サービス・割引・限定品など）</li>
+          <li>ピン・お店カードは<b>運営がゲーム調に制作</b>。写真はスマホ撮影でOK</li>
+          <li>チラシと違い、<b>掲載後もいつでも内容を変更</b>できる</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>お店にお願いすること</h3>
+        <ul>
+          <li>申請フォームの入力（<b>5〜10分・無料</b>）</li>
+          <li>外観写真1〜2枚＋名物の写真（<b>スマホでOK</b>）</li>
+          <li>特典の内容を決める（例：ソフトドリンク1杯サービス）</li>
+          <li>ご来店時、画面を見せられたら<b>特典を提供</b>していただく</li>
+          <li><b>費用はかかりません</b>（基本掲載は無料・有料オプションは希望時のみ）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="front-foot">
+    <span>ながおか探検録製作委員会</span>
+    <span>kakigawatei.github.io/nagaoka-tanken/</span>
+  </div>
+</section>
+
+<!-- ===================== BACK ===================== -->
+<section class="page">
+  <div class="eyebrow">01 ／ 料金</div>
+  <h2 class="sec">料金 — 加盟は「無料」　<span class="tax-note" style="margin:0">加盟金・月額 0円</span></h2>
+
+  <div class="split">
+    <div class="panel">
+      <h3>無料で使えること</h3>
+      <ul>
+        <li>地図に<b>お店ピン</b>＋<b>お店ページ</b>（写真・紹介文）</li>
+        <li><b>クーポン</b>（来店特典）を設定できる</li>
+        <li>お店の<b>オリジナル図鑑カード</b>／<b>3回来店で豪華版に昇格</b>（★1〜3）</li>
+        <li>お店の<b>混雑ランプ</b>（🟢🟡🔴を店頭から発信）</li>
+        <li>掲載の停止・取りやめは<b>いつでもOK・縛りなし</b></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>有料オプション（ご希望の店舗のみ）</h3>
+      <ul>
+        <li><b>オリジナルイベント企画</b>（期間限定イベントを企画・実装）</li>
+        <li><b>スポンサー表記</b>（イベントに店名を掲出）</li>
+        <li><b>上位表示・特集掲載</b></li>
+        <li><b>追加クーポン枠</b>（複数クーポン）</li>
+      </ul>
+      <p style="font-size:8pt; line-height:1.6; color:var(--ink-soft); margin-top:2mm;">料金は内容・期間に応じて個別お見積り。お申し込み前に金額（税込）を提示・ご合意のうえ提供します。</p>
+    </div>
+  </div>
+
+  <div class="paybox" style="margin-top:4mm;">
+    <p class="paynote" style="margin:0;"><b>基本の掲載は無料</b>（加盟金・月額なし・縛りなし）。費用がかかるのは有料オプションのみで、お支払いは<b>クレジットカード</b>または<b>銀行振込</b>に対応します（決済代行：Stripe）。有料オプションの料金は前払いで、表示・提示価格はすべて税込です。</p>
+  </div>
+
+  <div class="eyebrow">02 ／ お申し込み</div>
+  <h2 class="sec">掲載までの流れ</h2>
+
+  <div class="steps2">
+    <div class="s2">
+      <div class="num">1</div>
+      <div class="txt"><b>申請フォームを送信</b>　<span>お店の情報・写真・ご希望の特典を記入（5〜10分・この時点で費用はかかりません）</span></div>
+      <div class="tag free">無料</div>
+    </div>
+    <div class="s2">
+      <div class="num">2</div>
+      <div class="txt"><b>運営が内容を確認</b>　<span>掲載内容・特典を確認し、担当よりメールでご連絡します</span></div>
+      <div class="tag">2〜3日</div>
+    </div>
+    <div class="s2">
+      <div class="num">3</div>
+      <div class="txt"><b>運営がピン・お店カードを制作</b>　<span>写真をもとにゲームの世界観に合わせて制作します</span></div>
+      <div class="tag">お任せ</div>
+    </div>
+    <div class="s2">
+      <div class="num">4</div>
+      <div class="txt"><b>掲載スタート（無料）</b>　<span>通常7営業日以内に掲載。クーポン確認用PINをお送りします。ここまで費用はかかりません</span></div>
+      <div class="tag free">無料</div>
+    </div>
+    <div class="s2">
+      <div class="num">5</div>
+      <div class="txt"><b>（任意）有料オプションのご相談</b>　<span>もっと集客したくなったら、イベントや上位表示などをいつでもご相談いただけます</span></div>
+      <div class="tag">いつでも</div>
+    </div>
+  </div>
+
+  <h2 class="sec">よくあるご質問（Q&amp;A）</h2>
+
+  <div class="faq">
+    <div class="qa">
+      <div class="q">加盟に費用や契約期間はありますか？</div>
+      <div class="a"><b>加盟は無料</b>（加盟金・月額なし）。最低契約期間もなく、掲載停止はいつでもOKです。</div>
+    </div>
+    <div class="qa">
+      <div class="q">写真はプロに頼む必要がありますか？</div>
+      <div class="a">不要です。スマホ撮影でOK。運営がゲーム調に仕上げます。</div>
+    </div>
+    <div class="qa">
+      <div class="q">特典（クーポン）の内容は決まっていますか？</div>
+      <div class="a">お店側で自由に決められます。利用条件も設定できます。</div>
+    </div>
+    <div class="qa">
+      <div class="q">クーポンの不正利用が心配です。</div>
+      <div class="a">スタッフ様が<b>専用PIN</b>で確定する方式。画面のスクリーンショットだけでは使えません。</div>
+    </div>
+    <div class="qa">
+      <div class="q">掲載内容を変えたくなったら？</div>
+      <div class="a">メールでご連絡ください。写真・特典等の変更に対応します（追加費用なし）。</div>
+    </div>
+    <div class="qa">
+      <div class="q">お金はかかりますか？</div>
+      <div class="a"><b>加盟・基本掲載は無料</b>。費用がかかるのは有料オプションのみで、カードのほか<b>銀行振込にも対応</b>します。</div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <img class="qr" src="qr_form.png" alt="">
+    <div class="cta-txt">
+      <b>まずは申請フォームから（無料）</b>
+      <p>QRコードを読み取るか、URLからアクセスしてください。ご質問だけでも、お気軽にメールでどうぞ。</p>
+      <div class="url">https://tally.so/r/GxyO8L</div>
+      <div class="mail">お問い合わせ：aburalabo@gmail.com</div>
+    </div>
+  </div>
+
+  <div class="legal">
+    ながおか探検録製作委員会（運営統括責任者：岡雅俊）／ サービスサイト：https://kakigawatei.github.io/nagaoka-tanken/<br>
+    ※表示価格はすべて税込です。※所在地・電話番号は、ご請求があったとき遅滞なく開示いたします。
+    ※本サービスは送客の機会を提供するものであり、来店数・売上等の効果を保証するものではありません。
+    ※ご契約にあたっては別途「加盟店利用規約」および「特定商取引法に基づく表記」をご確認ください。
+  </div>
+</section>
+
+</body>
+</html>
