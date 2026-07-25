@@ -8,6 +8,7 @@ App Store Connect に入力する内容一式。コピペで使える。**2026-0
 - **バンドルID**：com.nagaokatanken.app
 - **主要言語**：日本語
 - **SKU**（任意の管理用ID）：nagaokatanken-001
+- **現行バージョン（今回の申請）**：1.4
 - **価格**：無料
 - **カテゴリ**：主：ゲーム ／ 副：旅行
 
@@ -99,4 +100,152 @@ App Store Connect に入力する内容一式。コピペで使える。**2026-0
 - [ ] **App Privacy を上記の内容に更新**（Firebase利用に整合）
 - [ ] プライバシーポリシーURL・価格＝無料・対象国を確認
 - [ ] ビルドを選択して「審査に提出」
+
+---
+
+# 多言語ローカライズ（App Store Connect の各言語欄にコピペ）
+
+アプリの多言語対応（日/英/簡/繁）に合わせて、ストアも各言語のローカライズを追加すると海外ユーザーに届きやすい。App Store Connect →「App情報」/各バージョンで言語を追加し、以下を貼り付ける。**アプリ名は共通で「ながおか探検録」でOK（必要なら英語圏に "Nagaoka Explorer" を併記可）。**
+
+## 🇬🇧 English (英語)
+
+- **Subtitle (30 chars)**：`Walk Nagaoka, find treasures`
+- **Promotional Text (170)**：
 ```
+Walk Nagaoka, approach real landmarks, and discover treasure cards! Learn local history as you collect—plus gacha, historical costumes, a lord's manor, and AR fireworks. JP/EN/中文. Free to play.
+```
+- **Description**：
+```
+A location-based walking game set in Nagaoka City, Niigata, Japan. Get physically close to the city's historic sites and landmarks to discover "treasures," then collect them into an illustrated card book.
+
+■ Walk and discover the city's treasures
+Aore Nagaoka, the Isoroku Yamamoto Memorial Museum, the Tsuginosuke Kawai Memorial Museum, the brewery town of Settaya, the koi and terraced ponds of Yamakoshi, the fish market street of Teradomari, and Tochio, Yoita, Koshiji, Yomogihira, Zao… Approach landmarks across Nagaoka to discover treasure cards packed with local history and stories—learn about Nagaoka while you play.
+
+■ Collect, grow, and want to go again
+- Earn coins and XP on each discovery, and level up
+- Spin the on-site "local gacha" and build a souvenir collection
+- The more you revisit a place, the more its card upgrades to a deluxe version
+- Dress up as historical figures in the "costume wardrobe" (Isoroku Yamamoto, Kanetsugu Naoe, and more)
+
+■ Deeper features to enjoy
+- The lord summons you! Offer souvenirs as "tribute," earn his trust, and unlock hidden lands in "Makino Manor"
+- Unlock fireworks by earning achievements, then launch them onto your own camera with AR—capture and share
+
+■ Multiple languages
+Japanese / English / Simplified Chinese / Traditional Chinese. Enjoyable for overseas visitors, too.
+
+■ Shops & outings
+Check partner shops, coupons, and crowd status. In-app announcements keep you up to date.
+
+■ About location & privacy
+Location is used to detect when you're near historic sites. We may aggregate anonymous usage to improve the app, but we do not collect personally identifying information such as your name.
+
+Become an explorer and tour Nagaoka. Your town becomes a field of adventure.
+```
+- **Keywords (100)**：`Nagaoka,walking,walk,GPS,location game,history,sightseeing,Niigata,explore,collection,fireworks,AR,travel,Japan`
+- **What's New**：
+```
+- Added multiple languages (English, Simplified & Traditional Chinese)
+- New "Zao" area, Yamakoshi viewpoint tour, and hidden spots
+- New "Makino Manor" system—a lord appears; offer souvenirs to unlock new lands
+- "Fireworks Hall": launch fireworks onto your camera with AR
+- Expanded "costume wardrobe" to dress up as historical figures
+- In-app announcements, shop/coupon/crowd info
+- Card artwork refresh, various tweaks and stability improvements
+```
+
+## 🇨🇳 简体中文 (簡体字)
+
+- **Subtitle (30)**：`步行长冈，发现宝物`
+- **Promotional Text (170)**：
+```
+在长冈边走边玩，走近名胜就能发现宝物卡片！收集图鉴还能了解当地历史。扭蛋、变装、牧野御殿、AR烟花等你来玩。支持日/英/中，免费畅玩。
+```
+- **Description**：
+```
+一款以日本新潟县长冈市为舞台、边走边玩的定位游戏。实际走近城市中的史迹与名胜，就能发现「宝物」，收集成图鉴。
+
+■ 边走边发现城市的宝物
+Aore长冈、山本五十六纪念馆、河井继之助纪念馆、摂田屋的酿造之乡、山古志的锦鲤与梯田梯池、寺泊的鱼市场通，以及栃尾・与板・越路・蓬平・藏王……走近长冈各地的名胜，即可发现满载当地历史与故事的宝物卡片，边玩边了解长冈。
+
+■ 收集、养成，让你想一再前往
+・每次发现获得金币与经验值，提升等级
+・在当地转动「当地扭蛋」，收集特产
+・同一地点到访越多次，图鉴卡片就会升级为豪华版
+・在「衣装间」变装成伟人（山本五十六、直江兼续等）
+
+■ 更深入的可玩要素
+・殿下召见！将收集的特产作为「年贡」献上，获得殿下信任，解锁隐藏的土地——「牧野御殿」
+・达成成就即可解锁烟花，用AR把烟花放到你的相机里，拍照分享
+
+■ 多语言对应
+日本语／English／简体中文／繁體中文。来访的海外朋友也能畅玩。
+
+■ 店铺・出游信息
+可查看加盟店、优惠券与拥挤状况。应用内通知随时送达最新消息。
+
+■ 关于定位与隐私
+定位仅用于判断你是否靠近史迹。为改善应用可能会统计匿名使用情况，但不会收集姓名等可识别个人的信息。
+
+成为探险家，畅游长冈吧。你的城市，就是冒险的舞台。
+```
+- **Keywords (100)**：`长冈,步行,散步,定位,GPS,史迹,观光,新潟,探险,图鉴,烟花,AR,旅行,地图,日本`
+- **What's New**：
+```
+・新增多语言（英语、简体中文、繁体中文）
+・新增「藏王」区域、山古志观景点巡游、隐藏地点
+・全新「牧野御殿」系统——殿下登场，献上特产解锁新土地
+・「烟花馆」：用AR把烟花放到你的相机里
+・扩充「衣装间」，变装成伟人
+・支持应用内通知、店铺/优惠券/拥挤信息
+・图鉴卡片焕新，多项调整与稳定性改善
+```
+
+## 🇹🇼 繁體中文 (繁体字)
+
+- **Subtitle (30)**：`步行長岡，發現寶物`
+- **Promotional Text (170)**：
+```
+在長岡邊走邊玩，走近名勝就能發現寶物卡片！收集圖鑑還能了解當地歷史。扭蛋、變裝、牧野御殿、AR煙火等你來玩。支援日/英/中，免費暢玩。
+```
+- **Description**：
+```
+一款以日本新潟縣長岡市為舞台、邊走邊玩的定位遊戲。實際走近城市中的史蹟與名勝，就能發現「寶物」，收集成圖鑑。
+
+■ 邊走邊發現城市的寶物
+Aore長岡、山本五十六紀念館、河井繼之助紀念館、攝田屋的釀造之鄉、山古志的錦鯉與梯田梯池、寺泊的魚市場通，以及栃尾・與板・越路・蓬平・藏王……走近長岡各地的名勝，即可發現滿載當地歷史與故事的寶物卡片，邊玩邊了解長岡。
+
+■ 收集、養成，讓你想一再前往
+・每次發現獲得金幣與經驗值，提升等級
+・在當地轉動「當地扭蛋」，收集特產
+・同一地點到訪越多次，圖鑑卡片就會升級為豪華版
+・在「衣裝間」變裝成偉人（山本五十六、直江兼續等）
+
+■ 更深入的可玩要素
+・殿下召見！將收集的特產作為「年貢」獻上，獲得殿下信任，解鎖隱藏的土地——「牧野御殿」
+・達成成就即可解鎖煙火，用AR把煙火放到你的相機裡，拍照分享
+
+■ 多語言對應
+日本語／English／简体中文／繁體中文。來訪的海外朋友也能暢玩。
+
+■ 店鋪・出遊資訊
+可查看加盟店、優惠券與擁擠狀況。應用內通知隨時送達最新消息。
+
+■ 關於定位與隱私
+定位僅用於判斷你是否靠近史蹟。為改善應用可能會統計匿名使用情況，但不會收集姓名等可識別個人的資訊。
+
+成為探險家，暢遊長岡吧。你的城市，就是冒險的舞台。
+```
+- **Keywords (100)**：`長岡,步行,散步,定位,GPS,史蹟,觀光,新潟,探險,圖鑑,煙火,AR,旅行,地圖,日本`
+- **What's New**：
+```
+・新增多語言（英語、簡體中文、繁體中文）
+・新增「藏王」區域、山古志觀景點巡遊、隱藏地點
+・全新「牧野御殿」系統——殿下登場，獻上特產解鎖新土地
+・「煙火館」：用AR把煙火放到你的相機裡
+・擴充「衣裝間」，變裝成偉人
+・支援應用內通知、店鋪/優惠券/擁擠資訊
+・圖鑑卡片煥新，多項調整與穩定性改善
+```
+
+> ※スクショは日本語版で作成済み（SS1〜5）。英/中のローカライズにも同じ画像を流用可。各言語のキャッチコピー入りスクショが必要ならコンが作成する（要相談）。
