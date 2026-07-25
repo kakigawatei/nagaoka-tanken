@@ -1724,7 +1724,7 @@
 
     var shops = (SHOP_DATA && SHOP_DATA.shops) ? SHOP_DATA.shops.slice() : [];
     if(!shops.length){
-      wrap.innerHTML = '<div class="shops-empty">まだ加盟店がありません。<br>お楽しみに！</div>';
+      wrap.innerHTML = '<div class="shops-empty">' + t("shops_empty") + '</div>';
       hint.textContent = "";
       return;
     }
@@ -1736,21 +1736,19 @@
     });
     if(hasPos) shops.sort(function(a, b){ return a._dist - b._dist; });
 
-    hint.textContent = hasPos
-      ? "現在地から近い順に並んでいます"
-      : "現在地が取れないため、距離順に並べられません（位置情報を許可すると近い順になります）";
+    hint.textContent = hasPos ? t("shops_hint_near") : t("shops_hint_nopos");
 
     var html = "";
     shops.forEach(function(s){
       var crowd = crowdOf(s.id);
       var cls   = crowd ? crowd.cls : "gray";
-      var label = crowd ? crowd.text : "情報なし";
+      var label = crowd ? crowd.text : t("crowd_none");
       html += '<div class="shop-row" data-shop="' + s.id + '">' +
                 '<div class="avatar"><img src="assets/ic_shop.png" alt=""><span class="lamp ' + cls + '"></span></div>' +
                 '<div class="info">' +
                   '<div class="nm">' + s.name + '</div>' +
                   '<div class="meta">' + (s.category || "") + '</div>' +
-                  (s.coupon ? '<span class="cpn">クーポンあり</span>' : '') +
+                  (s.coupon ? '<span class="cpn">' + t("coupon_avail") + '</span>' : '') +
                 '</div>' +
                 '<div class="right">' +
                   '<div class="st ' + cls + '">' + label + '</div>' +
@@ -2382,7 +2380,55 @@
     gacha_dup:{ja:"（×{n}になった！）",en:"(now ×{n}!)",zh_hans:"（变成×{n}了！）",zh_hant:"（變成×{n}了！）"},
     gacha_no_coin:{ja:"コインが足りません（スポットを訪れると無料で回せます）",en:"Not enough coins (visit spots to spin free)",zh_hans:"金币不足（到访地点可免费抽）",zh_hant:"金幣不足（到訪地點可免費抽）"},
     home_gacha_free:{ja:"🎰 ガチャを回す（無料 {n}回）",en:"🎰 Spin gacha ({n} free)",zh_hans:"🎰 抽扭蛋（免费 {n} 次）",zh_hant:"🎰 抽扭蛋（免費 {n} 次）"},
-    home_gacha_cost:{ja:"🎰 ガチャを回す（{n}コイン）",en:"🎰 Spin gacha ({n} coins)",zh_hans:"🎰 抽扭蛋（{n} 金币）",zh_hant:"🎰 抽扭蛋（{n} 金幣）"}
+    home_gacha_cost:{ja:"🎰 ガチャを回す（{n}コイン）",en:"🎰 Spin gacha ({n} coins)",zh_hans:"🎰 抽扭蛋（{n} 金币）",zh_hant:"🎰 抽扭蛋（{n} 金幣）"},
+    // --- Phase1c: 図鑑/称号/お店/ホーム挨拶などのUI骨組み ---
+    book_found_count:{ja:"発見数：{n} / {tot}",en:"Discovered: {n} / {tot}",zh_hans:"已发现：{n} / {tot}",zh_hant:"已發現：{n} / {tot}"},
+    book_grade_label:{ja:"図鑑グレード：",en:"Collection Grade: ",zh_hans:"图鉴等级：",zh_hant:"圖鑑等級："},
+    book_grade_max:{ja:" コンプ達成！最高グレード✨",en:" Complete! Top grade ✨",zh_hans:" 已集齐！最高等级✨",zh_hant:" 已集齊！最高等級✨"},
+    book_grade_next:{ja:" あと <b>{n}</b> 個のおみやげで{g}へ",en:" {n} more souvenir(s) to reach {g}",zh_hans:" 再收集 {n} 个特产升到{g}",zh_hant:" 再收集 {n} 個特產升到{g}"},
+    card_unknown:{ja:"？？？",en:"???",zh_hans:"？？？",zh_hant:"？？？"},
+    card_unfound:{ja:"未発見",en:"Not found",zh_hans:"未发现",zh_hant:"未發現"},
+    card_visit_hint:{ja:"現地を訪れよう",en:"Visit the spot",zh_hans:"去当地看看吧",zh_hant:"去當地看看吧"},
+    zone_limited:{ja:"🏮 限定",en:"🏮 Limited",zh_hans:"🏮 限定",zh_hant:"🏮 限定"},
+    zone_other:{ja:"その他",en:"Others",zh_hans:"其他",zh_hant:"其他"},
+    deluxe_note:{ja:"✦ 豪華版カード（何度も訪れたごほうび）",en:"✦ Deluxe card (reward for repeat visits)",zh_hans:"✦ 豪华版卡片（多次到访的奖励）",zh_hant:"✦ 豪華版卡片（多次到訪的獎勵）"},
+    deluxe_hint:{ja:"あと <b>{n}</b> 回訪れると豪華版に昇格！",en:"Visit <b>{n}</b> more time(s) to upgrade to deluxe!",zh_hans:"再到访 <b>{n}</b> 次即可升级为豪华版！",zh_hant:"再到訪 <b>{n}</b> 次即可升級為豪華版！"},
+    serial_note:{ja:"🏅 あなたは {n} 番目の発見者",en:"🏅 You are discoverer No. {n}",zh_hans:"🏅 你是第 {n} 位发现者",zh_hant:"🏅 你是第 {n} 位發現者"},
+    visit_dates:{ja:"🚩 現地を訪れた日：{dates}",en:"🚩 Visited on: {dates}",zh_hans:"🚩 到访日期：{dates}",zh_hant:"🚩 到訪日期：{dates}"},
+    visit_none:{ja:"まだ現地では訪れていません（実際に行くと通し番号と訪問日がつきます）",en:"Not visited in person yet (go there for a serial number and visit date)",zh_hans:"尚未实地到访（实际前往会获得编号和到访日期）",zh_hant:"尚未實地到訪（實際前往會獲得編號和到訪日期）"},
+    replay_btn:{ja:"お宝再鑑賞（所持：{n}）",en:"View treasure again (owned: {n})",zh_hans:"再次欣赏宝物（持有：{n}）",zh_hant:"再次欣賞寶物（持有：{n}）"},
+    detail_unfound_sub:{ja:"現地に近づくと図鑑に登録されます。",en:"Get close to the spot to add it to your collection.",zh_hans:"靠近当地即可收入图鉴。",zh_hant:"靠近當地即可收入圖鑑。"},
+    title_locked:{ja:"未解放",en:"Locked",zh_hans:"未解锁",zh_hant:"未解鎖"},
+    title_selected:{ja:"選択中",en:"Selected",zh_hans:"已选择",zh_hant:"已選擇"},
+    title_select:{ja:"選択する",en:"Select",zh_hans:"选择",zh_hant:"選擇"},
+    title_set_toast:{ja:"{name} を称号に設定しました",en:"Set \"{name}\" as your title",zh_hans:"已将「{name}」设为称号",zh_hant:"已將「{name}」設為稱號"},
+    era_cat_sep:{ja:" ／ ",en:" · ",zh_hans:" · ",zh_hant:" · "},
+    greet_named:{ja:"こんにちは、{name}さん！今日はどこへ探検に行こう？",en:"Hi {name}! Where shall we explore today?",zh_hans:"你好，{name}！今天去哪里探险呢？",zh_hant:"你好，{name}！今天去哪裡探險呢？"},
+    greet_anon:{ja:"今日はどこへ探検に行こうか！",en:"Where shall we explore today?",zh_hans:"今天去哪里探险呢！",zh_hant:"今天去哪裡探險呢！"},
+    hint_something:{ja:"あっちに何かありそうだよ！",en:"Looks like something's over there!",zh_hans:"那边好像有什么！",zh_hant:"那邊好像有什麼！"},
+    home_title_badge:{ja:"称号：{name}",en:"Title: {name}",zh_hans:"称号：{name}",zh_hant:"稱號：{name}"},
+    // --- Phase1c: お店・クーポン ---
+    shops_empty:{ja:"まだ加盟店がありません。<br>お楽しみに！",en:"No partner shops yet.<br>Stay tuned!",zh_hans:"暂无加盟店。<br>敬请期待！",zh_hant:"暫無加盟店。<br>敬請期待！"},
+    shops_hint_near:{ja:"現在地から近い順に並んでいます",en:"Sorted by distance from you",zh_hans:"按距离由近到远排列",zh_hant:"按距離由近到遠排列"},
+    shops_hint_nopos:{ja:"現在地が取れないため、距離順に並べられません（位置情報を許可すると近い順になります）",en:"Can't sort by distance without your location (allow location to sort by nearest)",zh_hans:"无法获取位置，暂不能按距离排序（允许定位后可按由近到远排列）",zh_hant:"無法取得位置，暫不能按距離排序（允許定位後可按由近到遠排列）"},
+    crowd_none:{ja:"情報なし",en:"No info",zh_hans:"暂无信息",zh_hant:"暫無資訊"},
+    coupon_avail:{ja:"クーポンあり",en:"Coupon available",zh_hans:"有优惠券",zh_hant:"有優惠券"},
+    crowd_note:{ja:"お店からの情報",en:"From the shop",zh_hans:"来自店家",zh_hant:"來自店家"},
+    link_web:{ja:"公式サイト",en:"Website",zh_hans:"官方网站",zh_hant:"官方網站"},
+    link_tel:{ja:"電話をかける",en:"Call",zh_hans:"拨打电话",zh_hant:"撥打電話"},
+    coupon_used:{ja:"✅ 使用済み",en:"✅ Used",zh_hans:"✅ 已使用",zh_hant:"✅ 已使用"},
+    coupon_used_at:{ja:"利用日時：{at}",en:"Used at: {at}",zh_hans:"使用时间：{at}",zh_hant:"使用時間：{at}"},
+    coupon_confirm_note:{ja:"店頭でスタッフに画面を見せ、確認をお願いしてください。",en:"Show this screen to the staff at the shop for confirmation.",zh_hans:"请在店内向店员出示此画面以确认。",zh_hant:"請在店內向店員出示此畫面以確認。"},
+    coupon_to_pin:{ja:"スタッフPIN入力へ進む",en:"Continue to staff PIN entry",zh_hans:"前往店员PIN输入",zh_hant:"前往店員PIN輸入"},
+    coupon_pin_note:{ja:"スタッフの方は、確認用PINをここに入力してください。",en:"Staff: please enter the confirmation PIN here.",zh_hans:"店员请在此输入确认PIN。",zh_hant:"店員請在此輸入確認PIN。"},
+    coupon_pin_error:{ja:"PINが違います。もう一度お試しください。",en:"Incorrect PIN. Please try again.",zh_hans:"PIN不正确，请重试。",zh_hant:"PIN不正確，請重試。"},
+    coupon_pin_confirm:{ja:"確定する",en:"Confirm",zh_hans:"确定",zh_hant:"確定"},
+    coupon_inrange:{ja:"お店の近くにいます（現在地から約{d}m）",en:"You're near the shop (about {d}m away)",zh_hans:"你在店铺附近（距离约{d}m）",zh_hant:"你在店鋪附近（距離約{d}m）"},
+    coupon_use:{ja:"クーポンを使う",en:"Use coupon",zh_hans:"使用优惠券",zh_hant:"使用優惠券"},
+    coupon_dist:{ja:"現在地から約{d}",en:"about {d} away",zh_hans:"距离约{d}",zh_hant:"距離約{d}"},
+    coupon_nopos:{ja:"現在地が取得できません（位置情報を許可してお試しください）",en:"Can't get your location (please allow location)",zh_hans:"无法获取位置（请允许定位后再试）",zh_hant:"無法取得位置（請允許定位後再試）"},
+    coupon_outrange:{ja:"お店の近くに来ると使えるようになります（{t}）",en:"Available when you're near the shop ({t})",zh_hans:"靠近店铺后即可使用（{t}）",zh_hant:"靠近店鋪後即可使用（{t}）"},
+    coupon_note_small:{ja:"※このクーポンは端末内の記録による簡易方式です（フェーズA）。ご利用は店頭でスタッフの確認のもとお願いします。将来的にはサーバー側で確認する仕組みに拡張予定です。",en:"* This coupon uses a simple on-device record (Phase A). Please use it with staff confirmation at the shop. Server-side verification is planned for the future.",zh_hans:"※此优惠券采用设备内记录的简易方式（A阶段）。使用时请在店内经店员确认。未来计划扩展为服务器端确认。",zh_hant:"※此優惠券採用裝置內記錄的簡易方式（A階段）。使用時請在店內經店員確認。未來計劃擴展為伺服器端確認。"}
   };
   function i18nDetect(){
     try{ var q=new URLSearchParams(location.search).get("lang"); if(q && I18N.nav_home[q]) return q; }catch(e){}
@@ -4874,13 +4920,13 @@
   // ホームのキャラのセリフ（idle時）。名前が設定されていれば呼びかける。
   function greetingText(){
     return save.playerName
-      ? ("こんにちは、" + save.playerName + "さん！今日はどこへ探検に行こう？")
-      : "今日はどこへ探検に行こうか！";
+      ? tf("greet_named", {name: save.playerName})
+      : t("greet_anon");
   }
-  // 名前変更などの後、point表示中でなければホームの挨拶を更新する
+  // 名前変更などの後、point表示中（ヒント表示中）でなければホームの挨拶を更新する
   function updateHomeGreeting(){
-    var t = document.getElementById("home-guide-text");
-    if(t && t.textContent.indexOf("あっち") === -1) t.textContent = greetingText();
+    var el = document.getElementById("home-guide-text");
+    if(el && el.textContent !== t("hint_something")) el.textContent = greetingText();
   }
 
   // 同じsrcの再設定による画像リロード（＝リフロー・画面ズレ）を避け、変化時だけ更新する
@@ -4908,7 +4954,7 @@
       setGuideImg(img, "happy");
     } else if(mood === "point"){
       setGuideImg(img, "point");
-      text.textContent = "あっちに何かありそうだよ！";
+      text.textContent = t("hint_something");
     } else {
       setGuideImg(img, "idle");
       text.textContent = greetingText();
@@ -4964,7 +5010,7 @@
     document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
     document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
     document.getElementById("home-sim-badge").style.display = (save.settings.mode === "simulate") ? "block" : "none";
-    document.getElementById("home-title-badge").textContent = "称号：" + getSelectedTitleName();
+    document.getElementById("home-title-badge").textContent = tf("home_title_badge", {name: getSelectedTitleName()});
     setGuideMood("idle");
     renderHomeNearest();
     renderBaseCard();
@@ -4997,7 +5043,7 @@
     var need = xpForLevel(save.level);
     document.getElementById("home-xp-label").textContent = save.xp + " / " + need + " XP";
     document.getElementById("home-xp-bar").style.width = Math.min(100, (save.xp/need)*100) + "%";
-    document.getElementById("home-title-badge").textContent = "称号：" + getSelectedTitleName();
+    document.getElementById("home-title-badge").textContent = tf("home_title_badge", {name: getSelectedTitleName()});
 
     var nameEl = document.getElementById("home-nearest-name");
     var distEl = document.getElementById("home-nearest-dist");
@@ -5336,7 +5382,7 @@
     if(crowd){
       html += '<div class="crowd-row"><span class="crowd-lamp ' + crowd.cls + '"></span>' +
               '<span class="crowd-text">' + crowd.text + '</span>' +
-              '<span class="crowd-note">お店からの情報</span></div>';
+              '<span class="crowd-note">' + t("crowd_note") + '</span></div>';
     }
 
     if(shop.offer){
@@ -5346,8 +5392,8 @@
     var links = shop.links || {};
     if(links.web || links.tel){
       html += '<div class="shop-modal-links">';
-      if(links.web) html += '<a class="shop-modal-link-btn" href="' + links.web + '" target="_blank" rel="noopener">公式サイト</a>';
-      if(links.tel) html += '<a class="shop-modal-link-btn" href="tel:' + links.tel + '">電話をかける</a>';
+      if(links.web) html += '<a class="shop-modal-link-btn" href="' + links.web + '" target="_blank" rel="noopener">' + t("link_web") + '</a>';
+      if(links.tel) html += '<a class="shop-modal-link-btn" href="tel:' + links.tel + '">' + t("link_tel") + '</a>';
       html += '</div>';
     }
 
@@ -5357,27 +5403,27 @@
       html += '<div class="coupon-terms">' + shop.coupon.terms + '</div>';
 
       if(redeemed){
-        html += '<div class="coupon-used-badge">✅ 使用済み<span class="at">利用日時：' + formatTimestamp(redeemed.at) + '</span></div>';
+        html += '<div class="coupon-used-badge">' + t("coupon_used") + '<span class="at">' + tf("coupon_used_at", {at: formatTimestamp(redeemed.at)}) + '</span></div>';
       } else if(shopModalStep === "confirm"){
-        html += '<div class="coupon-range-note">店頭でスタッフに画面を見せ、確認をお願いしてください。</div>';
-        html += '<button class="coupon-action-btn" id="btn-coupon-to-pin">スタッフPIN入力へ進む</button>';
+        html += '<div class="coupon-range-note">' + t("coupon_confirm_note") + '</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-to-pin">' + t("coupon_to_pin") + '</button>';
       } else if(shopModalStep === "pin"){
-        html += '<div class="coupon-range-note">スタッフの方は、確認用PINをここに入力してください。</div>';
+        html += '<div class="coupon-range-note">' + t("coupon_pin_note") + '</div>';
         html += '<div class="coupon-pin-row"><input type="tel" inputmode="numeric" maxlength="8" class="coupon-pin-input" id="coupon-pin-input" placeholder="PIN"></div>';
-        if(shopModalPinError) html += '<div class="coupon-pin-error">PINが違います。もう一度お試しください。</div>';
-        html += '<button class="coupon-action-btn" id="btn-coupon-confirm-pin">確定する</button>';
+        if(shopModalPinError) html += '<div class="coupon-pin-error">' + t("coupon_pin_error") + '</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-confirm-pin">' + t("coupon_pin_confirm") + '</button>';
       } else if(inRange){
-        html += '<div class="coupon-range-note">お店の近くにいます（現在地から約' + Math.round(dist) + 'm）</div>';
-        html += '<button class="coupon-action-btn" id="btn-coupon-use">クーポンを使う</button>';
+        html += '<div class="coupon-range-note">' + tf("coupon_inrange", {d: Math.round(dist)}) + '</div>';
+        html += '<button class="coupon-action-btn" id="btn-coupon-use">' + t("coupon_use") + '</button>';
       } else {
         var distText = dist != null
-          ? ('現在地から約' + (dist < 1000 ? Math.round(dist) + 'm' : (dist/1000).toFixed(1) + 'km'))
-          : '現在地が取得できません（位置情報を許可してお試しください）';
-        html += '<div class="coupon-range-note">お店の近くに来ると使えるようになります（' + distText + '）</div>';
-        html += '<button class="coupon-action-btn" disabled>クーポンを使う</button>';
+          ? tf("coupon_dist", {d: (dist < 1000 ? Math.round(dist) + 'm' : (dist/1000).toFixed(1) + 'km')})
+          : t("coupon_nopos");
+        html += '<div class="coupon-range-note">' + tf("coupon_outrange", {t: distText}) + '</div>';
+        html += '<button class="coupon-action-btn" disabled>' + t("coupon_use") + '</button>';
       }
 
-      html += '<div class="coupon-note-small">※このクーポンは端末内の記録による簡易方式です（フェーズA）。ご利用は店頭でスタッフの確認のもとお願いします。将来的にはサーバー側で確認する仕組みに拡張予定です。</div>';
+      html += '<div class="coupon-note-small">' + t("coupon_note_small") + '</div>';
       html += '</div>';
     }
 
@@ -5453,16 +5499,16 @@
     document.getElementById("book-detail").style.display = "none";
     var grid = document.getElementById("book-grid");
     grid.innerHTML = "";
-    document.getElementById("book-progress").textContent = "発見数：" + save.found.length + " / " + DATA.pois.filter(poiUnlocked).length;
+    document.getElementById("book-progress").textContent = tf("book_found_count", {n: save.found.length, tot: DATA.pois.filter(poiUnlocked).length});
 
     var g = bookGrade(), oc = omiyageCount();
     var gradeLine = document.getElementById("book-grade-line");
     var badge = '<span class="grade-badge grade-' + g + '">' + GRADE_NAMES[g] + '</span>';
     if(g >= 3){
-      gradeLine.innerHTML = "図鑑グレード：" + badge + " コンプ達成！最高グレード✨";
+      gradeLine.innerHTML = t("book_grade_label") + badge + t("book_grade_max");
     } else {
       var need = OMIYAGE_GRADE_THRESHOLDS[g] - oc;
-      gradeLine.innerHTML = "図鑑グレード：" + badge + " あと <b>" + need + "</b> 個のおみやげで" + GRADE_NAMES[g+1] + "へ";
+      gradeLine.innerHTML = t("book_grade_label") + badge + tf("book_grade_next", {n: need, g: GRADE_NAMES[g+1]});
     }
 
     function appendCard(poi){
@@ -5482,8 +5528,8 @@
           '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
       } else {
         card.innerHTML =
-          '<div class="thumb unknown">？？？</div>' +
-          '<div class="info"><div class="title">未発見</div><div class="era">現地を訪れよう</div></div>';
+          '<div class="thumb unknown">' + t("card_unknown") + '</div>' +
+          '<div class="info"><div class="title">' + t("card_unfound") + '</div><div class="era">' + t("card_visit_hint") + '</div></div>';
       }
       card.addEventListener("click", function(){ showBookDetail(poi, found); });
       grid.appendChild(card);
@@ -5508,7 +5554,7 @@
       var efound = eventPois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
       var ehead = document.createElement("div");
       ehead.className = "book-district-head limited";
-      ehead.innerHTML = '<span class="bd-name">🏮 限定</span><span class="bd-count">' + efound + ' / ' + eventPois.length + '</span>';
+      ehead.innerHTML = '<span class="bd-name">' + t("zone_limited") + '</span><span class="bd-count">' + efound + ' / ' + eventPois.length + '</span>';
       grid.appendChild(ehead);
       eventPois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
     }
@@ -5517,7 +5563,7 @@
     if(orphans.length){
       var oh = document.createElement("div");
       oh.className = "book-district-head";
-      oh.innerHTML = '<span class="bd-name">その他</span><span class="bd-count">' +
+      oh.innerHTML = '<span class="bd-name">' + t("zone_other") + '</span><span class="bd-count">' +
         orphans.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length + ' / ' + orphans.length + '</span>';
       grid.appendChild(oh);
       orphans.forEach(appendCard);
@@ -5531,12 +5577,12 @@
       var replayCount = save.inventory.treasureReplayTicket || 0;
       var deluxeInfo = "";
       if(deluxeUnlocked(poi)){
-        deluxeInfo = '<div class="deluxe-note">✦ 豪華版カード（何度も訪れたごほうび）</div>';
+        deluxeInfo = '<div class="deluxe-note">' + t("deluxe_note") + '</div>';
       } else if(hasDeluxe(poi)){
-        deluxeInfo = '<div class="deluxe-hint">あと <b>' + (DELUXE_VISIT_THRESHOLD - visitCountOf(poi.id)) + '</b> 回訪れると豪華版に昇格！</div>';
+        deluxeInfo = '<div class="deluxe-hint">' + tf("deluxe_hint", {n: (DELUXE_VISIT_THRESHOLD - visitCountOf(poi.id))}) + '</div>';
       }
       var serialInfo = (save.serials[poi.id])
-        ? '<div class="serial-note">🏅 あなたは ' + save.serials[poi.id].no + ' 番目の発見者</div>'
+        ? '<div class="serial-note">' + tf("serial_note", {n: save.serials[poi.id].no}) + '</div>'
         : '';
       // 実際に現地(実GPS)で訪れた日時（最大3回分＝豪華版の到達回数）
       var realVisits = (save.visits[poi.id] && save.visits[poi.id].realVisits) || [];
@@ -5546,19 +5592,19 @@
           var d = new Date(ts);
           return d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate();
         });
-        visitDatesInfo = '<div class="visit-dates">🚩 現地を訪れた日：' + dates.join("、") + '</div>';
+        visitDatesInfo = '<div class="visit-dates">' + tf("visit_dates", {dates: dates.join("、")}) + '</div>';
       } else {
-        visitDatesInfo = '<div class="visit-dates none">まだ現地では訪れていません（実際に行くと通し番号と訪問日がつきます）</div>';
+        visitDatesInfo = '<div class="visit-dates none">' + t("visit_none") + '</div>';
       }
       detail.innerHTML =
         '<img src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
         '<h3>' + poi.treasure.title + '</h3>' +
-        '<div class="era">' + poi.treasure.era + ' ／ ' + poi.category + '</div>' +
+        '<div class="era">' + poi.treasure.era + t("era_cat_sep") + poi.category + '</div>' +
         serialInfo +
         visitDatesInfo +
         deluxeInfo +
         '<p>' + poi.treasure.blurb + '</p>' +
-        (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">お宝再鑑賞（所持：' + replayCount + '）</button>' : '');
+        (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">' + tf("replay_btn", {n: replayCount}) + '</button>' : '');
       var replayBtn = document.getElementById("btn-replay-treasure");
       if(replayBtn){
         replayBtn.addEventListener("click", function(){
@@ -5572,7 +5618,7 @@
       }
     } else {
       detail.innerHTML =
-        '<h3>？？？</h3><div class="era">未発見</div><p>現地に近づくと図鑑に登録されます。</p>';
+        '<h3>' + t("card_unknown") + '</h3><div class="era">' + t("card_unfound") + '</div><p>' + t("detail_unfound_sub") + '</p>';
     }
     detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -5618,20 +5664,20 @@
   function renderTitlesList(){
     var list = document.getElementById("title-list");
     list.innerHTML = "";
-    TITLES.forEach(function(t){
-      var unlocked = t.check(save);
-      var selected = save.selectedTitle === t.id;
+    TITLES.forEach(function(ti){
+      var unlocked = ti.check(save);
+      var selected = save.selectedTitle === ti.id;
       var item = document.createElement("div");
       item.className = "title-item" + (unlocked ? "" : " locked");
       var btnHtml;
       if(!unlocked){
-        btnHtml = '<button class="title-select-btn" disabled>未解放</button>';
+        btnHtml = '<button class="title-select-btn" disabled>' + t("title_locked") + '</button>';
       } else if(selected){
-        btnHtml = '<button class="title-select-btn selected" disabled>選択中</button>';
+        btnHtml = '<button class="title-select-btn selected" disabled>' + t("title_selected") + '</button>';
       } else {
-        btnHtml = '<button class="title-select-btn" data-title="' + t.id + '">選択する</button>';
+        btnHtml = '<button class="title-select-btn" data-title="' + ti.id + '">' + t("title_select") + '</button>';
       }
-      item.innerHTML = '<div><div class="name">' + t.name + '</div></div>' + btnHtml;
+      item.innerHTML = '<div><div class="name">' + ti.name + '</div></div>' + btnHtml;
       list.appendChild(item);
     });
     Array.prototype.slice.call(list.querySelectorAll(".title-select-btn[data-title]")).forEach(function(btn){
@@ -5640,13 +5686,13 @@
   }
 
   function selectTitle(id){
-    var t = TITLES.filter(function(x){ return x.id === id; })[0];
-    if(!t || !t.check(save)) return;
+    var ti = TITLES.filter(function(x){ return x.id === id; })[0];
+    if(!ti || !ti.check(save)) return;
     save.selectedTitle = id;
     persist();
     renderTitlesList();
     renderHomeFull();
-    toast(t.name + " を称号に設定しました");
+    toast(tf("title_set_toast", {name: ti.name}));
   }
 
   function getSelectedTitleName(){
