@@ -2482,7 +2482,12 @@
     mk_tribute_title:{ja:"年貢を納める（おみやげのダブりを献上）",en:"Pay tribute (offer duplicate souvenirs)",zh_hans:"缴纳年贡（献上重复的特产）",zh_hant:"繳納年貢（獻上重複的特產）"},
     mk_note:{ja:"おみやげを納めると殿の信頼が上がり、家臣の格が上がったり、新しい土地が解禁されて図鑑が広がります。",en:"Offering souvenirs raises the Lord's trust, which can promote your rank and unlock new lands to expand your collection.",zh_hans:"献上特产可提升殿下的信任，从而提升家臣品级、解锁新土地，扩展图鉴。",zh_hant:"獻上特產可提升殿下的信任，從而提升家臣品級、解鎖新土地，擴展圖鑑。"},
     era_cat_sep2:{ja:"：",en:": ",zh_hans:"：",zh_hant:"："},
-    fw_got:{ja:"花火「{name}」を手に入れた！",en:"Got the firework \"{name}\"!",zh_hans:"获得了烟花「{name}」！",zh_hant:"獲得了煙火「{name}」！"}
+    fw_got:{ja:"花火「{name}」を手に入れた！",en:"Got the firework \"{name}\"!",zh_hans:"获得了烟花「{name}」！",zh_hant:"獲得了煙火「{name}」！"},
+    deluxe_upgraded:{ja:"🎴 {title} のカードが豪華版になった！",en:"🎴 {title}'s card became a deluxe version!",zh_hans:"🎴 {title} 的卡片升级为豪华版了！",zh_hant:"🎴 {title} 的卡片升級為豪華版了！"},
+    vpos_set:{ja:"現在の仮想現在地：緯度 {lat} / 経度 {lng}",en:"Current virtual location: lat {lat} / lng {lng}",zh_hans:"当前虚拟位置：纬度 {lat} / 经度 {lng}",zh_hant:"當前虛擬位置：緯度 {lat} / 經度 {lng}"},
+    vpos_none:{ja:"現在の仮想現在地：未設定",en:"Current virtual location: not set",zh_hans:"当前虚拟位置：未设置",zh_hant:"當前虛擬位置：未設定"},
+    teleport_btn:{ja:"▶ {d}：{name} へテレポート",en:"▶ Teleport to {d}: {name}",zh_hans:"▶ 传送到 {d}：{name}",zh_hant:"▶ 傳送到 {d}：{name}"},
+    teleport_done:{ja:"{name} にテレポートしました",en:"Teleported to {name}",zh_hans:"已传送到 {name}",zh_hant:"已傳送到 {name}"}
   };
   function i18nDetect(){
     try{ var q=new URLSearchParams(location.search).get("lang"); if(q && I18N.nav_home[q]) return q; }catch(e){}
@@ -2600,6 +2605,20 @@
     var e = DATA_I18N[ns] && DATA_I18N[ns][id] && DATA_I18N[ns][id][field];
     return (e && e[LANG]) || fallback;
   }
+  // 図鑑カード（pois.json）の翻訳＝別ファイル data/pois_i18n.json を非同期ロード。未翻訳のspot/fieldは自動でJAへフォールバック。
+  var POI_I18N = {};   // id -> {name,title,era,category,blurb:{en,zh_hans,zh_hant}}
+  var DIST_I18N = {};  // districtId -> {name:{...}}
+  function tp(id, field, fallback){
+    if(LANG === "ja") return fallback;
+    var e = POI_I18N[id] && POI_I18N[id][field];
+    return (e && e[LANG]) || fallback;
+  }
+  function poiName(p){ return tp(p.id, "name", p.name); }
+  function poiTitle(p){ return tp(p.id, "title", p.treasure.title); }
+  function poiEra(p){ return tp(p.id, "era", p.treasure.era); }
+  function poiCat(p){ return tp(p.id, "category", p.category); }
+  function poiBlurb(p){ return tp(p.id, "blurb", p.treasure.blurb); }
+  function distName(d){ if(LANG === "ja") return d.name; var e = DIST_I18N[d.id] && DIST_I18N[d.id].name; return (e && e[LANG]) || d.name; }
   function applyI18n(){
     var els=document.querySelectorAll("[data-i18n]");
     for(var i=0;i<els.length;i++){ els[i].textContent = t(els[i].getAttribute("data-i18n")); }
@@ -3514,7 +3533,7 @@
 
   function openGachaModal(poiId){
     var poi = poiId ? DATA.pois.filter(function(p){ return p.id === poiId; })[0] : null;
-    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : t("gacha_spot_any");
+    document.getElementById("gacha-spot-name").textContent = poi ? poiName(poi) : t("gacha_spot_any");
     document.getElementById("gacha-result").innerHTML = t("gacha_intro");
     // ステージを初期状態に戻す
     var cap = document.getElementById("g-capsule"); cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
@@ -3709,7 +3728,7 @@
   // 土地解禁のカットシーン（「殿からのお呼び」→めくって→解放！）
   function makinoUnlockScene(pid){
     var poi = (DATA && DATA.pois) ? DATA.pois.filter(function(p){ return p.id === pid; })[0] : null;
-    var name = poi ? poi.name : pid;
+    var name = poi ? poiName(poi) : pid;
     return { banner:"🏯 殿からのお呼び 🏯", lines:[
       { text:"おお、よう参った。年貢の働き、まことに大儀であった。", mood:"happy" },
       { text:"約束じゃ。そなたに、まだ知られておらぬ土地への道を教えよう。", mood:"normal" },
@@ -4764,7 +4783,7 @@
         serialPending: serialPending2 && !save.serials[poi.id] });
       checkAchievements();
       if(hasDeluxe(poi) && count === DELUXE_VISIT_THRESHOLD){
-        setTimeout(function(){ toast("🎴 " + poi.treasure.title + " のカードが豪華版になった！"); }, 1600);
+        setTimeout(function(){ toast(tf("deluxe_upgraded", {title: poiTitle(poi)})); }, 1600);
       }
       renderAll();
     }
@@ -4781,10 +4800,10 @@
     chestImg.src = "assets/chest_closed.png";
     if(opts.replay){
       title.textContent = t("replay_title");
-      sub.textContent = tf("replay_sub", {title: poi.treasure.title});
+      sub.textContent = tf("replay_sub", {title: poiTitle(poi)});
     } else {
       title.textContent = opts.first ? t("discover_title") : t("discover_revisit");
-      sub.textContent = opts.first ? tf("first_sub", {title: poi.treasure.title}) : tf("revisit_sub", {name: poi.name});
+      sub.textContent = opts.first ? tf("first_sub", {title: poiTitle(poi)}) : tf("revisit_sub", {name: poiName(poi)});
     }
     levelBanner.style.display = opts.leveled ? "block" : "none";
 
@@ -5237,7 +5256,7 @@
 
     if(isFound || hintUnlocked){
       // 発見済み、または「最寄りヒント」購入済みなら正確な名前・距離を表示
-      nameEl.textContent = target.poi.name;
+      nameEl.textContent = poiName(target.poi);
       distEl.textContent = tf("dist_ahead", {d: (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km")});
     } else {
       // 未発見＆未購入：おおまかな距離のみ（ショップ「最寄りヒント」で正確な位置が分かる）
@@ -5329,7 +5348,7 @@
     DATA.districts.forEach(function(d){
       var btn = document.createElement("div");
       btn.className = "district-tab" + (d.id === currentDistrict ? " active" : "");
-      btn.textContent = d.name;
+      btn.textContent = distName(d);
       btn.addEventListener("click", function(){
         currentDistrict = d.id;
         document.getElementById("map-popup").style.display = "none";
@@ -5450,7 +5469,7 @@
       distText = tf("popup_dist", {d: (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km")});
     }
     if(found){
-      popup.innerHTML = '<div class="name">' + poi.name + '</div><div class="meta">' + poi.treasure.era + ' ・ ' + distText + '</div>';
+      popup.innerHTML = '<div class="name">' + poiName(poi) + '</div><div class="meta">' + poiEra(poi) + ' ・ ' + distText + '</div>';
     } else {
       popup.innerHTML = '<div class="name">' + t("popup_unfound") + '</div><div class="meta">' + distText + '</div>';
     }
@@ -5683,10 +5702,10 @@
         var serialBadge = (save.serials[poi.id]) ? '<div class="serial-badge">No.' + save.serials[poi.id].no + '</div>' : '';
         card.innerHTML =
           '<div class="thumb-wrap">' +
-            '<img class="thumb" src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
+            '<img class="thumb" src="assets/' + cardImageFor(poi) + '" alt="' + poiTitle(poi) + '">' +
             starHtml + deluxeBadge + serialBadge +
           '</div>' +
-          '<div class="info"><div class="title">' + poi.treasure.title + '</div><div class="era">' + poi.treasure.era + '</div></div>';
+          '<div class="info"><div class="title">' + poiTitle(poi) + '</div><div class="era">' + poiEra(poi) + '</div></div>';
       } else {
         card.innerHTML =
           '<div class="thumb unknown">' + t("card_unknown") + '</div>' +
@@ -5705,7 +5724,7 @@
       var foundCount = dpois.filter(function(p){ return save.found.indexOf(p.id) !== -1; }).length;
       var head = document.createElement("div");
       head.className = "book-district-head";
-      head.innerHTML = '<span class="bd-name">' + d.name + '</span><span class="bd-count">' + foundCount + ' / ' + dpois.length + '</span>';
+      head.innerHTML = '<span class="bd-name">' + distName(d) + '</span><span class="bd-count">' + foundCount + ' / ' + dpois.length + '</span>';
       grid.appendChild(head);
       dpois.forEach(function(poi){ appendCard(poi); shown[poi.id] = 1; });
     });
@@ -5758,13 +5777,13 @@
         visitDatesInfo = '<div class="visit-dates none">' + t("visit_none") + '</div>';
       }
       detail.innerHTML =
-        '<img src="assets/' + cardImageFor(poi) + '" alt="' + poi.treasure.title + '">' +
-        '<h3>' + poi.treasure.title + '</h3>' +
-        '<div class="era">' + poi.treasure.era + t("era_cat_sep") + poi.category + '</div>' +
+        '<img src="assets/' + cardImageFor(poi) + '" alt="' + poiTitle(poi) + '">' +
+        '<h3>' + poiTitle(poi) + '</h3>' +
+        '<div class="era">' + poiEra(poi) + t("era_cat_sep") + poiCat(poi) + '</div>' +
         serialInfo +
         visitDatesInfo +
         deluxeInfo +
-        '<p>' + poi.treasure.blurb + '</p>' +
+        '<p>' + poiBlurb(poi) + '</p>' +
         (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">' + tf("replay_btn", {n: replayCount}) + '</button>' : '');
       var replayBtn = document.getElementById("btn-replay-treasure");
       if(replayBtn){
@@ -5883,9 +5902,9 @@
 
     var posLine = document.getElementById("sim-pos-line");
     if(save.settings.simLat != null){
-      posLine.textContent = "現在の仮想現在地：緯度 " + save.settings.simLat.toFixed(5) + " / 経度 " + save.settings.simLng.toFixed(5);
+      posLine.textContent = tf("vpos_set", {lat: save.settings.simLat.toFixed(5), lng: save.settings.simLng.toFixed(5)});
     } else {
-      posLine.textContent = "現在の仮想現在地：未設定";
+      posLine.textContent = t("vpos_none");
     }
 
     var list = document.getElementById("teleport-list");
@@ -5893,14 +5912,15 @@
     DATA.pois.filter(poiUnlocked).forEach(function(poi){
       var btn = document.createElement("button");
       btn.className = "teleport-btn";
-      var districtName = (DATA.districts.filter(function(d){return d.id===poi.districtId;})[0]||{}).name || "";
-      btn.textContent = "▶ " + districtName + "：" + poi.name + " へテレポート";
+      var dObj2 = DATA.districts.filter(function(d){return d.id===poi.districtId;})[0];
+      var districtName = dObj2 ? distName(dObj2) : "";
+      btn.textContent = tf("teleport_btn", {d: districtName, name: poiName(poi)});
       btn.disabled = (save.settings.mode !== "simulate");
       btn.addEventListener("click", function(){
         setSimPosition(poi.lat, poi.lng);
         currentDistrict = poi.districtId;
         renderSettings();
-        toast(poi.name + " にテレポートしました");
+        toast(tf("teleport_done", {name: poiName(poi)}));
       });
       list.appendChild(btn);
     });
@@ -6120,12 +6140,13 @@
     list.innerHTML = "";
     if(!DATA) return;
     DATA.pois.filter(poiUnlocked).forEach(function(poi){
-      var districtName = (DATA.districts.filter(function(d){ return d.id === poi.districtId; })[0] || {}).name || "";
+      var dObj = DATA.districts.filter(function(d){ return d.id === poi.districtId; })[0];
+      var districtName = dObj ? distName(dObj) : "";
       var found = save.found.indexOf(poi.id) !== -1;
       var btn = document.createElement("button");
       btn.className = "warp-item";
       btn.disabled = save.coins < WARP_COST;
-      btn.innerHTML = "<span class=\"warp-item-name\">" + districtName + "：" + poi.name + "</span>" +
+      btn.innerHTML = "<span class=\"warp-item-name\">" + districtName + "：" + poiName(poi) + "</span>" +
         "<span class=\"warp-item-badge" + (found ? " found" : "") + "\">" + (found ? t("badge_found2") : t("badge_unfound")) + "</span>";
       btn.addEventListener("click", function(){ doWarp(poi.id); });
       list.appendChild(btn);
@@ -6143,7 +6164,7 @@
       if(since < REVISIT_COOLDOWN_MS){
         var leftMin = Math.ceil((REVISIT_COOLDOWN_MS - since) / 60000);
         var leftTxt = leftMin >= 60 ? tf("time_hours", {n: Math.ceil(leftMin/60)}) : tf("time_mins", {n: leftMin});
-        toast(tf("warp_cooldown", {name: poi.name, t: leftTxt}));
+        toast(tf("warp_cooldown", {name: poiName(poi), t: leftTxt}));
         return;
       }
     }
@@ -6158,7 +6179,7 @@
     if(typeof sfxPurchase === "function") sfxPurchase();
     document.getElementById("warp-modal").classList.remove("show");
     showScreen("home");
-    toast(tf("warp_done", {name: poi.name}));
+    toast(tf("warp_done", {name: poiName(poi)}));
     attemptDiscovery(poi, { viaWarp: true });   // コインワープ：発見/再訪は可能だが通し番号（シリアル）は付けない
     renderAll();
   }
@@ -6269,7 +6290,7 @@
       var owned = save.costumes.owned.indexOf(c.id) !== -1;
       var equipped = save.costumes.equipped === c.id;
       var reqPois = costumeReqPois(c);
-      function poiNameOf(id){ var p = (DATA && DATA.pois) ? DATA.pois.filter(function(x){ return x.id === id; })[0] : null; return p ? p.name : id; }
+      function poiNameOf(id){ var p = (DATA && DATA.pois) ? DATA.pois.filter(function(x){ return x.id === id; })[0] : null; return p ? poiName(p) : id; }
       var reqNames = reqPois.map(poiNameOf);
       var reqFound = reqPois.filter(function(id){ return save.found.indexOf(id) !== -1; }).length;
 
@@ -6650,6 +6671,12 @@
     setInterval(function(){ if(!document.hidden) fetchCrowd(); }, CROWD_REFRESH_MS);
     document.addEventListener("visibilitychange", function(){ if(!document.hidden) fetchCrowd(); });
   }
+
+  // 図鑑カードの多言語データ（任意・失敗してもJAで動く）。届いたら再描画。
+  fetch("data/pois_i18n.json")
+    .then(function(res){ return res.ok ? res.json() : null; })
+    .then(function(j){ if(j){ POI_I18N = j.pois || {}; DIST_I18N = j.districts || {}; if(DATA){ try{ renderAll(); }catch(e){} } } })
+    .catch(function(){});
 
   // fetchはfile://環境で失敗しうるためインラインデータへフォールバック
   fetch("data/pois.json")
