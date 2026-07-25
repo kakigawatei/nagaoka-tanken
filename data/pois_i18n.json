@@ -1,72 +1,637 @@
 {
   "_note": "図鑑カードの多言語データ（機械翻訳ベース・後で手直し可）。JAは data/pois.json が正典。ここにない spot/field は自動でJAにフォールバック。エリアごとに順次追加。",
   "districts": {
-    "chuo":       { "name": { "en": "Nagaoka (Downtown)", "zh_hans": "长冈（中心部）", "zh_hant": "長岡（中心部）" } },
-    "settaya":    { "name": { "en": "Settaya", "zh_hans": "摂田屋", "zh_hant": "攝田屋" } },
-    "yamakoshi":  { "name": { "en": "Yamakoshi", "zh_hans": "山古志", "zh_hant": "山古志" } },
-    "teradomari": { "name": { "en": "Teradomari", "zh_hans": "寺泊", "zh_hant": "寺泊" } },
-    "tochio":     { "name": { "en": "Tochio", "zh_hans": "栃尾", "zh_hant": "栃尾" } },
-    "yoita":      { "name": { "en": "Yoita", "zh_hans": "与板", "zh_hant": "與板" } },
-    "koshiji":    { "name": { "en": "Koshiji", "zh_hans": "越路", "zh_hant": "越路" } },
-    "yomogihira": { "name": { "en": "Yomogihira", "zh_hans": "蓬平", "zh_hant": "蓬平" } },
-    "zao":        { "name": { "en": "Zao", "zh_hans": "藏王", "zh_hant": "藏王" } }
+    "chuo": {
+      "name": {
+        "en": "Nagaoka (Downtown)",
+        "zh_hans": "长冈（中心部）",
+        "zh_hant": "長岡（中心部）"
+      }
+    },
+    "settaya": {
+      "name": {
+        "en": "Settaya",
+        "zh_hans": "摂田屋",
+        "zh_hant": "攝田屋"
+      }
+    },
+    "yamakoshi": {
+      "name": {
+        "en": "Yamakoshi",
+        "zh_hans": "山古志",
+        "zh_hant": "山古志"
+      }
+    },
+    "teradomari": {
+      "name": {
+        "en": "Teradomari",
+        "zh_hans": "寺泊",
+        "zh_hant": "寺泊"
+      }
+    },
+    "tochio": {
+      "name": {
+        "en": "Tochio",
+        "zh_hans": "栃尾",
+        "zh_hant": "栃尾"
+      }
+    },
+    "yoita": {
+      "name": {
+        "en": "Yoita",
+        "zh_hans": "与板",
+        "zh_hant": "與板"
+      }
+    },
+    "koshiji": {
+      "name": {
+        "en": "Koshiji",
+        "zh_hans": "越路",
+        "zh_hant": "越路"
+      }
+    },
+    "yomogihira": {
+      "name": {
+        "en": "Yomogihira",
+        "zh_hans": "蓬平",
+        "zh_hant": "蓬平"
+      }
+    },
+    "zao": {
+      "name": {
+        "en": "Zao",
+        "zh_hans": "藏王",
+        "zh_hant": "藏王"
+      }
+    }
   },
   "pois": {
     "aore": {
-      "name":     { "en": "Aore Nagaoka", "zh_hans": "Aore长冈", "zh_hant": "Aore長岡" },
-      "title":    { "en": "Aore Nagaoka (City Hall Plaza)", "zh_hans": "Aore长冈（市政厅广场）", "zh_hant": "Aore長岡（市政廳廣場）" },
-      "era":      { "en": "Opened 2012", "zh_hans": "2012年开馆", "zh_hant": "2012年開館" },
-      "category": { "en": "Architecture / Public", "zh_hans": "建筑·公共", "zh_hant": "建築·公共" },
-      "blurb":    { "en": "Opened in 2012. Designed by architect Kengo Kuma, it was Japan's first complex uniting the city hall, an arena, and a covered plaza called 'Nakadoma.' Its nickname comes from the Nagaoka dialect 'aoure' (let's meet), and it serves as a gathering place where citizens come together daily.", "zh_hans": "2012年开馆。由建筑家隈研吾设计，是全国首座将市政厅、竞技场与带屋顶的广场「中土间」融为一体的综合设施。昵称源自长冈方言中意为「见面吧」的「会おうれ」，是市民日常聚集的交流据点。", "zh_hant": "2012年開館。由建築家隈研吾設計，是全國首座將市政廳、競技場與帶屋頂的廣場「中土間」融為一體的綜合設施。暱稱源自長岡方言中意為「見面吧」的「會おうれ」，是市民日常聚集的交流據點。" }
+      "name": {
+        "en": "Aore Nagaoka",
+        "zh_hans": "Aore长冈",
+        "zh_hant": "Aore長岡"
+      },
+      "title": {
+        "en": "Aore Nagaoka (City Hall Plaza)",
+        "zh_hans": "Aore长冈（市政厅广场）",
+        "zh_hant": "Aore長岡（市政廳廣場）"
+      },
+      "era": {
+        "en": "Opened 2012",
+        "zh_hans": "2012年开馆",
+        "zh_hant": "2012年開館"
+      },
+      "category": {
+        "en": "Architecture / Public",
+        "zh_hans": "建筑·公共",
+        "zh_hant": "建築·公共"
+      },
+      "blurb": {
+        "en": "Opened in 2012. Designed by architect Kengo Kuma, it was Japan's first complex uniting the city hall, an arena, and a covered plaza called 'Nakadoma.' Its nickname comes from the Nagaoka dialect 'aoure' (let's meet), and it serves as a gathering place where citizens come together daily.",
+        "zh_hans": "2012年开馆。由建筑家隈研吾设计，是全国首座将市政厅、竞技场与带屋顶的广场「中土间」融为一体的综合设施。昵称源自长冈方言中意为「见面吧」的「会おうれ」，是市民日常聚集的交流据点。",
+        "zh_hant": "2012年開館。由建築家隈研吾設計，是全國首座將市政廳、競技場與帶屋頂的廣場「中土間」融為一體的綜合設施。暱稱源自長岡方言中意為「見面吧」的「會おうれ」，是市民日常聚集的交流據點。"
+      }
     },
     "yamamoto": {
-      "name":     { "en": "Isoroku Yamamoto Memorial Museum", "zh_hans": "山本五十六纪念馆", "zh_hant": "山本五十六紀念館" },
-      "title":    { "en": "Isoroku Yamamoto Memorial Museum", "zh_hans": "山本五十六纪念馆", "zh_hant": "山本五十六紀念館" },
-      "era":      { "en": "Born 1884 (Nagaoka native)", "zh_hans": "生于1884年（长冈出身）", "zh_hant": "生於1884年（長岡出身）" },
-      "category": { "en": "Great Figure / Memorial", "zh_hans": "伟人·纪念馆", "zh_hant": "偉人·紀念館" },
-      "blurb":    { "en": "A memorial that conveys the character and life of Isoroku Yamamoto, the Nagaoka-born naval officer, through his belongings and records. On display are the uniform he wore when hit at the Battle of Tsushima and part of his aircraft. At the nearby birthplace site stand a reconstruction of his home, which burned down in the air raid, and a bust of him.", "zh_hans": "通过长冈出身的海军军人山本五十六的遗物与资料，传达其人格与生涯的纪念馆。馆内陈列着他在日本海海战中中弹时所穿的军服、座机的部分残片等。附近的故居遗址上，建有复原空袭中烧毁的故居的建筑以及其胸像。", "zh_hant": "透過長岡出身的海軍軍人山本五十六的遺物與資料，傳達其人格與生涯的紀念館。館內陳列著他在日本海海戰中中彈時所穿的軍服、座機的部分殘片等。附近的故居遺址上，建有復原空襲中燒毀的故居的建築以及其胸像。" }
+      "name": {
+        "en": "Isoroku Yamamoto Memorial Museum",
+        "zh_hans": "山本五十六纪念馆",
+        "zh_hant": "山本五十六紀念館"
+      },
+      "title": {
+        "en": "Isoroku Yamamoto Memorial Museum",
+        "zh_hans": "山本五十六纪念馆",
+        "zh_hant": "山本五十六紀念館"
+      },
+      "era": {
+        "en": "Born 1884 (Nagaoka native)",
+        "zh_hans": "生于1884年（长冈出身）",
+        "zh_hant": "生於1884年（長岡出身）"
+      },
+      "category": {
+        "en": "Great Figure / Memorial",
+        "zh_hans": "伟人·纪念馆",
+        "zh_hant": "偉人·紀念館"
+      },
+      "blurb": {
+        "en": "A memorial that conveys the character and life of Isoroku Yamamoto, the Nagaoka-born naval officer, through his belongings and records. On display are the uniform he wore when hit at the Battle of Tsushima and part of his aircraft. At the nearby birthplace site stand a reconstruction of his home, which burned down in the air raid, and a bust of him.",
+        "zh_hans": "通过长冈出身的海军军人山本五十六的遗物与资料，传达其人格与生涯的纪念馆。馆内陈列着他在日本海海战中中弹时所穿的军服、座机的部分残片等。附近的故居遗址上，建有复原空袭中烧毁的故居的建筑以及其胸像。",
+        "zh_hant": "透過長岡出身的海軍軍人山本五十六的遺物與資料，傳達其人格與生涯的紀念館。館內陳列著他在日本海海戰中中彈時所穿的軍服、座機的部分殘片等。附近的故居遺址上，建有復原空襲中燒毀的故居的建築以及其胸像。"
+      }
     },
     "kawai": {
-      "name":     { "en": "Tsuginosuke Kawai Memorial Museum", "zh_hans": "河井继之助纪念馆", "zh_hant": "河井繼之助紀念館" },
-      "title":    { "en": "Tsuginosuke Kawai Memorial Museum", "zh_hans": "河井继之助纪念馆", "zh_hant": "河井繼之助紀念館" },
-      "era":      { "en": "Bakumatsu (Chief Retainer of Nagaoka)", "zh_hans": "幕末（长冈藩家老）", "zh_hant": "幕末（長岡藩家老）" },
-      "category": { "en": "Great Figure / Memorial", "zh_hans": "伟人·纪念馆", "zh_hant": "偉人·紀念館" },
-      "blurb":    { "en": "Opened in 2006, this memorial conveys the life of Tsuginosuke Kawai, chief retainer of the Nagaoka domain in the Bakumatsu era, with about 30 related items. Championing armed neutrality yet drawn into the Boshin War of the north, his path can be traced through his prized Gatling gun and his travel diary 'Jinko.'", "zh_hans": "2006年开馆，通过约30件相关物品讲述幕末长冈藩首席家老河井继之助生涯的纪念馆。可从他爱用的加特林机枪、旅行日记《尘壶》等，追寻这位高举武装中立却走向北越戊辰战争的继之助的足迹。", "zh_hant": "2006年開館，透過約30件相關物品講述幕末長岡藩首席家老河井繼之助生涯的紀念館。可從他愛用的加特林機槍、旅行日記《塵壺》等，追尋這位高舉武裝中立卻走向北越戊辰戰爭的繼之助的足跡。" }
+      "name": {
+        "en": "Tsuginosuke Kawai Memorial Museum",
+        "zh_hans": "河井继之助纪念馆",
+        "zh_hant": "河井繼之助紀念館"
+      },
+      "title": {
+        "en": "Tsuginosuke Kawai Memorial Museum",
+        "zh_hans": "河井继之助纪念馆",
+        "zh_hant": "河井繼之助紀念館"
+      },
+      "era": {
+        "en": "Bakumatsu (Chief Retainer of Nagaoka)",
+        "zh_hans": "幕末（长冈藩家老）",
+        "zh_hant": "幕末（長岡藩家老）"
+      },
+      "category": {
+        "en": "Great Figure / Memorial",
+        "zh_hans": "伟人·纪念馆",
+        "zh_hant": "偉人·紀念館"
+      },
+      "blurb": {
+        "en": "Opened in 2006, this memorial conveys the life of Tsuginosuke Kawai, chief retainer of the Nagaoka domain in the Bakumatsu era, with about 30 related items. Championing armed neutrality yet drawn into the Boshin War of the north, his path can be traced through his prized Gatling gun and his travel diary 'Jinko.'",
+        "zh_hans": "2006年开馆，通过约30件相关物品讲述幕末长冈藩首席家老河井继之助生涯的纪念馆。可从他爱用的加特林机枪、旅行日记《尘壶》等，追寻这位高举武装中立却走向北越戊辰战争的继之助的足迹。",
+        "zh_hant": "2006年開館，透過約30件相關物品講述幕末長岡藩首席家老河井繼之助生涯的紀念館。可從他愛用的加特林機槍、旅行日記《塵壺》等，追尋這位高舉武裝中立卻走向北越戊辰戰爭的繼之助的足跡。"
+      }
     },
     "sensai": {
-      "name":     { "en": "Nagaoka War Damage Museum", "zh_hans": "长冈战灾资料馆", "zh_hant": "長岡戰災資料館" },
-      "title":    { "en": "Nagaoka War Damage Museum", "zh_hans": "长冈战灾资料馆", "zh_hant": "長岡戰災資料館" },
-      "era":      { "en": "Opened 2003", "zh_hans": "2003年开馆", "zh_hant": "2003年開館" },
-      "category": { "en": "History / Archive", "zh_hans": "历史·资料馆", "zh_hant": "歷史·資料館" },
-      "blurb":    { "en": "A museum conveying the reality of the Nagaoka air raid late on August 1, 1945, and the path to recovery. Opened in 2003, it moved in May 2026 to the former Goson Bunko building in Sakanoue-cho. As a hub for citizen efforts to pass on the memory of the war, it conveys the importance of peace through materials and testimony.", "zh_hans": "传达1945年8月1日深夜长冈空袭的真实惨状与复兴历程的资料馆。2003年开馆，2026年5月迁至长冈市坂之上町的旧·互尊文库建筑。作为传承战灾记忆的市民活动据点，通过资料与证言传达和平的珍贵。", "zh_hant": "傳達1945年8月1日深夜長岡空襲的真實慘狀與復興歷程的資料館。2003年開館，2026年5月遷至長岡市坂之上町的舊·互尊文庫建築。作為傳承戰災記憶的市民活動據點，透過資料與證言傳達和平的珍貴。" }
+      "name": {
+        "en": "Nagaoka War Damage Museum",
+        "zh_hans": "长冈战灾资料馆",
+        "zh_hant": "長岡戰災資料館"
+      },
+      "title": {
+        "en": "Nagaoka War Damage Museum",
+        "zh_hans": "长冈战灾资料馆",
+        "zh_hant": "長岡戰災資料館"
+      },
+      "era": {
+        "en": "Opened 2003",
+        "zh_hans": "2003年开馆",
+        "zh_hant": "2003年開館"
+      },
+      "category": {
+        "en": "History / Archive",
+        "zh_hans": "历史·资料馆",
+        "zh_hant": "歷史·資料館"
+      },
+      "blurb": {
+        "en": "A museum conveying the reality of the Nagaoka air raid late on August 1, 1945, and the path to recovery. Opened in 2003, it moved in May 2026 to the former Goson Bunko building in Sakanoue-cho. As a hub for citizen efforts to pass on the memory of the war, it conveys the importance of peace through materials and testimony.",
+        "zh_hans": "传达1945年8月1日深夜长冈空袭的真实惨状与复兴历程的资料馆。2003年开馆，2026年5月迁至长冈市坂之上町的旧·互尊文库建筑。作为传承战灾记忆的市民活动据点，通过资料与证言传达和平的珍贵。",
+        "zh_hant": "傳達1945年8月1日深夜長岡空襲的真實慘狀與復興歷程的資料館。2003年開館，2026年5月遷至長岡市坂之上町的舊·互尊文庫建築。作為傳承戰災記憶的市民活動據點，透過資料與證言傳達和平的珍貴。"
+      }
     },
     "nyozekura": {
-      "name":     { "en": "Nyozekura Museum", "zh_hans": "如是藏博物馆", "zh_hant": "如是藏博物館" },
-      "title":    { "en": "Nyozekura Museum", "zh_hans": "如是藏博物馆", "zh_hant": "如是藏博物館" },
-      "era":      { "en": "Linked to industrialist Kyohachiro Nomoto", "zh_hans": "与实业家野本恭八郎有渊源", "zh_hant": "與實業家野本恭八郎有淵源" },
-      "category": { "en": "History / Archive", "zh_hans": "历史·资料馆", "zh_hant": "歷史·資料館" },
-      "blurb":    { "en": "A museum centered on materials related to Kyohachiro Nomoto, the industrialist who donated the 'Goson Bunko' that became the forerunner of Nagaoka's municipal library. It also introduces materials on Nagaoka's forebears such as Tsuginosuke Kawai and Isoroku Yamamoto—a small storehouse of learning downtown that carefully preserves and shares its historically valuable collection.", "zh_hans": "以捐赠了长冈市立图书馆前身「互尊文库」的实业家野本恭八郎相关资料为中心，同时介绍河井继之助、山本五十六等长冈先贤资料的博物馆。是一座珍藏并公开具有历史价值藏品、位于市中心的小小学问之藏。", "zh_hant": "以捐贈了長岡市立圖書館前身「互尊文庫」的實業家野本恭八郎相關資料為中心，同時介紹河井繼之助、山本五十六等長岡先賢資料的博物館。是一座珍藏並公開具有歷史價值藏品、位於市中心的小小學問之藏。" }
+      "name": {
+        "en": "Nyozekura Museum",
+        "zh_hans": "如是藏博物馆",
+        "zh_hant": "如是藏博物館"
+      },
+      "title": {
+        "en": "Nyozekura Museum",
+        "zh_hans": "如是藏博物馆",
+        "zh_hant": "如是藏博物館"
+      },
+      "era": {
+        "en": "Linked to industrialist Kyohachiro Nomoto",
+        "zh_hans": "与实业家野本恭八郎有渊源",
+        "zh_hant": "與實業家野本恭八郎有淵源"
+      },
+      "category": {
+        "en": "History / Archive",
+        "zh_hans": "历史·资料馆",
+        "zh_hant": "歷史·資料館"
+      },
+      "blurb": {
+        "en": "A museum centered on materials related to Kyohachiro Nomoto, the industrialist who donated the 'Goson Bunko' that became the forerunner of Nagaoka's municipal library. It also introduces materials on Nagaoka's forebears such as Tsuginosuke Kawai and Isoroku Yamamoto—a small storehouse of learning downtown that carefully preserves and shares its historically valuable collection.",
+        "zh_hans": "以捐赠了长冈市立图书馆前身「互尊文库」的实业家野本恭八郎相关资料为中心，同时介绍河井继之助、山本五十六等长冈先贤资料的博物馆。是一座珍藏并公开具有历史价值藏品、位于市中心的小小学问之藏。",
+        "zh_hant": "以捐贈了長岡市立圖書館前身「互尊文庫」的實業家野本恭八郎相關資料為中心，同時介紹河井繼之助、山本五十六等長岡先賢資料的博物館。是一座珍藏並公開具有歷史價值藏品、位於市中心的小小學問之藏。"
+      }
     },
     "honmaru": {
-      "name":     { "en": "Nagaoka Castle Honmaru Site", "zh_hans": "长冈城本丸迹", "zh_hant": "長岡城本丸跡" },
-      "title":    { "en": "Nagaoka Castle Honmaru Site", "zh_hans": "长冈城本丸迹", "zh_hant": "長岡城本丸跡" },
-      "era":      { "en": "Edo–Meiji (seat of the Nagaoka domain)", "zh_hans": "江户～明治（长冈藩居城）", "zh_hant": "江戶～明治（長岡藩居城）" },
-      "category": { "en": "Castle Ruins / Historic Site", "zh_hans": "城迹·史迹", "zh_hant": "城跡·史跡" },
-      "blurb":    { "en": "The site of the honmaru (main enclosure) of Nagaoka Castle, seat of the Nagaoka domain ruled by the Makino family in the Edo period. A flatland castle with no keep, it used a roughly 23m three-story turret instead, but it burned down and was abandoned in the Boshin War of 1868. The remains were lost entirely when JR Nagaoka Station was built with the 1898 railway opening; today a monument marking the castle site stands before the station.", "zh_hans": "江户时代，牧野家治理的长冈藩居城·长冈城本丸的所在地。这座平城不设天守，以高约23米的三层橹（御三阶）代替，但在庆应4年（1868年）的北越戊辰战争中烧毁而废城。明治31年铁路开通建设JR长冈站后遗构完全消失，如今站前立有传述城址的石碑。", "zh_hant": "江戶時代，牧野家治理的長岡藩居城·長岡城本丸的所在地。這座平城不設天守，以高約23公尺的三層櫓（御三階）代替，但在慶應4年（1868年）的北越戊辰戰爭中燒毀而廢城。明治31年鐵路開通建設JR長岡站後遺構完全消失，如今站前立有傳述城址的石碑。" }
+      "name": {
+        "en": "Nagaoka Castle Honmaru Site",
+        "zh_hans": "长冈城本丸迹",
+        "zh_hant": "長岡城本丸跡"
+      },
+      "title": {
+        "en": "Nagaoka Castle Honmaru Site",
+        "zh_hans": "长冈城本丸迹",
+        "zh_hant": "長岡城本丸跡"
+      },
+      "era": {
+        "en": "Edo–Meiji (seat of the Nagaoka domain)",
+        "zh_hans": "江户～明治（长冈藩居城）",
+        "zh_hant": "江戶～明治（長岡藩居城）"
+      },
+      "category": {
+        "en": "Castle Ruins / Historic Site",
+        "zh_hans": "城迹·史迹",
+        "zh_hant": "城跡·史跡"
+      },
+      "blurb": {
+        "en": "The site of the honmaru (main enclosure) of Nagaoka Castle, seat of the Nagaoka domain ruled by the Makino family in the Edo period. A flatland castle with no keep, it used a roughly 23m three-story turret instead, but it burned down and was abandoned in the Boshin War of 1868. The remains were lost entirely when JR Nagaoka Station was built with the 1898 railway opening; today a monument marking the castle site stands before the station.",
+        "zh_hans": "江户时代，牧野家治理的长冈藩居城·长冈城本丸的所在地。这座平城不设天守，以高约23米的三层橹（御三阶）代替，但在庆应4年（1868年）的北越戊辰战争中烧毁而废城。明治31年铁路开通建设JR长冈站后遗构完全消失，如今站前立有传述城址的石碑。",
+        "zh_hant": "江戶時代，牧野家治理的長岡藩居城·長岡城本丸的所在地。這座平城不設天守，以高約23公尺的三層櫓（御三階）代替，但在慶應4年（1868年）的北越戊辰戰爭中燒毀而廢城。明治31年鐵路開通建設JR長岡站後遺構完全消失，如今站前立有傳述城址的石碑。"
+      }
     },
     "yukyuzan": {
-      "name":     { "en": "Yukyuzan Park (Local History Museum)", "zh_hans": "悠久山公园（乡土史料馆）", "zh_hant": "悠久山公園（鄉土史料館）" },
-      "title":    { "en": "Nagaoka Local History Museum (Yukyuzan Park)", "zh_hans": "长冈市乡土史料馆（悠久山公园）", "zh_hant": "長岡市鄉土史料館（悠久山公園）" },
-      "era":      { "en": "Commemorating the 60th year of city status", "zh_hans": "市制60周年纪念", "zh_hant": "市制60週年紀念" },
-      "category": { "en": "Park / Historic Site", "zh_hans": "公园·史迹", "zh_hant": "公園·史跡" },
-      "blurb":    { "en": "Yukyuzan Park, adorned with about 2,500 cherry trees and chosen among Japan's 100 best cherry-blossom sites. The keep-style building erected on the hill for the city's 60th anniversary is the Nagaoka Local History Museum, which introduces the achievements of 38 local forebears such as Tsuginosuke Kawai and Isoroku Yamamoto, and also displays folk materials conveying life in heavy-snow country.", "zh_hans": "约2500株樱花点缀、入选「日本樱花名所100选」的悠久山公园。作为市制60周年纪念事业在高地上建造的天守阁式建筑即长冈市乡土史料馆，介绍河井继之助、山本五十六等38位乡土先贤的业绩，还展出传述豪雪地带生活的民俗资料。", "zh_hant": "約2500株櫻花點綴、入選「日本櫻花名所100選」的悠久山公園。作為市制60週年紀念事業在高地上建造的天守閣式建築即長岡市鄉土史料館，介紹河井繼之助、山本五十六等38位鄉土先賢的業績，還展出傳述豪雪地帶生活的民俗資料。" }
+      "name": {
+        "en": "Yukyuzan Park (Local History Museum)",
+        "zh_hans": "悠久山公园（乡土史料馆）",
+        "zh_hant": "悠久山公園（鄉土史料館）"
+      },
+      "title": {
+        "en": "Nagaoka Local History Museum (Yukyuzan Park)",
+        "zh_hans": "长冈市乡土史料馆（悠久山公园）",
+        "zh_hant": "長岡市鄉土史料館（悠久山公園）"
+      },
+      "era": {
+        "en": "Commemorating the 60th year of city status",
+        "zh_hans": "市制60周年纪念",
+        "zh_hant": "市制60週年紀念"
+      },
+      "category": {
+        "en": "Park / Historic Site",
+        "zh_hans": "公园·史迹",
+        "zh_hant": "公園·史跡"
+      },
+      "blurb": {
+        "en": "Yukyuzan Park, adorned with about 2,500 cherry trees and chosen among Japan's 100 best cherry-blossom sites. The keep-style building erected on the hill for the city's 60th anniversary is the Nagaoka Local History Museum, which introduces the achievements of 38 local forebears such as Tsuginosuke Kawai and Isoroku Yamamoto, and also displays folk materials conveying life in heavy-snow country.",
+        "zh_hans": "约2500株樱花点缀、入选「日本樱花名所100选」的悠久山公园。作为市制60周年纪念事业在高地上建造的天守阁式建筑即长冈市乡土史料馆，介绍河井继之助、山本五十六等38位乡土先贤的业绩，还展出传述豪雪地带生活的民俗资料。",
+        "zh_hant": "約2500株櫻花點綴、入選「日本櫻花名所100選」的悠久山公園。作為市制60週年紀念事業在高地上建造的天守閣式建築即長岡市鄉土史料館，介紹河井繼之助、山本五十六等38位鄉土先賢的業績，還展出傳述豪雪地帶生活的民俗資料。"
+      }
     },
     "sakanoue": {
-      "name":     { "en": "Sakanoue Elementary School", "zh_hans": "阪之上小学校", "zh_hant": "阪之上小學校" },
-      "title":    { "en": "Sakanoue Elementary School (birthplace of 'Kome Hyappyo')", "zh_hans": "阪之上小学校（米百俵渊源之地）", "zh_hant": "阪之上小學校（米百俵淵源之地）" },
-      "era":      { "en": "Founded 1874 / Kome Hyappyo 1870", "zh_hans": "创立1874年／米百俵为明治3年(1870)", "zh_hant": "創立1874年／米百俵為明治3年(1870)" },
-      "category": { "en": "Great Figure / Historic Site", "zh_hans": "伟人·史迹", "zh_hant": "偉人·史跡" },
-      "blurb":    { "en": "One hundred bales of rice were sent as relief from the Mineyama branch domain to the Nagaoka domain, scorched by the Boshin War. Rather than dole them out to the impoverished samurai, chief administrator Torasaburo Kobayashi insisted on selling them and using the proceeds to found the 'Kokkan Gakko' school to nurture talent. Sakanoue Elementary, standing at the site tied to this famed 'Spirit of the Hundred Bales,' houses a heritage hall.", "zh_hans": "戊辰战争中化为焦土的长冈藩，收到支藩三根山藩慰问送来的百俵米。大参事小林虎三郎主张不将其分给困窘的藩士，而是卖掉、以其款项开设培养人才的学校「国汉学校」。建于这一以「米百俵精神」闻名逸话渊源之地的阪之上小学校，设有传统馆。", "zh_hant": "戊辰戰爭中化為焦土的長岡藩，收到支藩三根山藩慰問送來的百俵米。大參事小林虎三郎主張不將其分給困窘的藩士，而是賣掉、以其款項開設培養人才的學校「國漢學校」。建於這一以「米百俵精神」聞名逸話淵源之地的阪之上小學校，設有傳統館。" }
+      "name": {
+        "en": "Sakanoue Elementary School",
+        "zh_hans": "阪之上小学校",
+        "zh_hant": "阪之上小學校"
+      },
+      "title": {
+        "en": "Sakanoue Elementary School (birthplace of 'Kome Hyappyo')",
+        "zh_hans": "阪之上小学校（米百俵渊源之地）",
+        "zh_hant": "阪之上小學校（米百俵淵源之地）"
+      },
+      "era": {
+        "en": "Founded 1874 / Kome Hyappyo 1870",
+        "zh_hans": "创立1874年／米百俵为明治3年(1870)",
+        "zh_hant": "創立1874年／米百俵為明治3年(1870)"
+      },
+      "category": {
+        "en": "Great Figure / Historic Site",
+        "zh_hans": "伟人·史迹",
+        "zh_hant": "偉人·史跡"
+      },
+      "blurb": {
+        "en": "One hundred bales of rice were sent as relief from the Mineyama branch domain to the Nagaoka domain, scorched by the Boshin War. Rather than dole them out to the impoverished samurai, chief administrator Torasaburo Kobayashi insisted on selling them and using the proceeds to found the 'Kokkan Gakko' school to nurture talent. Sakanoue Elementary, standing at the site tied to this famed 'Spirit of the Hundred Bales,' houses a heritage hall.",
+        "zh_hans": "戊辰战争中化为焦土的长冈藩，收到支藩三根山藩慰问送来的百俵米。大参事小林虎三郎主张不将其分给困窘的藩士，而是卖掉、以其款项开设培养人才的学校「国汉学校」。建于这一以「米百俵精神」闻名逸话渊源之地的阪之上小学校，设有传统馆。",
+        "zh_hant": "戊辰戰爭中化為焦土的長岡藩，收到支藩三根山藩慰問送來的百俵米。大參事小林虎三郎主張不將其分給困窘的藩士，而是賣掉、以其款項開設培養人才的學校「國漢學校」。建於這一以「米百俵精神」聞名逸話淵源之地的阪之上小學校，設有傳統館。"
+      }
+    },
+    "kina_saffron": {
+      "name": {
+        "en": "Kina Saffron Sake Brewery (Kote-e Storehouses)",
+        "zh_hans": "机那藏红花酒本铺（镘绘之藏）",
+        "zh_hant": "機那藏紅花酒本鋪（鏝繪之藏）"
+      },
+      "title": {
+        "en": "Kina Saffron Sake Brewery",
+        "zh_hans": "机那藏红花酒本铺",
+        "zh_hant": "機那藏紅花酒本鋪"
+      },
+      "era": {
+        "en": "From the Meiji era",
+        "zh_hans": "明治时期起",
+        "zh_hant": "明治時期起"
+      },
+      "category": {
+        "en": "Brewing / Cultural Property",
+        "zh_hans": "酿造·文化财",
+        "zh_hant": "釀造·文化財"
+      },
+      "blurb": {
+        "en": "A historic site of earthen storehouses built by founder Jintaro Yoshizawa, who made his fortune from the medicinal 'Kina Saffron Sake' and poured that wealth into these buildings. Adorned with vividly colored kote-e (plaster relief art) by the plasterer Ikichi Kawakami, the storehouse is praised as 'Japan's finest kote-e' and is a registered national tangible cultural property.",
+        "zh_hans": "创业者吉泽仁太郎以药用酒「机那藏红花酒」致富，倾注其财富建造的土藏群史迹。由泥瓦匠河上伊吉打造、以极彩色镘绘（灰泥浮雕）装饰的藏被誉为「日本第一镘绘」，被指定为国家登录有形文化财。",
+        "zh_hant": "創業者吉澤仁太郎以藥用酒「機那藏紅花酒」致富，傾注其財富建造的土藏群史跡。由泥瓦匠河上伊吉打造、以極彩色鏝繪（灰泥浮雕）裝飾的藏被譽為「日本第一鏝繪」，被指定為國家登錄有形文化財。"
+      }
+    },
+    "yoshinogawa": {
+      "name": {
+        "en": "Yoshinogawa Jozogura",
+        "zh_hans": "吉乃川 酿藏",
+        "zh_hant": "吉乃川 釀藏"
+      },
+      "title": {
+        "en": "Yoshinogawa Jozogura (Sake Museum)",
+        "zh_hans": "吉乃川 酿藏",
+        "zh_hant": "吉乃川 釀藏"
+      },
+      "era": {
+        "en": "Said to be founded in 1548",
+        "zh_hans": "相传创业于1548年",
+        "zh_hant": "相傳創業於1548年"
+      },
+      "category": {
+        "en": "Brewing / Cultural Property",
+        "zh_hans": "酿造·文化财",
+        "zh_hant": "釀造·文化財"
+      },
+      "blurb": {
+        "en": "The sake museum of Yoshinogawa, a long-established brewery said to date to 1548. Opened in 2019 in a renovated Taisho-era bottling house, 'Tsunegura' (a registered national tangible cultural property), it features a distinctive triangular truss ceiling and offers exhibits on the history of sake-making plus a sake bar.",
+        "zh_hans": "相传1548年（天文17年）创业的老字号酒藏·吉乃川的酒博物馆。改装大正时期建造的瓶装工厂「常仓」（国家登录有形文化财），于2019年开馆。以三角形组成的桁架结构天花板为特色，可享受了解酿酒历史的展览与SAKE酒吧。",
+        "zh_hant": "相傳1548年（天文17年）創業的老字號酒藏·吉乃川的酒博物館。改裝大正時期建造的瓶裝工廠「常倉」（國家登錄有形文化財），於2019年開館。以三角形組成的桁架結構天花板為特色，可享受了解釀酒歷史的展覽與SAKE酒吧。"
+      }
+    },
+    "koshimurasaki": {
+      "name": {
+        "en": "Koshi-no-Murasaki (Soy Sauce Brewery)",
+        "zh_hans": "越紫（酱油藏）",
+        "zh_hant": "越紫（醬油藏）"
+      },
+      "title": {
+        "en": "Koshi-no-Murasaki",
+        "zh_hans": "越紫",
+        "zh_hant": "越紫"
+      },
+      "era": {
+        "en": "Founded 1831",
+        "zh_hans": "创业1831年",
+        "zh_hant": "創業1831年"
+      },
+      "category": {
+        "en": "Brewing / Cultural Property",
+        "zh_hans": "酿造·文化财",
+        "zh_hant": "釀造·文化財"
+      },
+      "blurb": {
+        "en": "A long-established Settaya soy sauce brewery founded in 1831 (Tenpo 2), with over 190 years of history. Its signature 'Koshi-no-Murasaki' is a twice-brewed soy sauce blended with dashi from carefully selected bonito flakes, cherished as an essential flavor on Niigata tables. Its atmospheric buildings and brick chimney won the Nagaoka Cityscape Award.",
+        "zh_hans": "天保2年（1831年）创业、拥有190余年历史的摂田屋老字号酱油藏。招牌商品「越紫」是以精选鲣节取出的高汤调和的再仕込酱油，作为新潟餐桌不可或缺的味道而广受喜爱。别具韵味的社屋与红砖烟囱曾获长冈市都市景观奖。",
+        "zh_hant": "天保2年（1831年）創業、擁有190餘年歷史的攝田屋老字號醬油藏。招牌商品「越紫」是以精選鰹節取出的高湯調和的再仕込醬油，作為新潟餐桌不可或缺的味道而廣受喜愛。別具韻味的社屋與紅磚煙囪曾獲長岡市都市景觀獎。"
+      }
+    },
+    "hasegawa": {
+      "name": {
+        "en": "Hasegawa Sake Brewery",
+        "zh_hans": "长谷川酒造（酒藏）",
+        "zh_hant": "長谷川酒造（酒藏）"
+      },
+      "title": {
+        "en": "Hasegawa Sake Brewery",
+        "zh_hans": "长谷川酒造",
+        "zh_hant": "長谷川酒造"
+      },
+      "era": {
+        "en": "Founded 1842",
+        "zh_hans": "创业1842年",
+        "zh_hant": "創業1842年"
+      },
+      "category": {
+        "en": "Brewing / Cultural Property",
+        "zh_hans": "酿造·文化财",
+        "zh_hant": "釀造·文化財"
+      },
+      "blurb": {
+        "en": "A Settaya sake brewery founded in 1842 (Tenpo 13) under the trade name 'Shinshuya.' Committed to small-batch production in which the master brewer and workers craft nearly every step by hand, its flagship 'Echigo Yukikobai' was named after the composer Minoru Endo. Its main house (built 1886) and brewing storehouse (built 1919) are registered national tangible cultural properties.",
+        "zh_hans": "天保13年（1842年）创业、商号「信州屋」的摂田屋酒藏。坚持由杜氏与藏人几乎全程手工酿造的少量生产，代表品牌「越后雪红梅」以作曲家远藤实命名。明治19年建造的主屋与大正8年建造的酿造藏被指定为国家登录有形文化财。",
+        "zh_hant": "天保13年（1842年）創業、商號「信州屋」的攝田屋酒藏。堅持由杜氏與藏人幾乎全程手工釀造的少量生產，代表品牌「越後雪紅梅」以作曲家遠藤實命名。明治19年建造的主屋與大正8年建造的釀造藏被指定為國家登錄有形文化財。"
+      }
+    },
+    "momijien": {
+      "name": {
+        "en": "Momijien (Tomogaoka Villa)",
+        "zh_hans": "红叶园（巴丘山庄）",
+        "zh_hant": "紅葉園（巴丘山莊）"
+      },
+      "title": {
+        "en": "Momijien (Tomogaoka Villa)",
+        "zh_hans": "红叶园（巴丘山庄）",
+        "zh_hant": "紅葉園（巴丘山莊）"
+      },
+      "era": {
+        "en": "A Meiji-era autumn-foliage garden",
+        "zh_hans": "明治时期的红叶庭园",
+        "zh_hant": "明治時期的紅葉庭園"
+      },
+      "category": {
+        "en": "Garden / Autumn Leaves",
+        "zh_hans": "庭园·红叶",
+        "zh_hant": "庭園·紅葉"
+      },
+      "blurb": {
+        "en": "A garden created around 1896 (Meiji 29) as the villa garden of the landowning Takahashi family. Across about 4,000 sq m grow maples and mountain cherries 150–200 years old, and the autumn foliage light-up is enchanting. You can also relax at the storehouse cafe while gazing at the garden. A registered national tangible cultural property.",
+        "zh_hans": "明治29年（1896）左右，作为地主髙桥家别墅的庭园而建造。约4000平方米内生长着树龄150～200年的红叶与山樱，秋日红叶点灯梦幻迷人。还可在园内的藏咖啡厅一边眺望庭园一边小憩。国家登录有形文化财。",
+        "zh_hant": "明治29年（1896）左右，作為地主髙橋家別墅的庭園而建造。約4000平方公尺內生長著樹齡150～200年的紅葉與山櫻，秋日紅葉點燈夢幻迷人。還可在園內的藏咖啡廳一邊眺望庭園一邊小憩。國家登錄有形文化財。"
+      }
+    },
+    "asahi_shuzo": {
+      "name": {
+        "en": "Asahi Shuzo / Shuraku-no-Sato Asahiyama",
+        "zh_hans": "朝日酒造／酒乐之里朝日山",
+        "zh_hant": "朝日酒造／酒樂之里朝日山"
+      },
+      "title": {
+        "en": "Asahi Shuzo / Shuraku-no-Sato Asahiyama",
+        "zh_hans": "朝日酒造／酒乐之里朝日山",
+        "zh_hant": "朝日酒造／酒樂之里朝日山"
+      },
+      "era": {
+        "en": "Brewery of Kubota and Asahiyama",
+        "zh_hans": "久保田·朝日山的酒藏",
+        "zh_hant": "久保田·朝日山的酒藏"
+      },
+      "category": {
+        "en": "Sake Brewery",
+        "zh_hans": "酒藏",
+        "zh_hant": "酒藏"
+      },
+      "blurb": {
+        "en": "The Koshiji sake brewery known for 'Kubota' and 'Asahiyama.' On its grounds, 'Shuraku-no-Sato Asahiyama' offers a popular tasting bar where you can sample a wide variety of sake, plus the restaurant 'Asahiyama Keian.' A renowned brewery of Koshiji that also helped develop Momijien garden.",
+        "zh_hans": "以「久保田」「朝日山」闻名的越路造酒屋。厂区内的「酒乐之里朝日山」设有可品尝多样酒品的试饮吧，颇受欢迎，还有餐处「朝日山萤庵」。也协助整备红叶园，是越路的名酒之乡。",
+        "zh_hant": "以「久保田」「朝日山」聞名的越路造酒屋。廠區內的「酒樂之里朝日山」設有可品嘗多樣酒品的試飲吧，頗受歡迎，還有餐處「朝日山螢庵」。也協助整備紅葉園，是越路的名酒之鄉。"
+      }
+    },
+    "shoraikaku": {
+      "name": {
+        "en": "Shoraikaku",
+        "zh_hans": "松籁阁",
+        "zh_hant": "松籟閣"
+      },
+      "title": {
+        "en": "Shoraikaku",
+        "zh_hans": "松籁阁",
+        "zh_hant": "松籟閣"
+      },
+      "era": {
+        "en": "Residence of Asahi Shuzo's founding family",
+        "zh_hans": "朝日酒造创业家的宅邸",
+        "zh_hant": "朝日酒造創業家的宅邸"
+      },
+      "category": {
+        "en": "Modern Japanese-style Architecture",
+        "zh_hans": "近代和风建筑",
+        "zh_hant": "近代和風建築"
+      },
+      "blurb": {
+        "en": "A residence built in the early Showa era by the founding family of Asahi Shuzo. A sukiya-style modern Japanese building surrounded by a pine grove ('shorai'), its highlights are the fine timbers and refined designs gathered from around the country. Preserved and open to the public as a registered national tangible cultural property.",
+        "zh_hans": "朝日酒造创业家于昭和初期建造的宅邸。是被松林（松籁）环绕的数寄屋风近代和风建筑，各地名木与精心雕琢的意匠为看点。作为登录有形文化财保存并公开。",
+        "zh_hant": "朝日酒造創業家於昭和初期建造的宅邸。是被松林（松籟）環繞的數寄屋風近代和風建築，各地名木與精心雕琢的意匠為看點。作為登錄有形文化財保存並公開。"
+      }
+    },
+    "koryu": {
+      "name": {
+        "en": "Koryu Shrine",
+        "zh_hans": "高龙神社",
+        "zh_hant": "高龍神社"
+      },
+      "title": {
+        "en": "Koryu Shrine",
+        "zh_hans": "高龙神社",
+        "zh_hant": "高龍神社"
+      },
+      "era": {
+        "en": "Said to be founded in the Nanboku-cho period",
+        "zh_hans": "相传创建于南北朝时代",
+        "zh_hant": "相傳創建於南北朝時代"
+      },
+      "category": {
+        "en": "Shrine / Faith",
+        "zh_hans": "神社·信仰",
+        "zh_hant": "神社·信仰"
+      },
+      "blurb": {
+        "en": "A deity of prosperous business enshrined on a mountainside deep beyond Yomogihira Onsen. It is said to have begun when an incarnation of a white serpent that saved a warrior who fell ill here was enshrined in the Nanboku-cho period. Many business owners and merchants visit from across Japan. You can reach the hall by a long stone stairway or by elevator, and it is also known for the unique custom of offering raw eggs.",
+        "zh_hans": "位于蓬平温泉深处、山腰上的商业繁盛之神。相传南北朝时代，将在此地病倒的武将救助的白蛇化身供奉于此为起源，全国众多经营者与生意人前来参拜。除长长的石阶外，也可乘电梯登上社殿，还以供奉生鸡蛋的独特信仰而闻名。",
+        "zh_hant": "位於蓬平溫泉深處、山腰上的商業繁盛之神。相傳南北朝時代，將在此地病倒的武將救助的白蛇化身供奉於此為起源，全國眾多經營者與生意人前來參拜。除長長的石階外，也可乘電梯登上社殿，還以供奉生雞蛋的獨特信仰而聞名。"
+      }
+    },
+    "yomogihira_onsen": {
+      "name": {
+        "en": "Yomogihira Onsen",
+        "zh_hans": "蓬平温泉",
+        "zh_hant": "蓬平溫泉"
+      },
+      "title": {
+        "en": "Yomogihira Onsen",
+        "zh_hans": "蓬平温泉",
+        "zh_hant": "蓬平溫泉"
+      },
+      "era": {
+        "en": "Nagaoka's 'hidden parlor'",
+        "zh_hans": "长冈的奥座敷",
+        "zh_hant": "長岡的奧座敷"
+      },
+      "category": {
+        "en": "Hot Spring",
+        "zh_hans": "温泉",
+        "zh_hant": "溫泉"
+      },
+      "blurb": {
+        "en": "A hot-spring town in the mountains known as 'Nagaoka's hidden parlor.' Its silky simple sulfur spring is gentle on the skin, leaving it smooth after bathing. At the foot of the business-prosperity Koryu Shrine, a few inns rooted in dragon-god legend convey a quaint, rustic charm.",
+        "zh_hans": "被称为「长冈奥座敷」的山间温泉地。带黏滑感的单纯硫磺泉肤触佳，浴后肌肤滑嫩。位于商业繁盛的高龙神社脚下，以龙神传说为起源的数间旅馆传递着质朴的情趣。",
+        "zh_hant": "被稱為「長岡奧座敷」的山間溫泉地。帶黏滑感的單純硫磺泉膚觸佳，浴後肌膚滑嫩。位於商業繁盛的高龍神社腳下，以龍神傳說為起源的數間旅館傳遞著質樸的情趣。"
+      }
+    },
+    "koryu_okumiya": {
+      "name": {
+        "en": "Koryu Shrine Okumiya (Inner Shrine)",
+        "zh_hans": "高龙神社 奥宫",
+        "zh_hant": "高龍神社 奧宮"
+      },
+      "title": {
+        "en": "Koryu Shrine Okumiya",
+        "zh_hans": "高龙神社 奥宫",
+        "zh_hant": "高龍神社 奧宮"
+      },
+      "era": {
+        "en": "Inner shrine, a power spot for wealth luck",
+        "zh_hans": "金运能量景点的奥宫",
+        "zh_hant": "金運能量景點的奧宮"
+      },
+      "category": {
+        "en": "Shrine / Temple",
+        "zh_hans": "寺社",
+        "zh_hant": "寺社"
+      },
+      "blurb": {
+        "en": "Koryu Shrine draws a constant stream of worshippers from across Japan as a power spot for business prosperity and wealth luck. Its inner shrine sits quietly even higher up the mountain, at the end of a narrow, steep path from the main hall. It is said that meeting a white serpent along the way is a sign of good fortune—a sacred inner sanctuary where the dragon god's presence lingers.",
+        "zh_hans": "作为商业繁盛、金运的能量景点，全国参拜者络绎不绝的高龙神社。其奥宫从本殿再向山上、沿狭窄险峻的山路登至尽头处静静镇座。相传途中若能遇见白蛇便是幸运之证，是龙神气息萦绕的奥之圣地。",
+        "zh_hant": "作為商業繁盛、金運的能量景點，全國參拜者絡繹不絕的高龍神社。其奧宮從本殿再向山上、沿狹窄險峻的山路登至盡頭處靜靜鎮座。相傳途中若能遇見白蛇便是幸運之證，是龍神氣息縈繞的奧之聖地。"
+      }
+    },
+    "kinpu": {
+      "name": {
+        "en": "Kinpu Shrine",
+        "zh_hans": "金峯神社",
+        "zh_hant": "金峯神社"
+      },
+      "title": {
+        "en": "Kinpu Shrine",
+        "zh_hans": "金峯神社",
+        "zh_hant": "金峯神社"
+      },
+      "era": {
+        "en": "Founded 709 / Zaodo Castle site tied to Lord Makino",
+        "zh_hans": "创建于709年／与牧野殿有渊源的藏王堂城迹",
+        "zh_hant": "創建於709年／與牧野殿有淵源的藏王堂城跡"
+      },
+      "category": {
+        "en": "Shrine / Castle Ruins",
+        "zh_hans": "神社·城迹",
+        "zh_hant": "神社·城跡"
+      },
+      "blurb": {
+        "en": "An ancient shrine standing in a grove of great zelkova trees by the Shinano River. Said to have been founded in 709 by inviting the Zao Gongen deity from Yoshino in Yamato, it was called 'Zao Gongen' until the Meiji era and revered as the guardian shrine of the Chuetsu region. The hall stands on the ninomaru site of the medieval flatland 'Zaodo Castle.' Tadanari Makino, first lord of the Nagaoka domain, is said to have entered Zaodo Castle before building Nagaoka Castle. Earthworks and moat traces still remain, quietly telling the story of where Lord Makino's rule of Nagaoka began.",
+        "zh_hans": "信浓川畔、榉树大木葱郁的杜中镇座的古社。相传和铜2年（709）迎请大和国吉野的藏王权现创建，至明治时期一直被称为「藏王权现」，作为中越总镇守受人崇敬。此社殿所在处即中世平城「藏王堂城」的二之丸迹。相传长冈藩初代·牧野忠成在筑长冈城之前，先入此藏王堂城。如今境内仍留有土垒与堀迹，静静诉说着牧野殿治理长冈之物语的起点。",
+        "zh_hant": "信濃川畔、櫸樹大木蔥鬱的杜中鎮座的古社。相傳和銅2年（709）迎請大和國吉野的藏王權現創建，至明治時期一直被稱為「藏王權現」，作為中越總鎮守受人崇敬。此社殿所在處即中世平城「藏王堂城」的二之丸跡。相傳長岡藩初代·牧野忠成在築長岡城之前，先入此藏王堂城。如今境內仍留有土壘與堀跡，靜靜訴說著牧野殿治理長岡之物語的起點。"
+      }
+    },
+    "okeyaki": {
+      "name": {
+        "en": "Great Zelkova of Zao",
+        "zh_hans": "藏王大榉树",
+        "zh_hant": "藏王大櫸樹"
+      },
+      "title": {
+        "en": "Great Zelkova of Zao",
+        "zh_hans": "藏王大榉树",
+        "zh_hant": "藏王大櫸樹"
+      },
+      "era": {
+        "en": "Sacred tree of Kinpu Shrine / zelkova grove",
+        "zh_hans": "金峯神社的御神木／榉树之杜",
+        "zh_hant": "金峯神社的御神木／櫸樹之杜"
+      },
+      "category": {
+        "en": "Sacred Tree / Giant Tree",
+        "zh_hans": "御神木·巨木",
+        "zh_hant": "御神木·巨木"
+      },
+      "blurb": {
+        "en": "The sacred great zelkova towering in the zelkova grove by the Shinano River on the grounds of Kinpu Shrine. A shimenawa rope is tied around its thick trunk, and its form spreading branches in all directions has quietly watched over the ancient shrine's long history. In summer it casts a cool shade to welcome worshippers—one of the symbols of 'Zao-sama.'",
+        "zh_hans": "金峯神社境内、信浓川畔榉树之杜中耸立的御神木大榉树。粗壮的树干上系着注连绳，向四方大大伸展枝条的姿态，静静守望着古社悠长的历史。夏日投下清凉的树荫迎接参拜者，是「藏王大人」的象征之一。",
+        "zh_hant": "金峯神社境內、信濃川畔櫸樹之杜中聳立的御神木大櫸樹。粗壯的樹幹上繫著注連繩，向四方大大伸展枝條的姿態，靜靜守望著古社悠長的歷史。夏日投下清涼的樹蔭迎接參拜者，是「藏王大人」的象徵之一。"
+      }
+    },
+    "zaodo": {
+      "name": {
+        "en": "Zaodo Castle Site",
+        "zh_hans": "藏王堂城迹",
+        "zh_hant": "藏王堂城跡"
+      },
+      "title": {
+        "en": "Zaodo Castle Site",
+        "zh_hans": "藏王堂城迹",
+        "zh_hant": "藏王堂城跡"
+      },
+      "era": {
+        "en": "Medieval flatland castle / tied to Tadanari Makino",
+        "zh_hans": "中世平城迹／与牧野忠成有渊源",
+        "zh_hant": "中世平城跡／與牧野忠成有淵源"
+      },
+      "category": {
+        "en": "Castle Ruins / Historic Site",
+        "zh_hans": "城迹·史迹",
+        "zh_hant": "城跡·史跡"
+      },
+      "blurb": {
+        "en": "The site of the medieval flatland 'Zaodo Castle.' In the Nanboku-cho period the Koshi-Nagao clan held it as a key point of the Chuetsu region, and in the Keicho era Tadanari Makino, first lord of Nagaoka, is said to have entered this castle before building Nagaoka Castle. Abandoned when Nagaoka Castle was built in 1618, it still retains earthworks and moat traces around the honmaru and ninomaru, and is designated a Nagaoka cultural property. The place where the story of Lord Makino's rule of Nagaoka began.",
+        "zh_hans": "中世所筑平城「藏王堂城」的遗迹。南北朝时期古志长尾氏据此为中越要冲，庆长年间相传长冈藩初代·牧野忠成在筑长冈城之前先入此城。1618年长冈城筑城的同时废城，如今仍以本丸、二之丸为中心留有土垒与堀迹，被指定为长冈市文化财。牧野殿治理长冈之物语开始的地方。",
+        "zh_hant": "中世所築平城「藏王堂城」的遺跡。南北朝時期古志長尾氏據此為中越要衝，慶長年間相傳長岡藩初代·牧野忠成在築長岡城之前先入此城。1618年長岡城築城的同時廢城，如今仍以本丸、二之丸為中心留有土壘與堀跡，被指定為長岡市文化財。牧野殿治理長岡之物語開始的地方。"
+      }
     }
   }
 }
