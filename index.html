@@ -1583,7 +1583,7 @@
   <div id="gacha-modal">
     <div class="gacha-modal-card">
       <button class="shop-modal-close" id="gacha-close" aria-label="とじる">×</button>
-      <div class="gacha-title">🎰 ここでガチャ</div>
+      <div class="gacha-title" data-i18n="gacha_title_here">🎰 ここでガチャ</div>
       <div class="gacha-spot" id="gacha-spot-name"></div>
       <div class="gacha-stage" id="gacha-stage">
         <img class="g-dome-fill" src="assets/gacha_dome.png" alt="" aria-hidden="true">
@@ -1592,8 +1592,8 @@
         <img class="g-capsule" id="g-capsule" src="assets/gacha_capsule.png" alt="">
         <div class="g-prize" id="g-prize"></div>
       </div>
-      <div class="gacha-result" id="gacha-result">ボタンを押して回そう！</div>
-      <button class="gacha-spin-btn" id="gacha-spin-btn">回す</button>
+      <div class="gacha-result" id="gacha-result" data-i18n="gacha_result_default">ボタンを押して回そう！</div>
+      <button class="gacha-spin-btn" id="gacha-spin-btn" data-i18n="gacha_spin">回す</button>
       <div class="gacha-note" id="gacha-note"></div>
     </div>
   </div>
@@ -2336,7 +2336,53 @@
     nearest_loading:{ja:"現在地を取得中…",en:"Getting location…",zh_hans:"正在获取位置…",zh_hant:"正在取得位置…"},
     badge_found:{ja:"発見済",en:"Found",zh_hans:"已发现",zh_hant:"已發現"},
     badge_unfound:{ja:"未発見",en:"Not found",zh_hans:"未发现",zh_hant:"未發現"},
-    discover_title:{ja:"発見！",en:"Discovered!",zh_hans:"发现了！",zh_hant:"發現了！"}
+    discover_title:{ja:"発見！",en:"Discovered!",zh_hans:"发现了！",zh_hant:"發現了！"},
+    // --- Phase1b: 動的文字列（発見/最寄り/ガチャ） ---
+    chest_found:{ja:"宝箱を見つけた！",en:"You found a treasure chest!",zh_hans:"发现了宝箱！",zh_hant:"發現了寶箱！"},
+    chest_tap:{ja:"タップして開けよう",en:"Tap to open it",zh_hans:"点击打开",zh_hant:"點擊打開"},
+    discover_revisit:{ja:"再訪の証",en:"Return Visit",zh_hans:"再访之证",zh_hant:"再訪之證"},
+    replay_title:{ja:"お宝再鑑賞",en:"View Treasure Again",zh_hans:"再次欣赏宝物",zh_hant:"再次欣賞寶物"},
+    replay_sub:{ja:"{title} を再び開いた！",en:"Opened {title} again!",zh_hans:"再次打开了 {title}！",zh_hant:"再次打開了 {title}！"},
+    first_sub:{ja:"{title} を図鑑に登録した！",en:"Added {title} to your collection!",zh_hans:"已将 {title} 收入图鉴！",zh_hant:"已將 {title} 收入圖鑑！"},
+    revisit_sub:{ja:"{name} にまた来た！",en:"You came back to {name}!",zh_hans:"又来到了 {name}！",zh_hant:"又來到了 {name}！"},
+    pill_double:{ja:"ダブルコイン発動！",en:"Double Coins!",zh_hans:"双倍金币！",zh_hant:"雙倍金幣！"},
+    pill_daily:{ja:"デイリー +{n}",en:"Daily +{n}",zh_hans:"每日 +{n}",zh_hant:"每日 +{n}"},
+    pill_streak:{ja:"ストリーク{d}日 +{n}",en:"Streak {d}d +{n}",zh_hans:"连续{d}天 +{n}",zh_hant:"連續{d}天 +{n}"},
+    serial_you:{ja:"🏅 あなたは <b>{n}</b> 番目の発見者！",en:"🏅 You are discoverer No. <b>{n}</b>!",zh_hans:"🏅 你是第 <b>{n}</b> 位发现者！",zh_hant:"🏅 你是第 <b>{n}</b> 位發現者！"},
+    serial_pending:{ja:"🏅 発見順を採番中…",en:"🏅 Assigning your discovery number…",zh_hans:"🏅 正在编号发现顺序…",zh_hant:"🏅 正在編號發現順序…"},
+    geo_off_name:{ja:"位置情報がオフです",en:"Location is off",zh_hans:"定位已关闭",zh_hant:"定位已關閉"},
+    geo_fail_name:{ja:"現在地を取得できません",en:"Can't get your location",zh_hans:"无法获取位置",zh_hant:"無法取得位置"},
+    geo_off_sub:{ja:"端末の設定で位置情報を許可してね",en:"Allow location in your device settings",zh_hans:"请在设备设置中允许定位",zh_hant:"請在裝置設定中允許定位"},
+    geo_fail_sub:{ja:"屋外や電波の良い場所で再度お試しを",en:"Try again outdoors or with better signal",zh_hans:"请到户外或信号好的地方再试",zh_hant:"請到戶外或訊號好的地方再試"},
+    nearest_novirtual:{ja:"仮想現在地が未設定です",en:"No virtual location set",zh_hans:"未设置虚拟位置",zh_hant:"未設定虛擬位置"},
+    nearest_loading_sub:{ja:"位置情報を許可すると探検を始められます",en:"Allow location to start exploring",zh_hans:"允许定位即可开始探险",zh_hant:"允許定位即可開始探險"},
+    nearest_novirtual_sub:{ja:"設定画面からテレポートしてみよう",en:"Teleport from the Settings screen",zh_hans:"从设置页面传送试试吧",zh_hant:"從設定頁面傳送試試吧"},
+    unfound_spot:{ja:"？？？（未発見スポット）",en:"??? (Undiscovered spot)",zh_hans:"？？？（未发现地点）",zh_hant:"？？？（未發現地點）"},
+    dist_ahead:{ja:"{d} 先",en:"{d} away",zh_hans:"{d} 处",zh_hant:"{d} 處"},
+    bucket_compass:{ja:"{b}・方角はコンパスを頼りに",en:"{b} · use the compass for direction",zh_hans:"{b}·方向请靠指南针",zh_hant:"{b}·方向請靠指南針"},
+    badge_found2:{ja:"発見済み",en:"Found",zh_hans:"已发现",zh_hant:"已發現"},
+    bucket_100:{ja:"100m以内",en:"Within 100m",zh_hans:"100m以内",zh_hant:"100m以內"},
+    bucket_300:{ja:"300m以内",en:"Within 300m",zh_hans:"300m以内",zh_hant:"300m以內"},
+    bucket_800:{ja:"800m以内",en:"Within 800m",zh_hans:"800m以内",zh_hant:"800m以內"},
+    bucket_2k:{ja:"2km以内",en:"Within 2km",zh_hans:"2km以内",zh_hant:"2km以內"},
+    bucket_over:{ja:"2km以上",en:"Over 2km",zh_hans:"2km以上",zh_hant:"2km以上"},
+    home_gacha_here:{ja:"🎰 ここでガチャを回す",en:"🎰 Spin the gacha here",zh_hans:"🎰 在这里抽扭蛋",zh_hant:"🎰 在這裡抽扭蛋"},
+    gacha_title_here:{ja:"🎰 ここでガチャ",en:"🎰 Gacha Here",zh_hans:"🎰 在这里扭蛋",zh_hant:"🎰 在這裡扭蛋"},
+    gacha_result_default:{ja:"ボタンを押して回そう！",en:"Press the button to spin!",zh_hans:"按下按钮开始抽！",zh_hant:"按下按鈕開始抽！"},
+    gacha_intro:{ja:"回すとカプセルが出てくるよ！",en:"Spin to get a capsule!",zh_hans:"抽一下就会出扭蛋！",zh_hant:"抽一下就會出扭蛋！"},
+    gacha_spin:{ja:"回す",en:"Spin",zh_hans:"抽",zh_hant:"抽"},
+    gacha_spinning:{ja:"回転中…",en:"Spinning…",zh_hans:"抽取中…",zh_hant:"抽取中…"},
+    gacha_free_spin:{ja:"無料で回す！（残り {n}回）",en:"Spin free! ({n} left)",zh_hans:"免费抽！（剩 {n} 次）",zh_hant:"免費抽！（剩 {n} 次）"},
+    gacha_free_note:{ja:"スポットを訪れると無料ガチャがたまります",en:"Visit spots to earn free spins",zh_hans:"到访地点可累积免费扭蛋",zh_hant:"到訪地點可累積免費扭蛋"},
+    gacha_cost_spin:{ja:"{n}コインで回す",en:"Spin for {n} coins",zh_hans:"{n} 金币抽一次",zh_hant:"{n} 金幣抽一次"},
+    gacha_coin_note:{ja:"所持コイン：{n} ／ スポットを訪れると無料で回せます",en:"Coins: {n} / Visit spots to spin for free",zh_hans:"持有金币：{n} ／到访地点可免费抽",zh_hant:"持有金幣：{n} ／到訪地點可免費抽"},
+    gacha_spot_any:{ja:"いつでもガチャ",en:"Anytime Gacha",zh_hans:"随时扭蛋",zh_hant:"隨時扭蛋"},
+    gacha_jackpot:{ja:"大当たり！ ",en:"Jackpot! ",zh_hans:"大奖！ ",zh_hant:"大獎！ "},
+    gacha_new_omi:{ja:"🎁 新しいおみやげ！",en:"🎁 New souvenir!",zh_hans:"🎁 新特产！",zh_hant:"🎁 新特產！"},
+    gacha_dup:{ja:"（×{n}になった！）",en:"(now ×{n}!)",zh_hans:"（变成×{n}了！）",zh_hant:"（變成×{n}了！）"},
+    gacha_no_coin:{ja:"コインが足りません（スポットを訪れると無料で回せます）",en:"Not enough coins (visit spots to spin free)",zh_hans:"金币不足（到访地点可免费抽）",zh_hant:"金幣不足（到訪地點可免費抽）"},
+    home_gacha_free:{ja:"🎰 ガチャを回す（無料 {n}回）",en:"🎰 Spin gacha ({n} free)",zh_hans:"🎰 抽扭蛋（免费 {n} 次）",zh_hant:"🎰 抽扭蛋（免費 {n} 次）"},
+    home_gacha_cost:{ja:"🎰 ガチャを回す（{n}コイン）",en:"🎰 Spin gacha ({n} coins)",zh_hans:"🎰 抽扭蛋（{n} 金币）",zh_hant:"🎰 抽扭蛋（{n} 金幣）"}
   };
   function i18nDetect(){
     try{ var q=new URLSearchParams(location.search).get("lang"); if(q && I18N.nav_home[q]) return q; }catch(e){}
@@ -2349,6 +2395,8 @@
   }
   var LANG = i18nDetect();
   function t(key){ var e=I18N[key]; if(!e) return key; return e[LANG]||e.ja||key; }
+  // 埋め込み変数付き翻訳：tf("dist_ahead",{d:"300m"}) → "300m 先"
+  function tf(key,map){ var s=t(key); if(map){ for(var k in map){ if(map.hasOwnProperty(k)){ s=s.split("{"+k+"}").join(map[k]); } } } return s; }
   function applyI18n(){
     var els=document.querySelectorAll("[data-i18n]");
     for(var i=0;i<els.length;i++){ els[i].textContent = t(els[i].getAttribute("data-i18n")); }
@@ -3188,7 +3236,7 @@
     var btn = document.getElementById("gacha-spin-btn");
     var note = document.getElementById("gacha-note");
     gachaSpinning = true;
-    btn.disabled = true; btn.textContent = "回転中…"; note.textContent = "";
+    btn.disabled = true; btn.textContent = t("gacha_spinning"); note.textContent = "";
     document.getElementById("gacha-result").innerHTML = "";
     prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
     cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
@@ -3215,7 +3263,7 @@
   function spinGacha(){
     if(gachaSpinning) return;   // 回転中は連打防止
     var free = gachaFreeAvailable();
-    if(!free && save.coins < GACHA_COST){ toast("コインが足りません（スポットを訪れると無料で回せます）"); return; }
+    if(!free && save.coins < GACHA_COST){ toast(t("gacha_no_coin")); return; }
     if(free){ save.gacha.freeSpins = Math.max(0, (save.gacha.freeSpins || 0) - 1); }
     else { save.coins -= GACHA_COST; }
     var res = rollGacha();
@@ -3235,10 +3283,10 @@
   function gachaResultText(res){
     if(res.type === "item"){
       var iv = ITEM_IMG[res.item] ? '<img class="gacha-res-thumb" src="' + ITEM_IMG[res.item] + '" alt=""> ' : "";
-      return (res.jackpot ? "大当たり！ " : "") + iv + res.label + " ×" + (res.qty || 1);
+      return (res.jackpot ? t("gacha_jackpot") : "") + iv + res.label + " ×" + (res.qty || 1);
     }
-    if(res.isNew) return "🎁 新しいおみやげ！<br>" + omiResultVisual(res) + res.name;
-    return omiResultVisual(res) + res.name + "<br><span class=\"gacha-dup\">（×" + res.count + "になった！）</span>";
+    if(res.isNew) return t("gacha_new_omi") + "<br>" + omiResultVisual(res) + res.name;
+    return omiResultVisual(res) + res.name + "<br><span class=\"gacha-dup\">" + tf("gacha_dup", {n: res.count}) + "</span>";
   }
 
   function showGachaResultInModal(res){
@@ -3252,19 +3300,19 @@
     var note = document.getElementById("gacha-note");
     var fs = save.gacha.freeSpins || 0;
     if(fs > 0){
-      btn.textContent = "無料で回す！（残り " + fs + "回）"; btn.disabled = false;
-      note.textContent = "スポットを訪れると無料ガチャがたまります";
+      btn.textContent = tf("gacha_free_spin", {n: fs}); btn.disabled = false;
+      note.textContent = t("gacha_free_note");
     } else {
-      btn.textContent = GACHA_COST + "コインで回す";
+      btn.textContent = tf("gacha_cost_spin", {n: GACHA_COST});
       btn.disabled = save.coins < GACHA_COST;
-      note.textContent = "所持コイン：" + save.coins + " ／ スポットを訪れると無料で回せます";
+      note.textContent = tf("gacha_coin_note", {n: save.coins});
     }
   }
 
   function openGachaModal(poiId){
     var poi = poiId ? DATA.pois.filter(function(p){ return p.id === poiId; })[0] : null;
-    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : "いつでもガチャ";
-    document.getElementById("gacha-result").innerHTML = "回すとカプセルが出てくるよ！";
+    document.getElementById("gacha-spot-name").textContent = poi ? poi.name : t("gacha_spot_any");
+    document.getElementById("gacha-result").innerHTML = t("gacha_intro");
     // ステージを初期状態に戻す
     var cap = document.getElementById("g-capsule"); cap.style.display = "none"; cap.classList.remove("drop"); cap.src = "assets/gacha_capsule.png";
     var prize = document.getElementById("g-prize"); prize.style.display = "none"; prize.classList.remove("pop"); prize.textContent = "";
@@ -4421,8 +4469,8 @@
     var closeBtn = document.getElementById("discover-close-btn");
 
     chestImg.src = "assets/chest_closed.png";
-    document.getElementById("discover-title").textContent = "宝箱を見つけた！";
-    document.getElementById("discover-sub").textContent = "タップして開けよう";
+    document.getElementById("discover-title").textContent = t("chest_found");
+    document.getElementById("discover-sub").textContent = t("chest_tap");
     document.getElementById("discover-rewards").innerHTML = "";
     document.getElementById("discover-serial").style.display = "none";
     document.getElementById("levelup-banner").style.display = "none";
@@ -4525,11 +4573,11 @@
 
     chestImg.src = "assets/chest_closed.png";
     if(opts.replay){
-      title.textContent = "お宝再鑑賞";
-      sub.textContent = poi.treasure.title + " を再び開いた！";
+      title.textContent = t("replay_title");
+      sub.textContent = tf("replay_sub", {title: poi.treasure.title});
     } else {
-      title.textContent = opts.first ? "発見！" : "再訪の証";
-      sub.textContent = opts.first ? poi.treasure.title + " を図鑑に登録した！" : poi.name + " にまた来た！";
+      title.textContent = opts.first ? t("discover_title") : t("discover_revisit");
+      sub.textContent = opts.first ? tf("first_sub", {title: poi.treasure.title}) : tf("revisit_sub", {name: poi.name});
     }
     levelBanner.style.display = opts.leveled ? "block" : "none";
 
@@ -4537,10 +4585,10 @@
     if(!opts.replay){
       rewardHtml += '<div class="reward-pill"><img src="assets/coin.png">+' + opts.coins + '</div>';
       if(opts.xp){ rewardHtml += '<div class="reward-pill">XP +' + opts.xp + '</div>'; }
-      if(opts.doubled){ rewardHtml += '<div class="reward-pill">ダブルコイン発動！</div>'; }
+      if(opts.doubled){ rewardHtml += '<div class="reward-pill">' + t("pill_double") + '</div>'; }
       if(opts.bonus){
-        rewardHtml += '<div class="reward-pill">デイリー +' + opts.bonus.missionBonus + '</div>';
-        rewardHtml += '<div class="reward-pill">ストリーク' + opts.bonus.streak + '日 +' + opts.bonus.streakBonus + '</div>';
+        rewardHtml += '<div class="reward-pill">' + tf("pill_daily", {n: opts.bonus.missionBonus}) + '</div>';
+        rewardHtml += '<div class="reward-pill">' + tf("pill_streak", {d: opts.bonus.streak, n: opts.bonus.streakBonus}) + '</div>';
       }
     }
     rewards.innerHTML = rewardHtml;
@@ -4552,12 +4600,12 @@
         serialEl.style.display = "";
         serialEl.classList.remove("pending");
         serialEl.removeAttribute("data-poi");
-        serialEl.innerHTML = "🏅 あなたは <b>" + opts.serialNo + "</b> 番目の発見者！";
+        serialEl.innerHTML = tf("serial_you", {n: opts.serialNo});
       } else if(opts.serialPending){
         serialEl.style.display = "";
         serialEl.classList.add("pending");
         serialEl.setAttribute("data-poi", poi.id);
-        serialEl.innerHTML = "🏅 発見順を採番中…";
+        serialEl.innerHTML = t("serial_pending");
       } else {
         serialEl.style.display = "none";
         serialEl.classList.remove("pending");
@@ -4923,11 +4971,11 @@
   }
 
   function distanceBucket(d){
-    if(d <= 100) return "100m以内";
-    if(d <= 300) return "300m以内";
-    if(d <= 800) return "800m以内";
-    if(d <= 2000) return "2km以内";
-    return "2km以上";
+    if(d <= 100) return t("bucket_100");
+    if(d <= 300) return t("bucket_300");
+    if(d <= 800) return t("bucket_800");
+    if(d <= 2000) return t("bucket_2k");
+    return t("bucket_over");
   }
 
   // ホームのガチャボタンは常時表示（いつでも回せる）。無料回数 or コストを表示。
@@ -4938,7 +4986,7 @@
     var poi = currentInRangePoi;
     btn.setAttribute("data-poi", (poi && save.found.indexOf(poi.id) !== -1) ? poi.id : "");
     var gfs = save.gacha.freeSpins || 0;
-    btn.textContent = gfs > 0 ? ("🎰 ガチャを回す（無料 " + gfs + "回）") : ("🎰 ガチャを回す（" + GACHA_COST + "コイン）");
+    btn.textContent = gfs > 0 ? tf("home_gacha_free", {n: gfs}) : tf("home_gacha_cost", {n: GACHA_COST});
   }
 
   function renderHomeNearest(){
@@ -4958,11 +5006,11 @@
 
     if(!currentPos || !DATA){
       if(save.settings.mode === "gps" && geoError){
-        nameEl.textContent = (geoError === 1) ? "位置情報がオフです" : "現在地を取得できません";
-        distEl.textContent = (geoError === 1) ? "端末の設定で位置情報を許可してね" : "屋外や電波の良い場所で再度お試しを";
+        nameEl.textContent = (geoError === 1) ? t("geo_off_name") : t("geo_fail_name");
+        distEl.textContent = (geoError === 1) ? t("geo_off_sub") : t("geo_fail_sub");
       } else {
-        nameEl.textContent = (save.settings.mode === "gps") ? "現在地を取得中…" : "仮想現在地が未設定です";
-        distEl.textContent = (save.settings.mode === "gps") ? "位置情報を許可すると探検を始められます" : "設定画面からテレポートしてみよう";
+        nameEl.textContent = (save.settings.mode === "gps") ? t("nearest_loading") : t("nearest_novirtual");
+        distEl.textContent = (save.settings.mode === "gps") ? t("nearest_loading_sub") : t("nearest_novirtual_sub");
       }
       badgeEl.style.display = "none";
       return;
@@ -4983,14 +5031,14 @@
     if(isFound || hintUnlocked){
       // 発見済み、または「最寄りヒント」購入済みなら正確な名前・距離を表示
       nameEl.textContent = target.poi.name;
-      distEl.textContent = (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km") + " 先";
+      distEl.textContent = tf("dist_ahead", {d: (d < 1000 ? Math.round(d) + "m" : (d/1000).toFixed(1) + "km")});
     } else {
       // 未発見＆未購入：おおまかな距離のみ（ショップ「最寄りヒント」で正確な位置が分かる）
-      nameEl.textContent = "？？？（未発見スポット）";
-      distEl.textContent = distanceBucket(d) + "・方角はコンパスを頼りに";
+      nameEl.textContent = t("unfound_spot");
+      distEl.textContent = tf("bucket_compass", {b: distanceBucket(d)});
     }
     badgeEl.style.display = "inline-block";
-    badgeEl.textContent = isFound ? "発見済み" : "未発見";
+    badgeEl.textContent = isFound ? t("badge_found2") : t("badge_unfound");
     badgeEl.className = "badge" + (isFound ? " found" : "");
 
     var brg = bearing(currentPos.lat, currentPos.lng, target.poi.lat, target.poi.lng);
