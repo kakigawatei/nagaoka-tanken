@@ -456,6 +456,10 @@
     box-shadow: inset 0 0 0 1px #d8c497;
   }
   .settings-section h2{ font-size:13px; margin:0 0 10px; color:var(--ink-soft); }
+  .lang-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .lang-btn{ flex:1 1 40%; min-width:120px; padding:11px 8px; border-radius:10px; border:1.5px solid #d8c497;
+    background:#fff; color:var(--ink); font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .lang-btn.active{ background:var(--indigo); color:#fff; border-color:var(--indigo); }
   .name-input{
     width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px;
     border:2px solid #d8c497; border-radius:10px; background:var(--card-bg); color:var(--ink);
@@ -1225,7 +1229,7 @@
         <p class="sub">NAGAOKA EXPLORATION LOG</p>
       </div>
       <img class="title-guide-img" id="title-guide-img" src="assets/guide_idle.png" alt="ガイド">
-      <button class="title-start-btn" id="btn-start">たんけんへ出る</button>
+      <button class="title-start-btn" id="btn-start" data-i18n="start_btn">たんけんへ出る</button>
     </div>
   </div>
 
@@ -1263,7 +1267,7 @@
     <button class="referral-home-btn" id="referral-open-btn" style="display:none;">🎁 友達をさそう（紹介コード）</button>
 
     <div class="nearest-card">
-      <h2>最寄りのスポット</h2>
+      <h2 data-i18n="nearest">最寄りのスポット</h2>
       <div class="nearest-main">
         <div class="compass-wrap"><img id="home-compass-img" src="assets/compass.png" alt="コンパス"></div>
         <div class="nearest-info">
@@ -1275,10 +1279,10 @@
     </div>
 
     <div class="base-card">
-      <div class="base-head">🏕️ 探検隊の拠点</div>
-      <div class="base-sub">留守の間も隊員がコインを集めてくれます</div>
+      <div class="base-head" data-i18n="base_head">🏕️ 探検隊の拠点</div>
+      <div class="base-sub" data-i18n="base_sub">留守の間も隊員がコインを集めてくれます</div>
       <div class="base-accrued-line">たまっているコイン：<b id="base-accrued">0</b> / <span id="base-cap">0</span></div>
-      <button class="base-collect-btn" id="base-collect-btn">回収する</button>
+      <button class="base-collect-btn" id="base-collect-btn" data-i18n="base_collect">回収する</button>
       <div class="base-up-row">
         <div class="base-up-info">隊員 <b id="base-members">1</b>人（採取 +<span id="base-rate">15</span>/時）</div>
         <button class="base-up-btn" id="base-hire-btn">雇う（150）</button>
@@ -1292,7 +1296,7 @@
 
   <!-- MAP -->
   <div class="screen" id="screen-map">
-    <div class="topbar"><h1>マップ</h1><div></div></div>
+    <div class="topbar"><h1 data-i18n="title_map">マップ</h1><div></div></div>
     <div class="district-tabs" id="map-district-tabs"></div>
     <div class="map-layer-toggle">
       <div class="layer-chip layer-treasure active" id="layer-chip-treasure">🗺️ お宝</div>
@@ -1311,7 +1315,7 @@
 
   <!-- BOOK -->
   <div class="screen" id="screen-book">
-    <div class="topbar"><h1>図鑑</h1><div></div></div>
+    <div class="topbar"><h1 data-i18n="title_book">図鑑</h1><div></div></div>
     <div class="book-subtabs" id="book-subtabs">
       <div class="book-subtab active" data-sub="book">図鑑</div>
       <div class="book-subtab" data-sub="ach">実績</div>
@@ -1348,7 +1352,7 @@
 
   <!-- SHOP -->
   <div class="screen" id="screen-shop">
-    <div class="topbar"><h1>店</h1><div></div></div>
+    <div class="topbar"><h1 data-i18n="title_shop">店</h1><div></div></div>
     <div class="shop-topbar-coin"><div class="stat-pill"><img src="assets/coin.png" alt="coin">所持コイン：<span id="shop-coins">0</span></div></div>
     <div class="book-subtabs" id="shop-subtabs">
       <div class="book-subtab active" data-shopsub="item">アイテム</div>
@@ -1371,7 +1375,7 @@
 
   <!-- 加盟店リスト（現在地から近い順・混雑ランプ付き） -->
   <div class="screen" id="screen-shops">
-    <div class="topbar"><h1>お店</h1><div></div></div>
+    <div class="topbar"><h1 data-i18n="title_shops">お店</h1><div></div></div>
     <div class="shops-head">
       <div class="shops-legend">
         <span><i class="crowd-lamp green"></i>空いている</span>
@@ -1387,16 +1391,26 @@
 
   <!-- SETTINGS -->
   <div class="screen" id="screen-settings">
-    <div class="topbar"><h1>設定</h1><div></div></div>
+    <div class="topbar"><h1 data-i18n="title_settings">設定</h1><div></div></div>
 
     <div class="settings-section">
-      <h2>たんけん者の名前</h2>
+      <h2 data-i18n="set_lang">言語 / Language</h2>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="ja">日本語</button>
+        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="zh_hans">简体中文</button>
+        <button class="lang-btn" data-lang="zh_hant">繁體中文</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2 data-i18n="set_name">たんけん者の名前</h2>
       <input type="text" id="player-name-input" class="name-input" maxlength="12" placeholder="なまえを入力（例：たろう）">
       <div class="settings-note">ここで決めた名前で、ホーム画面のキャラが「こんにちは、〇〇さん！」と話しかけます。</div>
     </div>
 
     <div class="settings-section">
-      <h2>みための設定</h2>
+      <h2 data-i18n="set_look">みための設定</h2>
       <div class="avatar-options" id="avatar-options">
         <div class="avatar-opt" data-avatar="boy1"><img src="assets/guide_idle.png" alt="男の子"><span>男の子</span></div>
         <div class="avatar-opt" data-avatar="boy2"><img src="assets/guide_idle_boy2.png" alt="男の子2"><span>男の子2</span></div>
@@ -1407,7 +1421,7 @@
     </div>
 
     <div class="settings-section">
-      <h2>効果音</h2>
+      <h2 data-i18n="set_sfx">効果音</h2>
       <div class="mode-toggle">
         <div class="mode-btn" id="sfx-btn-on">ON</div>
         <div class="mode-btn" id="sfx-btn-off">OFF</div>
@@ -1427,23 +1441,23 @@
     </div>
 
     <div class="settings-section">
-      <h2>データ</h2>
-      <button class="settings-btn" id="btn-export">書き出し（JSON）</button>
-      <button class="settings-btn" id="btn-import">読み込み</button>
+      <h2 data-i18n="set_data">データ</h2>
+      <button class="settings-btn" id="btn-export" data-i18n="btn_export">書き出し（JSON）</button>
+      <button class="settings-btn" id="btn-import" data-i18n="btn_import">読み込み</button>
       <input type="file" id="file-import" accept="application/json" style="display:none;">
       <br>
-      <button class="settings-btn danger" id="btn-reset">進捗をリセット</button>
+      <button class="settings-btn danger" id="btn-reset" data-i18n="btn_reset">進捗をリセット</button>
       <div class="settings-note">書き出したJSONファイルを保管しておくと、機種変更時などにデータを復元できます。</div>
     </div>
 
     <div class="settings-section">
-      <h2>加盟店の方へ</h2>
-      <button class="settings-btn" id="btn-shop-application">法人・個人店のお客様はこちら</button>
+      <h2 data-i18n="set_merchant">加盟店の方へ</h2>
+      <button class="settings-btn" id="btn-shop-application" data-i18n="btn_merchant">法人・個人店のお客様はこちら</button>
       <div class="settings-note">押すと申請フォームが開きます。お店の掲載・特典・写真などをご記入ください。</div>
     </div>
 
     <div class="settings-section">
-      <h2>このアプリについて</h2>
+      <h2 data-i18n="set_about">このアプリについて</h2>
       <div class="settings-note">
         位置情報や進捗は基本的に端末内（localStorage）で処理・保存します。お宝カードの通し番号や友達紹介の機能では、端末ごとに自動発行される匿名IDと、発見したスポットのID・日時のみを外部（Firebase）へ送信します。氏名などの個人情報は送信しません。<br>
         現在：中心部・摂田屋・山古志・寺泊・栃尾・与板・越路・蓬平の8地区、42スポット対応。ショップ・実績・称号・デイリーストリーク・衣装だんすに対応。<br>
@@ -1453,7 +1467,7 @@
     </div>
 
     <div class="settings-section">
-      <h2>運営者・規約</h2>
+      <h2 data-i18n="set_terms">運営者・規約</h2>
       <div class="settings-note">
         運営：ながおか探検録製作委員会（岡雅俊）<br>
         お問い合わせ：<a href="mailto:aburalabo@gmail.com">aburalabo@gmail.com</a><br>
@@ -1465,12 +1479,12 @@
 
   <!-- Bottom Nav -->
   <div class="bottom-nav" id="bottom-nav" style="display:none;">
-    <button class="nav-btn active" data-screen="home"><img src="assets/ic_home.png">ホーム</button>
-    <button class="nav-btn" data-screen="map"><img src="assets/ic_map.png">マップ</button>
-    <button class="nav-btn" data-screen="book"><img src="assets/ic_book.png">図鑑</button>
-    <button class="nav-btn" data-screen="shops"><img src="assets/ic_shop.png">お店</button>
-    <button class="nav-btn" data-screen="shop"><img src="assets/coin.png">ショップ</button>
-    <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png">設定</button>
+    <button class="nav-btn active" data-screen="home"><img src="assets/ic_home.png"><span data-i18n="nav_home">ホーム</span></button>
+    <button class="nav-btn" data-screen="map"><img src="assets/ic_map.png"><span data-i18n="nav_map">マップ</span></button>
+    <button class="nav-btn" data-screen="book"><img src="assets/ic_book.png"><span data-i18n="nav_book">図鑑</span></button>
+    <button class="nav-btn" data-screen="shops"><img src="assets/ic_shop.png"><span data-i18n="nav_shops">お店</span></button>
+    <button class="nav-btn" data-screen="shop"><img src="assets/coin.png"><span data-i18n="nav_shop">ショップ</span></button>
+    <button class="nav-btn" data-screen="settings"><img src="assets/ic_settings.png"><span data-i18n="nav_settings">設定</span></button>
   </div>
 
   <!-- 近接ドキドキ演出：画面のふちが鼓動する赤いビネット（ビートごとに一瞬光る） -->
@@ -1481,12 +1495,12 @@
     <div class="chest-stage" id="chest-stage">
       <img class="chest" id="chest-img" src="assets/chest_closed.png" alt="宝箱">
     </div>
-    <div class="levelup-banner" id="levelup-banner" style="display:none;">レベルアップ！</div>
+    <div class="levelup-banner" id="levelup-banner" style="display:none;" data-i18n="levelup">レベルアップ！</div>
     <div class="discover-title" id="discover-title">発見！</div>
     <div class="discover-sub" id="discover-sub"></div>
     <div class="discover-rewards" id="discover-rewards"></div>
     <div class="discover-serial" id="discover-serial" style="display:none;"></div>
-    <button class="discover-close-btn" id="discover-close-btn">とじる</button>
+    <button class="discover-close-btn" id="discover-close-btn" data-i18n="discover_close">とじる</button>
   </div>
 
   <!-- Shop (加盟店) detail modal -->
@@ -2276,6 +2290,62 @@
   };
 
   function fbEnabled(){ return !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId); }
+
+  /* ===== 多言語（i18n）Phase1：UI主要部。日本語 / English / 简体中文 / 繁體中文 =====
+   * data-i18n 属性の付いた要素を、選択言語に応じて差し替える。端末言語で自動初期選択＋設定で手動切替。
+   * ※機械翻訳ベース（後で手直し可）。図鑑の解説文などはPhase2で対応予定。 */
+  var LANG_KEY = "tekuteku_lang";
+  var I18N = {
+    nav_home:{ja:"ホーム",en:"Home",zh_hans:"主页",zh_hant:"主頁"},
+    nav_map:{ja:"マップ",en:"Map",zh_hans:"地图",zh_hant:"地圖"},
+    nav_book:{ja:"図鑑",en:"Cards",zh_hans:"图鉴",zh_hant:"圖鑑"},
+    nav_shops:{ja:"お店",en:"Shops",zh_hans:"店铺",zh_hant:"店鋪"},
+    nav_shop:{ja:"ショップ",en:"Store",zh_hans:"商店",zh_hant:"商店"},
+    nav_settings:{ja:"設定",en:"Settings",zh_hans:"设置",zh_hant:"設定"},
+    title_map:{ja:"マップ",en:"Map",zh_hans:"地图",zh_hant:"地圖"},
+    title_book:{ja:"図鑑",en:"Card Collection",zh_hans:"图鉴",zh_hant:"圖鑑"},
+    title_shop:{ja:"ショップ",en:"Store",zh_hans:"商店",zh_hant:"商店"},
+    title_shops:{ja:"お店",en:"Local Shops",zh_hans:"本地店铺",zh_hant:"本地店鋪"},
+    title_settings:{ja:"設定",en:"Settings",zh_hans:"设置",zh_hant:"設定"},
+    start_btn:{ja:"たんけんへ出る",en:"Start Exploring",zh_hans:"开始探险",zh_hant:"開始探險"},
+    nearest:{ja:"最寄りのスポット",en:"Nearest Spot",zh_hans:"最近的地点",zh_hant:"最近的地點"},
+    base_head:{ja:"🏕️ 探検隊の拠点",en:"🏕️ Expedition Base",zh_hans:"🏕️ 探险队基地",zh_hant:"🏕️ 探險隊基地"},
+    base_sub:{ja:"留守の間も隊員がコインを集めてくれます",en:"Your crew gathers coins while you're away",zh_hans:"外出时队员也会帮你收集金币",zh_hant:"外出時隊員也會幫你收集金幣"},
+    base_collect:{ja:"回収する",en:"Collect",zh_hans:"收取",zh_hant:"收取"},
+    discover_close:{ja:"とじる",en:"Close",zh_hans:"关闭",zh_hant:"關閉"},
+    levelup:{ja:"レベルアップ！",en:"Level Up!",zh_hans:"升级了！",zh_hant:"升級了！"},
+    set_lang:{ja:"言語 / Language",en:"Language",zh_hans:"语言",zh_hant:"語言"},
+    set_name:{ja:"たんけん者の名前",en:"Explorer Name",zh_hans:"探险者名字",zh_hant:"探險者名字"},
+    set_look:{ja:"みための設定",en:"Appearance",zh_hans:"外观",zh_hant:"外觀"},
+    set_sfx:{ja:"効果音",en:"Sound Effects",zh_hans:"音效",zh_hant:"音效"},
+    set_data:{ja:"データ",en:"Data",zh_hans:"数据",zh_hant:"資料"},
+    set_merchant:{ja:"加盟店の方へ",en:"For Businesses",zh_hans:"商家专区",zh_hant:"商家專區"},
+    set_about:{ja:"このアプリについて",en:"About This App",zh_hans:"关于本应用",zh_hant:"關於本應用"},
+    set_terms:{ja:"運営者・規約",en:"Operator & Terms",zh_hans:"运营者与条款",zh_hant:"營運者與條款"},
+    btn_export:{ja:"書き出し（JSON）",en:"Export (JSON)",zh_hans:"导出（JSON）",zh_hant:"匯出（JSON）"},
+    btn_import:{ja:"読み込み",en:"Import",zh_hans:"导入",zh_hant:"匯入"},
+    btn_reset:{ja:"進捗をリセット",en:"Reset Progress",zh_hans:"重置进度",zh_hant:"重置進度"},
+    btn_merchant:{ja:"法人・個人店のお客様はこちら",en:"Businesses: Apply Here",zh_hans:"企业/店铺申请入口",zh_hant:"企業/店鋪申請入口"}
+  };
+  function i18nDetect(){
+    try{ var q=new URLSearchParams(location.search).get("lang"); if(q && I18N.nav_home[q]) return q; }catch(e){}
+    try{ var s=localStorage.getItem(LANG_KEY); if(s && I18N.nav_home[s]) return s; }catch(e){}
+    var n=((navigator.language||navigator.userLanguage||"ja")+"").toLowerCase();
+    if(n.indexOf("ja")===0) return "ja";
+    if(n.indexOf("zh")===0) return (n.indexOf("tw")>=0||n.indexOf("hk")>=0||n.indexOf("hant")>=0||n.indexOf("mo")>=0)?"zh_hant":"zh_hans";
+    if(n.indexOf("en")===0) return "en";
+    return "ja";
+  }
+  var LANG = i18nDetect();
+  function t(key){ var e=I18N[key]; if(!e) return key; return e[LANG]||e.ja||key; }
+  function applyI18n(){
+    var els=document.querySelectorAll("[data-i18n]");
+    for(var i=0;i<els.length;i++){ els[i].textContent = t(els[i].getAttribute("data-i18n")); }
+    try{ document.documentElement.lang = (LANG==="zh_hans"?"zh-Hans":LANG==="zh_hant"?"zh-Hant":LANG); }catch(e){}
+    var bs=document.querySelectorAll(".lang-btn");
+    for(var j=0;j<bs.length;j++){ bs[j].classList.toggle("active", bs[j].getAttribute("data-lang")===LANG); }
+  }
+  function setLang(l){ if(!I18N.nav_home[l]) return; LANG=l; try{ localStorage.setItem(LANG_KEY,l); }catch(e){} applyI18n(); }
 
   var FB_LS_UID = "nagaoka_fb_uid";
   var FB_LS_REFRESH = "nagaoka_fb_refresh";
@@ -6178,6 +6248,10 @@
       btn.addEventListener("click", function(){ showScreen(btn.getAttribute("data-screen")); });
     });
 
+    document.querySelectorAll(".lang-btn").forEach(function(b){
+      b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); });
+    });
+
     var annoBell = document.getElementById("anno-bell");
     if(annoBell) annoBell.addEventListener("click", openAnnoModal);
     var annoClose = document.getElementById("anno-close");
@@ -6261,6 +6335,7 @@
     DATA = data;
     initBBoxes();
     wireEvents();
+    applyI18n();   // 多言語UIを反映（端末言語で自動選択）
     enforceLocationMode();   // 一般ユーザーは実GPSに固定（開発モードのみシミュレーション可）
     applyDevVisibility();     // 開発用UI（位置情報モード）の表示/非表示
     applyMode();
