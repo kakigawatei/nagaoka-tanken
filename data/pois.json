@@ -90,6 +90,15 @@
         "lng": 138.7748
       },
       "unlockLevel": 1
+    },
+    {
+      "id": "kawanishi",
+      "name": "川西",
+      "center": {
+        "lat": 37.432,
+        "lng": 138.752
+      },
+      "unlockLevel": 1
     }
   ],
   "pois": [
@@ -1244,6 +1253,82 @@
         "era": "鋸鍛冶のまち（1842年〜）",
         "blurb": "「鋸（のこぎり）鍛冶のまち」として知られる脇野町。天保13年（1842）、会津から帰郷した中屋庄兵衛が鋸づくりを始めたのが元祖と伝わり、かつては鋸店が軒を連ねた。炉の火とふいご、職人の手仕事が生んだ刃物は、雪国の暮らしと産業を長く支えてきた。",
         "image": "card_wakinomachi.png"
+      }
+    },
+    {
+      "id": "umataka_jomonkan",
+      "districtId": "kawanishi",
+      "name": "馬高縄文館",
+      "lat": 37.4466,
+      "lng": 138.7685,
+      "radius": 70,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "博物館・縄文遺跡",
+      "treasure": {
+        "title": "馬高縄文館（火焔土器ミュージアム）",
+        "era": "火焔土器\"発見の地\"（馬高遺跡）",
+        "blurb": "昭和11年（1936）、火焔型土器が発見された馬高遺跡。国宝級の「火焔土器」の\"発見の地\"に建つ縄文ミュージアムで、燃えあがる炎のような四つの突起と渦巻く文様は縄文人の造形力の頂点。長岡＝火焔土器のまち、その原点がここにある。",
+        "image": "card_umataka_jomonkan.png"
+      }
+    },
+    {
+      "id": "kenritsu_rekishi",
+      "districtId": "kawanishi",
+      "name": "新潟県立歴史博物館",
+      "lat": 37.4387,
+      "lng": 138.7677,
+      "radius": 70,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "博物館",
+      "treasure": {
+        "title": "新潟県立歴史博物館",
+        "era": "火焔土器と縄文の世界",
+        "blurb": "関原の丘に建つ、新潟の歴史と民俗を体感できる博物館。約90点の火焔型土器がずらりと並ぶ展示室は圧巻で、「縄文人の世界」や「雪と暮らし」の実物大ジオラマが、はるかな縄文の暮らしと雪国の四季を今によみがえらせる。学びと映えを兼ねた川西を代表するミュージアム。",
+        "image": "card_kenritsu_rekishi.png"
+      }
+    },
+    {
+      "id": "echigo_kyuryo",
+      "districtId": "kawanishi",
+      "name": "国営越後丘陵公園",
+      "lat": 37.4182,
+      "lng": 138.7432,
+      "radius": 120,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "公園・花",
+      "treasure": {
+        "title": "国営越後丘陵公園",
+        "era": "花と緑の丘陵公園",
+        "blurb": "宮本東方町の丘陵地に広がる、北陸唯一の国営公園。春のチューリップやバラ、夏のひまわり、秋のコスモスや紅葉、冬は一面の雪あそびと、四季折々の花と自然が楽しめる。広い芝生広場に立つ一本の大きな木がシンボルで、冬にはあたり一面が青いイルミネーションの光に包まれる。",
+        "image": "card_echigo_kyuryo.png"
+      }
+    },
+    {
+      "id": "kyuryo_hanabatake",
+      "districtId": "kawanishi",
+      "name": "丘陵公園の花畑",
+      "lat": 37.415,
+      "lng": 138.746,
+      "radius": 100,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "花畑・絶景",
+      "treasure": {
+        "title": "丘陵公園の花畑",
+        "era": "四季の花畑（夏＝ひまわり）",
+        "blurb": "越後丘陵公園を彩る、季節ごとの花畑。春はチューリップとバラ、夏は青空に映える黄色いひまわりの海、秋はコスモス…と、訪れるたびに違う花の絶景が待っている。丘陵公園いちばんの映えスポット。（※季節でカードの姿が変わる）",
+        "image": "card_kyuryo_hanabatake.png"
       }
     }
   ]

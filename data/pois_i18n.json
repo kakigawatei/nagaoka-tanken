@@ -70,6 +70,13 @@
         "zh_hans": "三岛",
         "zh_hant": "三島"
       }
+    },
+    "kawanishi": {
+      "name": {
+        "en": "Kawanishi",
+        "zh_hans": "川西",
+        "zh_hant": "川西"
+      }
     }
   },
   "pois": {
@@ -773,6 +780,114 @@
         "en": "Wakinomachi, known as the 'town of saw smithing.' It is said that in 1842, Shobei Nakaya, who returned home from Aizu, began making saws here, and saw shops once lined the streets. The blades born from the forge fire, bellows, and artisans' handwork long supported life and industry in snow country.",
         "zh_hans": "以「锯锻冶之町」闻名的胁野町。相传天保13年（1842），从会津返乡的中屋庄兵卫在此开始制锯为元祖，昔日锯店鳞次栉比。炉火与风箱、匠人手工锻造的刃物，长久支撑着雪国的生活与产业。",
         "zh_hant": "以「鋸鍛冶之町」聞名的脇野町。相傳天保13年（1842），從會津返鄉的中屋庄兵衛在此開始製鋸為元祖，昔日鋸店鱗次櫛比。爐火與風箱、匠人手工鍛造的刃物，長久支撐著雪國的生活與產業。"
+      }
+    },
+    "umataka_jomonkan": {
+      "name": {
+        "en": "Umataka Jomon Museum",
+        "zh_hans": "马高绳文馆",
+        "zh_hant": "馬高繩文館"
+      },
+      "title": {
+        "en": "Umataka Jomon Museum (Flame Pottery Museum)",
+        "zh_hans": "马高绳文馆（火焰陶器博物馆）",
+        "zh_hant": "馬高繩文館（火焰陶器博物館）"
+      },
+      "era": {
+        "en": "Birthplace of Flame Pottery (Umataka Site)",
+        "zh_hans": "火焰陶器\"发现之地\"（马高遗迹）",
+        "zh_hant": "火焰陶器\"發現之地\"（馬高遺跡）"
+      },
+      "category": {
+        "en": "Museum / Jomon Site",
+        "zh_hans": "博物馆·绳文遗迹",
+        "zh_hant": "博物館·繩文遺跡"
+      },
+      "blurb": {
+        "en": "The Umataka Site, where flame-style pottery was discovered in 1936. A Jomon museum standing on the very 'place of discovery' of the national-treasure-class 'Flame Pottery,' whose four blazing flame-like projections and swirling patterns are the pinnacle of Jomon artistry. Here lies the origin of Nagaoka as the city of flame pottery.",
+        "zh_hans": "1936年发现火焰型陶器的马高遗迹。这座绳文博物馆就建在国宝级「火焰陶器」的\"发现之地\"，四个如烈焰升腾的突起与涡卷纹样，是绳文人造型力的巅峰。长冈＝火焰陶器之城，其原点就在这里。",
+        "zh_hant": "1936年發現火焰型陶器的馬高遺跡。這座繩文博物館就建在國寶級「火焰陶器」的\"發現之地\"，四個如烈焰升騰的突起與渦捲紋樣，是繩文人造型力的巔峰。長岡＝火焰陶器之城，其原點就在這裡。"
+      }
+    },
+    "kenritsu_rekishi": {
+      "name": {
+        "en": "Niigata Prefectural Museum of History",
+        "zh_hans": "新潟县立历史博物馆",
+        "zh_hant": "新潟縣立歷史博物館"
+      },
+      "title": {
+        "en": "Niigata Prefectural Museum of History",
+        "zh_hans": "新潟县立历史博物馆",
+        "zh_hant": "新潟縣立歷史博物館"
+      },
+      "era": {
+        "en": "Flame Pottery and the Jomon World",
+        "zh_hans": "火焰陶器与绳文世界",
+        "zh_hant": "火焰陶器與繩文世界"
+      },
+      "category": {
+        "en": "Museum",
+        "zh_hans": "博物馆",
+        "zh_hant": "博物館"
+      },
+      "blurb": {
+        "en": "A museum on the hills of Sekihara where you can experience Niigata's history and folklore. Its hall lined with some 90 flame-style pots is breathtaking, and life-size dioramas of 'the world of the Jomon people' and 'life with snow' bring the distant Jomon age and the four seasons of snow country back to life. A leading museum of Kawanishi that combines learning and beauty.",
+        "zh_hans": "坐落于关原丘陵、可整体体验新潟历史与民俗的博物馆。约90件火焰型陶器排列的展厅蔚为壮观，「绳文人的世界」与「雪与生活」的实物大立体模型，让遥远的绳文生活与雪国四季重现眼前。是兼具学习与观赏的川西代表性博物馆。",
+        "zh_hant": "坐落於關原丘陵、可整體體驗新潟歷史與民俗的博物館。約90件火焰型陶器排列的展廳蔚為壯觀，「繩文人的世界」與「雪與生活」的實物大立體模型，讓遙遠的繩文生活與雪國四季重現眼前。是兼具學習與觀賞的川西代表性博物館。"
+      }
+    },
+    "echigo_kyuryo": {
+      "name": {
+        "en": "Echigo Hillside Park",
+        "zh_hans": "国营越后丘陵公园",
+        "zh_hant": "國營越後丘陵公園"
+      },
+      "title": {
+        "en": "Echigo Hillside Park",
+        "zh_hans": "国营越后丘陵公园",
+        "zh_hant": "國營越後丘陵公園"
+      },
+      "era": {
+        "en": "A hillside park of flowers and greenery",
+        "zh_hans": "花与绿的丘陵公园",
+        "zh_hant": "花與綠的丘陵公園"
+      },
+      "category": {
+        "en": "Park / Flowers",
+        "zh_hans": "公园·花",
+        "zh_hant": "公園·花"
+      },
+      "blurb": {
+        "en": "The only national government park in the Hokuriku region, spreading across the hills of Miyamoto-tohobo. Enjoy flowers and nature through the seasons—tulips and roses in spring, sunflowers in summer, cosmos and autumn leaves in fall, and a snowy playground in winter. A great solitary tree on the wide lawn is its symbol, and in winter the whole area is wrapped in blue illumination.",
+        "zh_hans": "位于宫本东方町丘陵地、北陆唯一的国营公园。春有郁金香与玫瑰、夏有向日葵、秋有波斯菊与红叶、冬有一面雪上游乐，四季花卉与自然皆可尽享。宽阔草坪上矗立的一棵大树是公园的象征，冬季整片园区被蓝色灯饰的光芒包裹。",
+        "zh_hant": "位於宮本東方町丘陵地、北陸唯一的國營公園。春有鬱金香與玫瑰、夏有向日葵、秋有波斯菊與紅葉、冬有一面雪上遊樂，四季花卉與自然皆可盡享。寬闊草坪上矗立的一棵大樹是公園的象徵，冬季整片園區被藍色燈飾的光芒包裹。"
+      }
+    },
+    "kyuryo_hanabatake": {
+      "name": {
+        "en": "Hillside Park Flower Fields",
+        "zh_hans": "丘陵公园的花田",
+        "zh_hant": "丘陵公園的花田"
+      },
+      "title": {
+        "en": "Hillside Park Flower Fields",
+        "zh_hans": "丘陵公园的花田",
+        "zh_hant": "丘陵公園的花田"
+      },
+      "era": {
+        "en": "Flower fields of the four seasons (summer = sunflowers)",
+        "zh_hans": "四季花田（夏＝向日葵）",
+        "zh_hant": "四季花田（夏＝向日葵）"
+      },
+      "category": {
+        "en": "Flower Field / Scenic View",
+        "zh_hans": "花田·绝景",
+        "zh_hant": "花田·絕景"
+      },
+      "blurb": {
+        "en": "The seasonal flower fields that color Echigo Hillside Park. Tulips and roses in spring, a sea of golden sunflowers against the blue sky in summer, cosmos in autumn—a different floral spectacle awaits each visit. The most photogenic spot in the whole park. (The card's scene changes with the season.)",
+        "zh_hans": "点缀越后丘陵公园的四季花田。春有郁金香与玫瑰，夏有映衬蓝天的金黄向日葵之海，秋有波斯菊……每次到访都有不同的花之绝景。是全园最出片的景点。（卡片会随季节改变样貌。）",
+        "zh_hant": "點綴越後丘陵公園的四季花田。春有鬱金香與玫瑰，夏有映襯藍天的金黃向日葵之海，秋有波斯菊……每次到訪都有不同的花之絕景。是全園最出片的景點。（卡片會隨季節改變樣貌。）"
       }
     }
   }
