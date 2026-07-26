@@ -5686,7 +5686,7 @@
   //   冬 card_<id>_winter.png（＋ _winter_deluxe.png）
   // 未登録の季節は自動でベース画像（夏）にフォールバックする（アートが無くても壊れない）。
   var SEASONAL_CARDS = {
-    kyuryo_hanabatake: { summer: 1, autumn: 1 }   // 夏=ひまわり（ベース）／秋=コスモス畑＋紅葉。春/冬のアートが揃い次第 spring/winter を追加。
+    kyuryo_hanabatake: { summer: 1, autumn: 1, winter: 1 }   // 夏=ひまわり（ベース）／秋=コスモス畑＋紅葉／冬=雪の丘。春のアートが揃い次第 spring を追加。
   };
   function currentSeason(d){
     // 開発・確認用：?season=spring などで季節を強制できる
