@@ -81,6 +81,15 @@
         "lng": 138.847
       },
       "unlockLevel": 1
+    },
+    {
+      "id": "mishima",
+      "name": "三島",
+      "center": {
+        "lat": 37.4435,
+        "lng": 138.767
+      },
+      "unlockLevel": 1
     }
   ],
   "pois": [
@@ -1140,6 +1149,101 @@
         "era": "中世の平城跡／牧野忠成ゆかり",
         "blurb": "中世に築かれた平城「蔵王堂城」の跡。南北朝期には中越の要衝として古志長尾氏が拠り、慶長年間には長岡藩初代・牧野忠成が長岡城を築く前にこの城へ入ったと伝わる。1618年の長岡城築城とともに廃城となったが、今も本丸・二の丸を中心に土塁と堀跡が残り、長岡市の文化財に指定されている。牧野の殿が長岡を治める物語が始まった地。",
         "image": "card_zaodo.png"
+      }
+    },
+    {
+      "id": "rengeji_osugi",
+      "districtId": "mishima",
+      "name": "蓮花寺の大杉",
+      "lat": 37.4478,
+      "lng": 138.7715,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "御神木・巨木",
+      "treasure": {
+        "title": "蓮花寺の大杉",
+        "era": "御神木の巨木",
+        "blurb": "三島町にある蓮花寺の境内にそびえる、御神木の大杉。太い幹に注連縄が張られ、天へまっすぐ伸びる高い樹と四方へ広がる枝葉は、長い歳月を静かに見守ってきた。夏は涼やかな木陰をつくって参拝者を迎える、三島の里の信仰を今に伝える巨木。",
+        "image": "card_rengeji_osugi.png"
+      }
+    },
+    {
+      "id": "takeakari_kaido",
+      "districtId": "mishima",
+      "name": "竹あかり街道（三島の散歩道）",
+      "lat": 37.4448,
+      "lng": 138.7688,
+      "radius": 90,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "町並み・祭",
+      "treasure": {
+        "title": "竹あかり街道（三島の散歩道）",
+        "era": "越後みしま竹あかり街道（2025年で終了）",
+        "blurb": "三島の本町から宮下町へ続く、昔ながらの街道。古い酒蔵やそうめん屋、寺社が軒を連ね、道の脇には「縄文雪つらら」と呼ばれる清水が湧く。秋の夜には約2万個の竹灯籠が通りを照らす「越後みしま竹あかり街道」で親しまれた（2025年をもって終了）。今も竹あかりの記憶とともに、レトロな里の街道の情緒を伝えている。",
+        "image": "card_takeakari_kaido.png"
+      }
+    },
+    {
+      "id": "kannyakuji",
+      "districtId": "mishima",
+      "name": "寛益寺",
+      "lat": 37.4462,
+      "lng": 138.7742,
+      "radius": 70,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "寺院・古刹",
+      "treasure": {
+        "title": "寛益寺",
+        "era": "行基菩薩の開山と伝わる古刹",
+        "blurb": "行基菩薩の開山と伝わる、三島の古刹。茅葺屋根の山門と苔むした石段が長い歳月を物語る。門をくぐると静かな参道が奥へと続き、深い緑に包まれた境内は、しっとりとした山寺の趣を今に伝えている。",
+        "image": "card_kannyakuji.png"
+      }
+    },
+    {
+      "id": "konryuji",
+      "districtId": "mishima",
+      "name": "根立寺",
+      "lat": 37.4405,
+      "lng": 138.7758,
+      "radius": 70,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "寺院・古刹",
+      "treasure": {
+        "title": "根立寺",
+        "era": "龍の木彫りの山寺",
+        "blurb": "深い緑に包まれた三島の山寺。本堂の軒下には見事な龍の木彫りが施され、堂の中央には紅白の鈴緒が下がる。青もみじに包まれた木造のお堂は、静かな祈りの空気をたたえている。",
+        "image": "card_konryuji.png"
+      }
+    },
+    {
+      "id": "wakinomachi",
+      "districtId": "mishima",
+      "name": "脇野町（鋸鍛冶のまち）",
+      "lat": 37.4425,
+      "lng": 138.7618,
+      "radius": 90,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "伝統産業・町並み",
+      "treasure": {
+        "title": "脇野町（鋸鍛冶のまち）",
+        "era": "鋸鍛冶のまち（1842年〜）",
+        "blurb": "「鋸（のこぎり）鍛冶のまち」として知られる脇野町。天保13年（1842）、会津から帰郷した中屋庄兵衛が鋸づくりを始めたのが元祖と伝わり、かつては鋸店が軒を連ねた。炉の火とふいご、職人の手仕事が生んだ刃物は、雪国の暮らしと産業を長く支えてきた。",
+        "image": "card_wakinomachi.png"
       }
     }
   ]

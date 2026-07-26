@@ -63,6 +63,13 @@
         "zh_hans": "藏王",
         "zh_hant": "藏王"
       }
+    },
+    "mishima": {
+      "name": {
+        "en": "Mishima",
+        "zh_hans": "三岛",
+        "zh_hant": "三島"
+      }
     }
   },
   "pois": {
@@ -631,6 +638,141 @@
         "en": "The site of the medieval flatland 'Zaodo Castle.' In the Nanboku-cho period the Koshi-Nagao clan held it as a key point of the Chuetsu region, and in the Keicho era Tadanari Makino, first lord of Nagaoka, is said to have entered this castle before building Nagaoka Castle. Abandoned when Nagaoka Castle was built in 1618, it still retains earthworks and moat traces around the honmaru and ninomaru, and is designated a Nagaoka cultural property. The place where the story of Lord Makino's rule of Nagaoka began.",
         "zh_hans": "中世所筑平城「藏王堂城」的遗迹。南北朝时期古志长尾氏据此为中越要冲，庆长年间相传长冈藩初代·牧野忠成在筑长冈城之前先入此城。1618年长冈城筑城的同时废城，如今仍以本丸、二之丸为中心留有土垒与堀迹，被指定为长冈市文化财。牧野殿治理长冈之物语开始的地方。",
         "zh_hant": "中世所築平城「藏王堂城」的遺跡。南北朝時期古志長尾氏據此為中越要衝，慶長年間相傳長岡藩初代·牧野忠成在築長岡城之前先入此城。1618年長岡城築城的同時廢城，如今仍以本丸、二之丸為中心留有土壘與堀跡，被指定為長岡市文化財。牧野殿治理長岡之物語開始的地方。"
+      }
+    },
+    "rengeji_osugi": {
+      "name": {
+        "en": "Great Cedar of Rengeji",
+        "zh_hans": "莲花寺大杉",
+        "zh_hant": "蓮花寺大杉"
+      },
+      "title": {
+        "en": "Great Cedar of Rengeji",
+        "zh_hans": "莲花寺大杉",
+        "zh_hant": "蓮花寺大杉"
+      },
+      "era": {
+        "en": "Sacred giant tree",
+        "zh_hans": "神木·巨木",
+        "zh_hant": "神木·巨木"
+      },
+      "category": {
+        "en": "Sacred Tree / Giant Tree",
+        "zh_hans": "神木·巨木",
+        "zh_hant": "神木·巨木"
+      },
+      "blurb": {
+        "en": "A sacred great cedar towering in the precincts of Rengeji temple in Mishima. A shimenawa rope is tied around its thick trunk, and the tall tree rising straight to the sky with branches spreading in all directions has quietly watched over the ages. In summer it casts a cool shade to welcome worshippers—a giant tree that conveys the faith of the Mishima countryside.",
+        "zh_hans": "耸立于三岛町莲花寺境内的御神木大杉。粗壮的树干上系着注连绳，笔直伸向天空、枝叶向四方舒展的高树，静静守望着悠长岁月。夏日投下清凉的树荫迎接参拜者，是传承三岛乡里信仰至今的巨木。",
+        "zh_hant": "聳立於三島町蓮花寺境內的御神木大杉。粗壯的樹幹上繫著注連繩，筆直伸向天空、枝葉向四方舒展的高樹，靜靜守望著悠長歲月。夏日投下清涼的樹蔭迎接參拜者，是傳承三島鄉里信仰至今的巨木。"
+      }
+    },
+    "takeakari_kaido": {
+      "name": {
+        "en": "Takeakari Kaido (Mishima Promenade)",
+        "zh_hans": "竹灯光街道（三岛散步道）",
+        "zh_hant": "竹燈光街道（三島散步道）"
+      },
+      "title": {
+        "en": "Takeakari Kaido (Mishima Promenade)",
+        "zh_hans": "竹灯光街道（三岛散步道）",
+        "zh_hant": "竹燈光街道（三島散步道）"
+      },
+      "era": {
+        "en": "Echigo-Mishima Bamboo Lantern Road (ended in 2025)",
+        "zh_hans": "越后三岛竹灯光街道（2025年结束）",
+        "zh_hant": "越後三島竹燈光街道（2025年結束）"
+      },
+      "category": {
+        "en": "Townscape / Festival",
+        "zh_hans": "街景·祭典",
+        "zh_hant": "街景·祭典"
+      },
+      "blurb": {
+        "en": "An old-fashioned kaido road running from Honcho to Miyashita-cho in Mishima. Old sake breweries, somen noodle shops, and temples line the street, and beside the road springs a clear water called 'Jomon Yuki-tsurara.' It was beloved as the 'Echigo-Mishima Bamboo Lantern Road,' where on autumn nights about 20,000 bamboo lanterns lit the street (it ended in 2025). Together with the memory of the bamboo lights, it still conveys the charm of a retro rural street.",
+        "zh_hans": "从三岛本町延伸至宫下町的古老街道。古老的酒藏、素面店、寺社鳞次栉比，路旁涌出名为「绳文雪凌」的清泉。秋夜里约2万个竹灯笼点亮街道的「越后三岛竹灯光街道」曾广受喜爱（已于2025年结束）。如今，它仍与竹灯光的记忆一起，传递着复古乡间街道的情韵。",
+        "zh_hant": "從三島本町延伸至宮下町的古老街道。古老的酒藏、素麵店、寺社鱗次櫛比，路旁湧出名為「繩文雪凌」的清泉。秋夜裡約2萬個竹燈籠點亮街道的「越後三島竹燈光街道」曾廣受喜愛（已於2025年結束）。如今，它仍與竹燈光的記憶一起，傳遞著復古鄉間街道的情韻。"
+      }
+    },
+    "kannyakuji": {
+      "name": {
+        "en": "Kannyakuji Temple",
+        "zh_hans": "宽益寺",
+        "zh_hant": "寬益寺"
+      },
+      "title": {
+        "en": "Kannyakuji Temple",
+        "zh_hans": "宽益寺",
+        "zh_hant": "寬益寺"
+      },
+      "era": {
+        "en": "Ancient temple said to be founded by the monk Gyoki",
+        "zh_hans": "相传行基菩萨开山的古刹",
+        "zh_hant": "相傳行基菩薩開山的古剎"
+      },
+      "category": {
+        "en": "Temple / Ancient Temple",
+        "zh_hans": "寺院·古刹",
+        "zh_hant": "寺院·古剎"
+      },
+      "blurb": {
+        "en": "An ancient temple in Mishima said to have been founded by the monk Gyoki. Its thatched-roof gate and moss-covered stone steps tell of long years. Through the gate, a quiet approach continues inward, and the precincts wrapped in deep green convey the serene charm of a mountain temple.",
+        "zh_hans": "相传由行基菩萨开山的三岛古刹。茅草屋顶的山门与苔藓覆盖的石阶诉说着悠长岁月。穿过山门，静谧的参道向深处延伸，被浓绿环抱的境内，至今传递着幽静山寺的韵味。",
+        "zh_hant": "相傳由行基菩薩開山的三島古剎。茅草屋頂的山門與苔蘚覆蓋的石階訴說著悠長歲月。穿過山門，靜謐的參道向深處延伸，被濃綠環抱的境內，至今傳遞著幽靜山寺的韻味。"
+      }
+    },
+    "konryuji": {
+      "name": {
+        "en": "Konryuji Temple",
+        "zh_hans": "根立寺",
+        "zh_hant": "根立寺"
+      },
+      "title": {
+        "en": "Konryuji Temple",
+        "zh_hans": "根立寺",
+        "zh_hant": "根立寺"
+      },
+      "era": {
+        "en": "Mountain temple with dragon carvings",
+        "zh_hans": "龙木雕的山寺",
+        "zh_hant": "龍木雕的山寺"
+      },
+      "category": {
+        "en": "Temple / Ancient Temple",
+        "zh_hans": "寺院·古刹",
+        "zh_hant": "寺院·古剎"
+      },
+      "blurb": {
+        "en": "A mountain temple in Mishima wrapped in deep green. Beneath the eaves of the main hall are magnificent dragon wood carvings, and a red-and-white bell rope hangs at the center of the hall. The wooden hall surrounded by green maples holds an air of quiet prayer.",
+        "zh_hans": "被浓绿环抱的三岛山寺。本堂的屋檐下施以精美的龙木雕，堂中央垂下红白相间的铃绪。被青枫环绕的木造佛堂，满溢着静谧的祈祷气息。",
+        "zh_hant": "被濃綠環抱的三島山寺。本堂的屋簷下施以精美的龍木雕，堂中央垂下紅白相間的鈴緒。被青楓環繞的木造佛堂，滿溢著靜謐的祈禱氣息。"
+      }
+    },
+    "wakinomachi": {
+      "name": {
+        "en": "Wakinomachi (Town of Saw Smithing)",
+        "zh_hans": "胁野町（锯锻冶之町）",
+        "zh_hant": "脇野町（鋸鍛冶之町）"
+      },
+      "title": {
+        "en": "Wakinomachi (Town of Saw Smithing)",
+        "zh_hans": "胁野町（锯锻冶之町）",
+        "zh_hant": "脇野町（鋸鍛冶之町）"
+      },
+      "era": {
+        "en": "Town of saw smithing (since 1842)",
+        "zh_hans": "锯锻冶之町（1842年起）",
+        "zh_hant": "鋸鍛冶之町（1842年起）"
+      },
+      "category": {
+        "en": "Traditional Industry / Townscape",
+        "zh_hans": "传统产业·街景",
+        "zh_hant": "傳統產業·街景"
+      },
+      "blurb": {
+        "en": "Wakinomachi, known as the 'town of saw smithing.' It is said that in 1842, Shobei Nakaya, who returned home from Aizu, began making saws here, and saw shops once lined the streets. The blades born from the forge fire, bellows, and artisans' handwork long supported life and industry in snow country.",
+        "zh_hans": "以「锯锻冶之町」闻名的胁野町。相传天保13年（1842），从会津返乡的中屋庄兵卫在此开始制锯为元祖，昔日锯店鳞次栉比。炉火与风箱、匠人手工锻造的刃物，长久支撑着雪国的生活与产业。",
+        "zh_hant": "以「鋸鍛冶之町」聞名的脇野町。相傳天保13年（1842），從會津返鄉的中屋庄兵衛在此開始製鋸為元祖，昔日鋸店鱗次櫛比。爐火與風箱、匠人手工鍛造的刃物，長久支撐著雪國的生活與產業。"
       }
     }
   }
