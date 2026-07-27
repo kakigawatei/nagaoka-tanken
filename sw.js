@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v170";
+var CACHE_VERSION = "v171";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -237,7 +237,13 @@ var PRECACHE_URLS = [
   "assets/card_kyuryo_hanabatake.png", "assets/card_kyuryo_hanabatake_deluxe.png",
   "assets/card_kyuryo_hanabatake_autumn.png", "assets/card_kyuryo_hanabatake_autumn_deluxe.png",
   "assets/card_kyuryo_hanabatake_winter.png", "assets/card_kyuryo_hanabatake_winter_deluxe.png",
-  "assets/card_kyuryo_hanabatake_spring.png", "assets/card_kyuryo_hanabatake_spring_deluxe.png"
+  "assets/card_kyuryo_hanabatake_spring.png", "assets/card_kyuryo_hanabatake_spring_deluxe.png",
+  // 千秋・古正寺エリア
+  "assets/map_senshu.png",
+  "assets/card_kome_hyappyo.png", "assets/card_kome_hyappyo_deluxe.png",
+  "assets/card_mishima_okujiro.png", "assets/card_mishima_okujiro_deluxe.png",
+  "assets/card_kindai_bijutsukan.png", "assets/card_kindai_bijutsukan_deluxe.png",
+  "assets/card_lyric_hall.png", "assets/card_lyric_hall_deluxe.png"
 ];
 
 self.addEventListener("install", function (event) {

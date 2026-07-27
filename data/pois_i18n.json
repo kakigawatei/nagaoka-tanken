@@ -77,6 +77,13 @@
         "zh_hans": "川西",
         "zh_hant": "川西"
       }
+    },
+    "senshu": {
+      "name": {
+        "en": "Senshu-Koshoji",
+        "zh_hans": "千秋·古正寺",
+        "zh_hant": "千秋·古正寺"
+      }
     }
   },
   "pois": {
@@ -888,6 +895,114 @@
         "en": "The seasonal flower fields that color Echigo Hillside Park. Tulips and roses in spring, a sea of golden sunflowers against the blue sky in summer, cosmos in autumn—a different floral spectacle awaits each visit. The most photogenic spot in the whole park. (The card's scene changes with the season.)",
         "zh_hans": "点缀越后丘陵公园的四季花田。春有郁金香与玫瑰，夏有映衬蓝天的金黄向日葵之海，秋有波斯菊……每次到访都有不同的花之绝景。是全园最出片的景点。（卡片会随季节改变样貌。）",
         "zh_hant": "點綴越後丘陵公園的四季花田。春有鬱金香與玫瑰，夏有映襯藍天的金黃向日葵之海，秋有波斯菊……每次到訪都有不同的花之絕景。是全園最出片的景點。（卡片會隨季節改變樣貌。）"
+      }
+    },
+    "kome_hyappyo": {
+      "name": {
+        "en": "Statue Group of the Hundred Bags of Rice",
+        "zh_hans": "米百俵群像",
+        "zh_hant": "米百俵群像"
+      },
+      "title": {
+        "en": "The Hundred Bags of Rice — Statue Group",
+        "zh_hans": "米百俵群像",
+        "zh_hant": "米百俵群像"
+      },
+      "era": {
+        "en": "The Spirit of the Hundred Bags of Rice (Kobayashi Torasaburo)",
+        "zh_hans": "米百俵精神（小林虎三郎）",
+        "zh_hant": "米百俵精神（小林虎三郎）"
+      },
+      "category": {
+        "en": "Statue Group / Education",
+        "zh_hans": "群像·教育",
+        "zh_hant": "群像·教育"
+      },
+      "blurb": {
+        "en": "After the Boshin War left Nagaoka in ashes, a branch domain sent 100 bags of rice in sympathy. The chief minister Kobayashi Torasaburo declared that precisely because the people were starving, they must build a school, and sold the rice to fund the Kokkan school. Future talent over a single bag today — this statue group in Senshugahara Furusato Forest carries on the Spirit of the Hundred Bags of Rice.",
+        "zh_hans": "戊辰战争令长冈化为焦土，支藩送来百俵慰问米。藩大参事小林虎三郎说「正因吃不上饭才更要办学」，将米卖掉充作国汉学校的资金。舍眼前一俵、育未来人才——传承「米百俵精神」的群像，矗立于千秋原故乡之森。",
+        "zh_hant": "戊辰戰爭令長岡化為焦土，支藩送來百俵慰問米。藩大參事小林虎三郎說「正因吃不上飯才更要辦學」，將米賣掉充作國漢學校的資金。捨眼前一俵、育未來人才——傳承「米百俵精神」的群像，矗立於千秋原故鄉之森。"
+      }
+    },
+    "mishima_okujiro": {
+      "name": {
+        "en": "Statue of Mishima Okujiro",
+        "zh_hans": "三岛亿二郎像",
+        "zh_hant": "三島億二郎像"
+      },
+      "title": {
+        "en": "Statue of Mishima Okujiro",
+        "zh_hans": "三岛亿二郎像",
+        "zh_hant": "三島億二郎像"
+      },
+      "era": {
+        "en": "Father of Nagaoka Modernization",
+        "zh_hans": "长冈近代化之父",
+        "zh_hant": "長岡近代化之父"
+      },
+      "category": {
+        "en": "Bronze Statue / Great Figure",
+        "zh_hans": "铜像·伟人",
+        "zh_hant": "銅像·偉人"
+      },
+      "blurb": {
+        "en": "Mishima Okujiro rebuilt Nagaoka from the ruins of the Boshin War. He founded the 69th National Bank, hospitals, the Hokuetsu Railway and gas lamps, and nurtured people through his Lamp Society study circle. Standing along the Shinano River embankment, pointing to the sky toward the city future, he still encourages the citizens today.",
+        "zh_hans": "三岛亿二郎是使长冈从戊辰战败中重建的恩人。他创立第六十九国立银行、医院与北越铁道、煤气灯等诸多近代事业，并以学习会「灯会」育人。他立于信浓川堤岸，指向天空、昭示长冈的未来，至今仍激励着市民。",
+        "zh_hant": "三島億二郎是使長岡從戊辰戰敗中重建的恩人。他創立第六十九國立銀行、醫院與北越鐵道、煤氣燈等諸多近代事業，並以學習會「燈會」育人。他立於信濃川堤岸，指向天空、昭示長岡的未來，至今仍激勵著市民。"
+      }
+    },
+    "kindai_bijutsukan": {
+      "name": {
+        "en": "Niigata Prefectural Museum of Modern Art",
+        "zh_hans": "新潟县立近代美术馆",
+        "zh_hant": "新潟縣立近代美術館"
+      },
+      "title": {
+        "en": "Niigata Prefectural Museum of Modern Art",
+        "zh_hans": "新潟县立近代美术馆",
+        "zh_hant": "新潟縣立近代美術館"
+      },
+      "era": {
+        "en": "Palace of Art in Senshugahara",
+        "zh_hans": "千秋原的美之殿堂",
+        "zh_hant": "千秋原的美之殿堂"
+      },
+      "category": {
+        "en": "Art Museum",
+        "zh_hans": "美术馆",
+        "zh_hant": "美術館"
+      },
+      "blurb": {
+        "en": "Opened in 1993 in Senshugahara Furusato Forest under the concept of a museum in the forest. It holds modern and contemporary art from Japan and abroad, its great undulating curved roof and brickwork set off beautifully against the greenery — a refined hub of art symbolizing the culture of Nagaoka.",
+        "zh_hans": "以「森林中的美术馆」为理念，1993年在千秋原故乡之森开馆。收藏海内外近现代美术，大幅波动的曲面屋顶与砖砌外观在绿意中格外醒目，是象征长冈文化、精致的美之据点。",
+        "zh_hant": "以「森林中的美術館」為理念，1993年在千秋原故鄉之森開館。收藏海內外近現代美術，大幅波動的曲面屋頂與磚砌外觀在綠意中格外醒目，是象徵長岡文化、精緻的美之據點。"
+      }
+    },
+    "lyric_hall": {
+      "name": {
+        "en": "Nagaoka Lyric Hall",
+        "zh_hans": "长冈抒情厅",
+        "zh_hant": "長岡抒情廳"
+      },
+      "title": {
+        "en": "Nagaoka Lyric Hall",
+        "zh_hans": "长冈抒情厅",
+        "zh_hant": "長岡抒情廳"
+      },
+      "era": {
+        "en": "Hall of Music and Theater",
+        "zh_hans": "音乐与戏剧的殿堂",
+        "zh_hant": "音樂與戲劇的殿堂"
+      },
+      "category": {
+        "en": "Music and Theater Hall",
+        "zh_hans": "音乐·戏剧厅",
+        "zh_hant": "音樂·戲劇廳"
+      },
+      "blurb": {
+        "en": "Opened in 1996 in Senshugahara Furusato Forest, this complex hall for music and theater wraps a cylindrical concert hall and a playhouse beneath a gently undulating great roof and glass facade. With fine acoustics and expansive architectural beauty, it keeps playing the melody of the arts and culture of Nagaoka.",
+        "zh_hans": "1996年在千秋原故乡之森开馆的音乐·戏剧综合厅。以舒缓起伏的大屋顶与玻璃幕墙，包裹起圆筒形音乐厅与剧场。凭借出色音响与舒展的建筑之美，持续奏响长冈的艺术文化。",
+        "zh_hant": "1996年在千秋原故鄉之森開館的音樂·戲劇綜合廳。以舒緩起伏的大屋頂與玻璃幕牆，包裹起圓筒形音樂廳與劇場。憑藉出色音響與舒展的建築之美，持續奏響長岡的藝術文化。"
       }
     }
   }

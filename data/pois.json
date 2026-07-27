@@ -99,6 +99,15 @@
         "lng": 138.752
       },
       "unlockLevel": 1
+    },
+    {
+      "id": "senshu",
+      "name": "千秋・古正寺",
+      "center": {
+        "lat": 37.4635,
+        "lng": 138.8313
+      },
+      "unlockLevel": 1
     }
   ],
   "pois": [
@@ -1183,7 +1192,7 @@
       "id": "takeakari_kaido",
       "districtId": "mishima",
       "name": "竹あかり街道（三島の散歩道）",
-      "lat": 37.5030,
+      "lat": 37.503,
       "lng": 138.7895,
       "radius": 90,
       "rarity": "rare",
@@ -1222,7 +1231,7 @@
       "districtId": "mishima",
       "name": "根立寺",
       "lat": 37.4915,
-      "lng": 138.7800,
+      "lng": 138.78,
       "radius": 70,
       "rarity": "uncommon",
       "coinsFirst": 160,
@@ -1329,6 +1338,82 @@
         "era": "四季の花畑（夏＝ひまわり）",
         "blurb": "越後丘陵公園を彩る、季節ごとの花畑。春はチューリップとバラ、夏は青空に映える黄色いひまわりの海、秋はコスモス…と、訪れるたびに違う花の絶景が待っている。丘陵公園いちばんの映えスポット。（※季節でカードの姿が変わる）",
         "image": "card_kyuryo_hanabatake.png"
+      }
+    },
+    {
+      "id": "kome_hyappyo",
+      "districtId": "senshu",
+      "name": "米百俵の群像",
+      "lat": 37.4638,
+      "lng": 138.8313,
+      "radius": 50,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "群像・教育",
+      "treasure": {
+        "title": "米百俵の群像",
+        "era": "米百俵の精神（小林虎三郎）",
+        "blurb": "戊辰戦争で焦土と化した長岡へ、支藩から届いた見舞いの米百俵。藩の大参事・小林虎三郎は「食えないときこそ学校を」と、これを売って国漢学校の資金にあてた。目先の一俵より未来の人材を——「米百俵の精神」を今に伝える群像が、千秋が原ふるさとの森に立つ。",
+        "image": "card_kome_hyappyo.png"
+      }
+    },
+    {
+      "id": "mishima_okujiro",
+      "districtId": "senshu",
+      "name": "三島億二郎像",
+      "lat": 37.4618,
+      "lng": 138.8324,
+      "radius": 50,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "銅像・偉人",
+      "treasure": {
+        "title": "三島億二郎像",
+        "era": "長岡近代化の父",
+        "blurb": "戊辰の敗戦から長岡を立て直した恩人・三島億二郎。第六十九国立銀行の設立、病院や北越鉄道、ガス灯…数々の近代事業を興し、勉強会「ランプ会」で人を育てた。信濃川の土手沿いに立ち、空を指して長岡の未来を示すその姿は、今も市民を励ましている。",
+        "image": "card_mishima_okujiro.png"
+      }
+    },
+    {
+      "id": "kindai_bijutsukan",
+      "districtId": "senshu",
+      "name": "新潟県立近代美術館",
+      "lat": 37.4641,
+      "lng": 138.8321,
+      "radius": 50,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "美術館",
+      "treasure": {
+        "title": "新潟県立近代美術館",
+        "era": "千秋が原の美の殿堂",
+        "blurb": "「森の中の美術館」をコンセプトに1993年、千秋が原ふるさとの森に開館。国内外の近代・現代美術を収蔵し、大きく波打つ曲面屋根とレンガの佇まいが緑に映える。長岡の文化を象徴する、洗練された美の拠点。",
+        "image": "card_kindai_bijutsukan.png"
+      }
+    },
+    {
+      "id": "lyric_hall",
+      "districtId": "senshu",
+      "name": "長岡リリックホール",
+      "lat": 37.4643,
+      "lng": 138.8295,
+      "radius": 50,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "音楽・演劇ホール",
+      "treasure": {
+        "title": "長岡リリックホール",
+        "era": "音楽と演劇の殿堂",
+        "blurb": "1996年開館、千秋が原ふるさとの森に建つ音楽・演劇の複合ホール。円筒形のコンサートホールと劇場を、ゆるやかに波打つ大屋根とガラスのファサードが包む。すぐれた音響と伸びやかな建築美で、長岡の芸術文化を奏で続けている。",
+        "image": "card_lyric_hall.png"
       }
     }
   ]
