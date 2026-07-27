@@ -108,6 +108,15 @@
         "lng": 138.8313
       },
       "unlockLevel": 1
+    },
+    {
+      "id": "izumozaki",
+      "name": "出雲崎",
+      "center": {
+        "lat": 37.541,
+        "lng": 138.684
+      },
+      "unlockLevel": 1
     }
   ],
   "pois": [
@@ -1414,6 +1423,101 @@
         "era": "音楽と演劇の殿堂",
         "blurb": "1996年開館、千秋が原ふるさとの森に建つ音楽・演劇の複合ホール。円筒形のコンサートホールと劇場を、ゆるやかに波打つ大屋根とガラスのファサードが包む。すぐれた音響と伸びやかな建築美で、長岡の芸術文化を奏で続けている。",
         "image": "card_lyric_hall.png"
+      }
+    },
+    {
+      "id": "ryokan_kinenkan",
+      "districtId": "izumozaki",
+      "name": "良寛記念館",
+      "lat": 37.5422,
+      "lng": 138.6888,
+      "radius": 50,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "記念館・偉人",
+      "treasure": {
+        "title": "良寛記念館",
+        "era": "江戸の名僧・良寛の生誕地",
+        "blurb": "江戸後期の禅僧にして歌人・書家の良寛（1758-1831）は、ここ出雲崎の名主の家に生まれた。「淡雪の中にたちたる三千大千世界（みちおほち）またその中にあわ雪ぞ降る」――子どもらと手まりに興じ、無欲恬淡に生きた良寛の心を伝える記念館。松の庭と石畳が、越後の偉人の面影を今に残す。",
+        "image": "card_ryokan_kinenkan.png"
+      }
+    },
+    {
+      "id": "tsumairi_machinami",
+      "districtId": "izumozaki",
+      "name": "妻入りの街並み",
+      "lat": 37.5405,
+      "lng": 138.6848,
+      "radius": 50,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "町並み・天領",
+      "treasure": {
+        "title": "妻入りの街並み",
+        "era": "天領の港町・妻入り家屋の連なり",
+        "blurb": "日本海沿いに約4km、間口の狭い「妻入り」の家々がびっしりと軒を連ねる、全国的にも珍しい町並み。江戸時代は幕府の天領として栄え、北前船や漁で賑わった。一本の細い通りが海へまっすぐ延び、夕暮れには家並みの向こうに日本海の夕陽が沈む。時が止まったような郷愁の風景。",
+        "image": "card_tsumairi_machinami.png"
+      }
+    },
+    {
+      "id": "sekiyu_kinenkan",
+      "districtId": "izumozaki",
+      "name": "出雲崎石油記念館",
+      "lat": 37.5389,
+      "lng": 138.6788,
+      "radius": 50,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "記念館・産業遺産",
+      "treasure": {
+        "title": "出雲崎石油記念館（天領出雲崎時代館）",
+        "era": "日本の石油産業発祥の地",
+        "blurb": "出雲崎は「日本の石油産業発祥の地」。明治期、尼瀬の海岸に林立した木造の採掘やぐらから石油が汲み上げられ、近代日本のエネルギーを支えた。その歴史と天領の暮らしを伝える記念館。石油ランプの灯りに、越後の近代化を切り拓いた先人たちの息づかいが宿る。",
+        "image": "card_sekiyu_kinenkan.png"
+      }
+    },
+    {
+      "id": "tenryo_sato",
+      "districtId": "izumozaki",
+      "name": "天領の里",
+      "lat": 37.5398,
+      "lng": 138.6825,
+      "radius": 50,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "絶景・夕陽",
+      "treasure": {
+        "title": "天領の里（夕凪の橋）",
+        "era": "日本海に沈む夕陽・佐渡遥拝の名所",
+        "blurb": "道の駅「越後出雲崎 天領の里」から日本海へ長く延びる桟橋「夕凪の橋」。その先の展望デッキからは、海に浮かぶ佐渡島と、水平線に沈む雄大な夕陽が一望できる。金色に輝く光の道が海面をまっすぐに伸びる夕暮れは、まさに絶景。天領の港町が誇る、日本海のサンセットスポット。",
+        "image": "card_tenryo_sato.png"
+      }
+    },
+    {
+      "id": "ishii_jinja",
+      "districtId": "izumozaki",
+      "name": "石井神社",
+      "lat": 37.5425,
+      "lng": 138.6884,
+      "radius": 50,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "神社・絶景",
+      "treasure": {
+        "title": "石井神社",
+        "era": "海を見下ろす天空のパワースポット",
+        "blurb": "石井町の高台に鎮座する石井神社。石の鳥居が、その向こうに広がる日本海の大パノラマをまるで額縁のように切り取る。狛犬に見守られ、はるか下に青い海と海岸線を見晴らす「天空のパワースポット」。鳥居越しに沈む夕陽の神々しさは格別で、訪れる人の心を清らかにする。",
+        "image": "card_ishii_jinja.png"
       }
     }
   ]

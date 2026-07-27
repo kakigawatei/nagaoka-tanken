@@ -84,6 +84,13 @@
         "zh_hans": "千秋·古正寺",
         "zh_hant": "千秋·古正寺"
       }
+    },
+    "izumozaki": {
+      "name": {
+        "en": "Izumozaki",
+        "zh_hans": "出云崎",
+        "zh_hant": "出雲崎"
+      }
     }
   },
   "pois": {
@@ -1003,6 +1010,141 @@
         "en": "Opened in 1996 in Senshugahara Furusato Forest, this complex hall for music and theater wraps a cylindrical concert hall and a playhouse beneath a gently undulating great roof and glass facade. With fine acoustics and expansive architectural beauty, it keeps playing the melody of the arts and culture of Nagaoka.",
         "zh_hans": "1996年在千秋原故乡之森开馆的音乐·戏剧综合厅。以舒缓起伏的大屋顶与玻璃幕墙，包裹起圆筒形音乐厅与剧场。凭借出色音响与舒展的建筑之美，持续奏响长冈的艺术文化。",
         "zh_hant": "1996年在千秋原故鄉之森開館的音樂·戲劇綜合廳。以舒緩起伏的大屋頂與玻璃幕牆，包裹起圓筒形音樂廳與劇場。憑藉出色音響與舒展的建築之美，持續奏響長岡的藝術文化。"
+      }
+    },
+    "ryokan_kinenkan": {
+      "name": {
+        "en": "Ryokan Memorial Museum",
+        "zh_hans": "良宽纪念馆",
+        "zh_hant": "良寬紀念館"
+      },
+      "title": {
+        "en": "Ryokan Memorial Museum",
+        "zh_hans": "良宽纪念馆",
+        "zh_hant": "良寬紀念館"
+      },
+      "era": {
+        "en": "Birthplace of the Great Monk Ryokan",
+        "zh_hans": "江户名僧良宽的诞生地",
+        "zh_hant": "江戶名僧良寬的誕生地"
+      },
+      "category": {
+        "en": "Memorial Museum / Great Figure",
+        "zh_hans": "纪念馆·伟人",
+        "zh_hant": "紀念館·偉人"
+      },
+      "blurb": {
+        "en": "Ryokan (1758-1831), the late-Edo Zen monk, poet and calligrapher, was born here into a village headman family in Izumozaki. He played temari ball with the local children and lived a life of gentle simplicity. This museum, with its pine garden and stone paths, keeps alive the spirit of one of Echigo's most beloved figures.",
+        "zh_hans": "江户后期的禅僧、歌人兼书法家良宽（1758-1831）就诞生于出云崎的名主之家。他与孩童一同玩手鞠、恬淡无欲地生活。这座纪念馆以松林庭园与石板小径，将越后这位备受爱戴的伟人的身影传承至今。",
+        "zh_hant": "江戶後期的禪僧、歌人兼書法家良寬（1758-1831）就誕生於出雲崎的名主之家。他與孩童一同玩手鞠、恬淡無欲地生活。這座紀念館以松林庭園與石板小徑，將越後這位備受愛戴的偉人的身影傳承至今。"
+      }
+    },
+    "tsumairi_machinami": {
+      "name": {
+        "en": "Tsumairi Townscape",
+        "zh_hans": "妻入町并",
+        "zh_hant": "妻入町並"
+      },
+      "title": {
+        "en": "Tsumairi Townscape",
+        "zh_hans": "妻入町并",
+        "zh_hant": "妻入町並"
+      },
+      "era": {
+        "en": "Port Town of the Shogunate / Row of Gabled Houses",
+        "zh_hans": "天领港町·妻入家屋的连绵",
+        "zh_hant": "天領港町·妻入家屋的連綿"
+      },
+      "category": {
+        "en": "Townscape / Shogunate Domain",
+        "zh_hans": "町并·天领",
+        "zh_hant": "町並·天領"
+      },
+      "blurb": {
+        "en": "Along the Japan Sea for some 4km, narrow-fronted gabled houses stand densely side by side in the rare tsumairi style. Once a directly-governed shogunate domain, the town thrived on the kitamaebune trade and fishing. A single slender street runs straight down to the sea, where at dusk the Japan Sea sun sinks beyond the rooftops — a nostalgic scene where time stands still.",
+        "zh_hans": "沿日本海约4公里，窄门面的「妻入」家屋鳞次栉比，是全国罕见的町并。江户时代作为幕府天领，靠北前船与渔业繁荣。一条细长的街道笔直通向大海，黄昏时分日本海的夕阳沉落在家屋的彼端，宛如时光停驻的乡愁风景。",
+        "zh_hant": "沿日本海約4公里，窄門面的「妻入」家屋鱗次櫛比，是全國罕見的町並。江戶時代作為幕府天領，靠北前船與漁業繁榮。一條細長的街道筆直通向大海，黃昏時分日本海的夕陽沉落在家屋的彼端，宛如時光停駐的鄉愁風景。"
+      }
+    },
+    "sekiyu_kinenkan": {
+      "name": {
+        "en": "Izumozaki Petroleum Museum",
+        "zh_hans": "出云崎石油纪念馆",
+        "zh_hant": "出雲崎石油紀念館"
+      },
+      "title": {
+        "en": "Izumozaki Petroleum Museum",
+        "zh_hans": "出云崎石油纪念馆",
+        "zh_hant": "出雲崎石油紀念館"
+      },
+      "era": {
+        "en": "Birthplace of Japan's Petroleum Industry",
+        "zh_hans": "日本石油产业发祥地",
+        "zh_hant": "日本石油產業發祥地"
+      },
+      "category": {
+        "en": "Museum / Industrial Heritage",
+        "zh_hans": "纪念馆·产业遗产",
+        "zh_hant": "紀念館·產業遺產"
+      },
+      "blurb": {
+        "en": "Izumozaki is the birthplace of Japan's petroleum industry. In the Meiji era, wooden derricks stood in rows along the Amaze shore, drawing up oil that powered a modernizing Japan. This museum conveys that history and the life of the shogunate domain; in the glow of oil lamps lingers the breath of the pioneers who opened the way to Echigo's modernization.",
+        "zh_hans": "出云崎是「日本石油产业发祥地」。明治时期，尼濑海岸林立着木造采掘塔，汲取的石油支撑起近代日本的能源。这座纪念馆传承那段历史与天领的生活，石油灯的光芒中，仍留有开拓越后近代化的先人们的气息。",
+        "zh_hant": "出雲崎是「日本石油產業發祥地」。明治時期，尼瀨海岸林立著木造採掘塔，汲取的石油支撐起近代日本的能源。這座紀念館傳承那段歷史與天領的生活，石油燈的光芒中，仍留有開拓越後近代化的先人們的氣息。"
+      }
+    },
+    "tenryo_sato": {
+      "name": {
+        "en": "Tenryo no Sato",
+        "zh_hans": "天领之里",
+        "zh_hant": "天領之里"
+      },
+      "title": {
+        "en": "Tenryo no Sato (Yunagi Bridge)",
+        "zh_hans": "天领之里（夕凪桥）",
+        "zh_hant": "天領之里（夕凪橋）"
+      },
+      "era": {
+        "en": "Sunset over the Japan Sea, Facing Sado",
+        "zh_hans": "日本海落日·遥拜佐渡的名所",
+        "zh_hant": "日本海落日·遙拜佐渡的名所"
+      },
+      "category": {
+        "en": "Scenic View / Sunset",
+        "zh_hans": "绝景·夕阳",
+        "zh_hant": "絕景·夕陽"
+      },
+      "blurb": {
+        "en": "From the roadside station 'Echigo Izumozaki Tenryo no Sato,' the Yunagi Bridge stretches far out over the Japan Sea. From the observation deck at its end you can take in Sado Island floating on the sea and the majestic sun sinking into the horizon. At dusk a golden road of light runs straight across the water — a true spectacle, the pride of this shogunate port town.",
+        "zh_hans": "从道路休息站「越后出云崎 天领之里」向日本海长长延伸的栈桥「夕凪桥」，桥端的观景台可一览浮于海上的佐渡岛与沉入水平线的雄伟夕阳。黄昏时分，金色的光之路笔直伸展于海面，堪称绝景，是天领港町引以为傲的日本海落日胜地。",
+        "zh_hant": "從道路休息站「越後出雲崎 天領之里」向日本海長長延伸的棧橋「夕凪橋」，橋端的觀景台可一覽浮於海上的佐渡島與沉入水平線的雄偉夕陽。黃昏時分，金色的光之路筆直伸展於海面，堪稱絕景，是天領港町引以為傲的日本海落日勝地。"
+      }
+    },
+    "ishii_jinja": {
+      "name": {
+        "en": "Ishii Shrine",
+        "zh_hans": "石井神社",
+        "zh_hant": "石井神社"
+      },
+      "title": {
+        "en": "Ishii Shrine",
+        "zh_hans": "石井神社",
+        "zh_hant": "石井神社"
+      },
+      "era": {
+        "en": "Sky Power Spot Overlooking the Sea",
+        "zh_hans": "俯瞰大海的天空能量景点",
+        "zh_hant": "俯瞰大海的天空能量景點"
+      },
+      "category": {
+        "en": "Shrine / Scenic View",
+        "zh_hans": "神社·绝景",
+        "zh_hant": "神社·絕景"
+      },
+      "blurb": {
+        "en": "Ishii Shrine sits on a rise in Ishii-cho, where a stone torii frames the grand panorama of the Japan Sea beyond like a picture frame. Watched over by guardian lion-dogs, you gaze far down at the blue sea and coastline from this 'sky power spot.' The divine sight of the sun setting through the torii is extraordinary, purifying the hearts of all who visit.",
+        "zh_hans": "石井神社镇座于石井町的高台，石鸟居宛如画框般切取出彼端辽阔的日本海全景。在狛犬的守护下，从这处「天空能量景点」俯瞰远处的蓝海与海岸线。鸟居间沉落的夕阳格外神圣，涤净每位到访者的心灵。",
+        "zh_hant": "石井神社鎮座於石井町的高台，石鳥居宛如畫框般切取出彼端遼闊的日本海全景。在狛犬的守護下，從這處「天空能量景點」俯瞰遠處的藍海與海岸線。鳥居間沉落的夕陽格外神聖，滌淨每位到訪者的心靈。"
       }
     }
   }
