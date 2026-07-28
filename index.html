@@ -1090,9 +1090,6 @@
   /* ドローンショー（花火館タップ時のオーバーレイ再生） */
   #drone-show{ position:absolute; inset:0; z-index:72; display:none; overflow:hidden; }
   #drone-show canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-  /* ドローン花火「長岡花火」用の書体（M PLUS Rounded 1c Regular, SIL OFL 1.1・長岡花火の4字だけにサブセット。
-     参考=ドローンショーの丸ゴシック体に近い書体。ライセンス全文: assets/fonts/MPLUSRounded1c-OFL.txt） */
-  @font-face{ font-family:"NagaokaBrush"; src:url("data:font/woff2;base64,d09GMgABAAAAAAVcABAAAAAACaAAAAUHAAEPGgAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbIBxCBlYATBEIColkiAcBNgIkAw4LDAAEIAWDIAcgFyQYDBugB8gehXGzc4SIsmxNNL6u1yKep/b7nbu7D/OoCU8kEon6pyNNPEQ8MpRAq0TNpPh+Hrf1xox9YgML7Vkd4FVhVYN1UfZ1R6T8//eq/h9ag6KTKSLvj3mz1jufsnzMSRyg0UGNdWgDHJAOsGLBqFYr8yYXV3htAZQKJkSNiojGfz7GLNKEHQSExQGhQf8fIrbPuc+LzDGD0+KcNLC6zBGlku1qfkYycUvMt93Nz8sYNpP0dGo91gUd5Y2xG3j3j+YfrMMgZBgsaUZkxxkMWTCNeLvBNk2D18kKcSE+63+eGc0W8wKQ82MqORfgYpGylz9mRFHmfCArtWajuPD/f4DPrJrX2V8ek9IOEUkZAYWgy8mxzlHyCVAqBdqeZL1W1qYbUJS6k0fe1ZZJTLp6P4tq3QvteQ+zRSiZHJpSHDk6wmodbsVMskXl326dAM+sahDDBOrHk9VTCCptGtcwzO8fUbwqEIen+Nfj+8dGBhWuWPUJPFE1PkiYAFOTreMtkzF2Cx7DqwV9o0qSYf712/1IPksMfzcF4kGFvtVK164JJS0KV64ULirGVdFAYkjMKCqK4gkpjbKq+L5RpXWmO+e8+qAsnJIoXEgfc2n5leUDO1brHWG2OFzbh+HnoI+aHlEUDyxxBDwP6m9ltTqORZ3Dy1Zp9U99apm8JmBSOP4eiwP6igBy2L2ImewMwF+VfgcVOQnQPLnvHRkTVBTLyIW4MvMM4iNB76GUZ/GhYVA0TCpJpvhjgf10itkRSCdwf/C5/GPp7Q4Kk6KkivELtmq2F6K8NyCTDyYNCLUh9JRbtlpTQPUSKAERLwh0ntRV1SHzZZUj1f3Dxg9f3jNLw18tzpCIRwb6fhrT3dZuvxGuFnnTkSgkdVR1yfMTqGmlvZRAU0B9yEs5soQpQs54d00KXp2uXWsvTT22YeYBkz07eAV0AW+HPM7E0fp9/DHhsdTStuvXKrz3XLeoxaQw5286cN05M3zZ9pfuppKYnNYrx7eFloal+RWad156RFjQg8FladeXpJT55MH8jx3H0uDoaGnsZPrp3WfStXwmAogWnogW8ewY2ry1b2UfGJBGMn7Xb2BPLspZ2h3yw329n3KFOkLuTiK7wbp75vZjaemlx1eJJPY5xB6DBx9tjAwWeGGz5g1pm5MxHrm0kGuI0AjHlkOqj40gwoYroAVcGwIZEd2lJTlZZMgVjpaNcCWIXuPoqPPIhQgt4vP4bhxbVR1SEyFXhHA2V5nHxhHhScDCU+b+I8gboWqSp67DOcnQg8jD3OBFi7zsHH2Gn14/5j5k5uskyI0zSzS4Mp6WPnllWvmmJ/FEOEIIF9Dt8kX8g7Odnx18aX5e/mI0W0PqwCZBtqw8QgCCTKveebJ61VzK7SsTfwHAV9sfMwB+5b13/e/9NyFdKGULYMQMVM77d8CMrqNH/SeJ9gej31WSBtr1BUwTzIYNDF1egFJCgD0SUr407AguDQEnAO5YNctdTLl3V2da5lu/u7PjnTiEG4oq+MqUpViOZImS5KHZsGLNAS1OEhFajEz5MiwisggtnClalByZUogsnCN503flSZIpRy4LD2dJY1IuJOvx9hgiiTjNfEVaV1qx58xid7AvI5xylshVoEyZyp5GJOCwDHlyue4gKEYtM2eKkOhckDx3bXq/6a0ZwUUe+1rY9RMzA/jz32VwVF/87+3bZvDDqPUMYwgG7OmLAA==") format("woff2"); font-display:swap; }
   #ar-view{ position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; }
   /* video は canvas への描画ソース。非表示だが drawImage が黒くならないよう完全display:noneにはしない */
   #ar-video{ position:absolute; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; }
@@ -4173,19 +4170,24 @@
   // 文字を隠しcanvasに2段(長岡／花火)で描いてマスク化→グリッドで点をサンプリング→各ドローンの目標点に。
   // ①バラバラに飛来→②整列して文字を形づくる→③その場でキラキラ停滞（しっかり長く見せる）→④ふわっと散る。
   var droneSprites={};
-  // 参考画像どおり「白が主体、赤・緑・ピンク・金が少しだけ」混じる（青系は使わない＝実写に無いため）
-  var DRONE_PAL=[[255,255,255],[255,255,255],[255,255,255],[255,255,255],[255,255,255],
-                 [255,255,255],[255,255,255],[255,255,255],[255,255,255],[255,255,255],
-                 [255,255,255],[255,255,255],[255,255,255],[255,255,255],[255,255,255],[255,255,255],
-                 [255,92,92],[124,252,102],[255,107,208],[255,210,77]];
+  // 色コード→RGB（参考写真から拾った実際の色。w白 r赤 g緑 p桃 y金）
+  var DRONE_COL={ w:[255,255,255], r:[255,92,92], g:[124,240,110], p:[255,107,205], y:[255,205,77] };
   var DRONE_T1=1600, DRONE_HOLD=5200, DRONE_DISP=1400;      // ms（飛来／停滞／散る。masa指摘で停滞を大幅に延長＝しっかり読める時間を確保）
   var DRONE_TOTAL=DRONE_T1+DRONE_HOLD+DRONE_DISP;
-  // 参考写真の書体（丸みのあるゴシック体）に寄せるため、長岡花火の4字だけにサブセットしたM PLUS Rounded 1cを使う
-  var DRONE_FONT='"NagaokaBrush","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif';
-  // 早めに読み込み、もし先にサムネをフォールバントで焼いていたら破棄して焼き直す
-  (function(){ try{ if(document.fonts && document.fonts.load){
-    document.fonts.load('40px "NagaokaBrush"', '長岡花火').then(function(){ if(typeof arProcUrl!=='undefined') delete arProcUrl.nagaoka; }).catch(function(){});
-  } }catch(e){} })();
+  // 参考写真「長岡花火」の実ドローン配置を画像解析で抽出した実座標（496点）。
+  // 各7文字= x(3桁,0-999)/y(3桁,0-999)/色(w白 r赤 g緑 p桃 y金)。箱の縦=size, 横=size*0.9625。
+  var NAGAOKA_ASPECT=0.9625, NAGAOKA_STEP=0.0213;
+  var NAGAOKA_DOTS_ENC="000253w002231w016898w017875w023227w025251w027853w031410w033433w037887g039832w043679w043862g047225w049247w051699w053422w055403w055812w060873g062287w062669w062842w064268w064309w064330w064350w066369w066793w068075w068094w070116w070137w070156w070223w070246w070692w072178w072199w072592w074392w076412w076821w078772w078853g080611w080885y080930y082909y082954r084660w084977r084999r086270w086289w086309w086328w086347w086577w088367w088800w090056w090075w090114w090682w092135w092154w094174w094197w094221w094242w094630w094832w095602w097780w099403w101381w101650w101885y101907y103757w103932r103954r103999p105978r107579w109810w111671w115622w117600w119219w119242w119692w119789w123009w123377w123643w125034w125399w127767w129665w134707w140684w142216w142238w150009w150030w150635w154137w154157w154656w158073w158094w162296w167212w169236w171281w177313w179007w179030w179133w181156w185069w185092w189296w193757y195326w195780y195800w195821r195842r197208w197862r197885r197907w199232w199930w199948w201643w204002w206026w206131w206307w208154w210710g214067w214090w214337w216694g216753y216774y216793y218815y218836r218858r218879r218967w220903w220922w220945w222628w222671w224206w224652w226231w228320w234002w234022w236127w236150w236350w236607w238304w240064w240690g241086w241587w241986w243828r243855p243965w245332w245560w245626w245669g247649w251289w253204w255229w255362w257317w259602w261000w261021w261815r263126w263581w263847w265148w267274w267343w267963w267986w269084w269559w271304w271645w273797r275371w279202w279255w279830w280223w280600w282774r284354w286289w286579w290019w290144w290963w290986w292384w292555w292620w292641w296793r296815w302272w302763r304369w308201w308221w310399w313782r313806w313963w315639w315986w319259w321381w327412w327765p333789w335197w337219w339394w339615w339635r339963w339984w343422w356407w360437w362613y362633y362963w364195w364216w364986w376424w378452w384958w386980w391212w393439w405948w409973w578120w578146w580178w580204w582234w582259w582287w584313w584339g586366g586392y604729w604753w606088w606116w608146w608174w609204w609231w611259w611285w611309g613337g613362y613388y613418r615708w615776w619051w623748w627725w635695w635765w635947w643920w647718w647742w650036w650060w654900w656291w664311y664872w666152w668922w670124w672330r674219w676845w678034w678287w680058w680900w682171w682817w684141w686305y687873w691124w691789w693324y695347r697214w699154w699234w699759w701845w705030w707056w707174w707731w707819w711135w711789w711872w715319r715337r715703w720157w720212g720231g720673w720761w722641w724845w726817w728613w728731w732024w734054w734247y734268y734291r734789w736313p736337p736583w736701w742227y744208g744675w744761w748643w750560w752615w752731w756246y756266y756289r758313w758335w758701w761024w761051w761585w763186g763223y769675w771152g773643w777099w777615w779313w781127g781337w785851w787184w787202y789022w789047w789223r795090w795150g798111w800133g800311w800332w806877w808838w810202w816019w816099g818047w818139g820289w820862w822270w822309w822330w824122g824251w833894w837740w837847w841309w843017w843872w845045g845712w847268w847289w849247w855907w859686w867710w867735w869860w869888w872019g872047g874660w878920w884684w888641w890716w894903w898875w900021w900049y902079r902107r902133w904163w904193w905223w905249w905662w905943w907279w907307w909332w909358w909384w909699w911410w911437w911463w915918w917639w923896w927045y929075r929105w929131r931161w931191w931660w931684w931958w933221w933247w935276w935302w935328w935935w937356w937381w937407w939433w939461w946911w952973w956948w972932w980969w980990w991950w999977w";
+  var _nagDots=null;
+  // エンコード文字列を [{nx,ny,c}] に展開（初回だけ・以後キャッシュ）
+  function nagaokaDots(){
+    if(_nagDots) return _nagDots;
+    var s=NAGAOKA_DOTS_ENC, out=[];
+    for(var i=0;i+7<=s.length;i+=7){
+      out.push({ nx:parseInt(s.substr(i,3),10)/999, ny:parseInt(s.substr(i+3,3),10)/999, c:s.charAt(i+6) });
+    }
+    _nagDots=out; return out;
+  }
   function droneClamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function droneEase(p){ return p<0.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; } // easeInOutCubic
 
@@ -4204,36 +4206,13 @@
     droneSprites[key]=c; return c;
   }
 
-  // 「長岡／花火」を2段で、一辺sizeの箱に中心(cx,cy)で描き、目標座標(絶対)とグリッド間隔stepを返す。
-  // 参考写真は「細い一本線でくっきり読める書体」＝グリッドは粗め・縁取りは最小限にして
-  // ストロークがドットで潰れて団子にならないようにする（塗りつぶし過ぎ厳禁）。
+  // 参考写真から抽出した実ドローン座標を、中心(cx,cy)・縦sizeの箱に配置し、目標座標(絶対)＋各点の色＋
+  // ドット間隔stepを返す。フォントで描かず「本物の配置そのまま」を使う（masa要望＝配置を全く同じに）。
   function droneBuildTargets(size, cx, cy){
-    var S=Math.max(32, Math.round(size));
-    var mask=document.createElement("canvas"); mask.width=S; mask.height=S;
-    var m=mask.getContext("2d");
-    m.fillStyle="#fff"; m.strokeStyle="#fff"; m.lineJoin="round";
-    m.textAlign="center"; m.textBaseline="middle";
-    var fs=S*0.44;
-    m.font=fs+"px "+DRONE_FONT;                        // 丸ゴシック（M PLUS Rounded 1c）で参考写真の書体に寄せる
-    m.lineWidth=Math.max(1, fs*0.02);                 // ごく細い縁取り＝欠け防止の最小限（太らせすぎない）
-    var gap=fs*1.06, lines=["長岡","花火"];
-    for(var li=0; li<lines.length; li++){
-      var yy=S/2 + (li===0 ? -gap/2 : gap/2);
-      m.fillText(lines[li], S/2, yy); m.strokeText(lines[li], S/2, yy);
-    }
-    var data; try{ data=m.getImageData(0,0,S,S).data; }catch(e){ return { pts:[], step:6 }; }
-    var step=Math.max(4, Math.round(fs/10));           // 参考同様グリッドは粗め＝ストロークが1〜2列の線として読める
-    var pts=[], ox=cx-S/2, oy=cy-S/2, j=step*0.03;     // 揺らぎはごくわずか＝きれいな格子
-    for(var y=(step/2|0); y<S; y+=step){
-      for(var x=(step/2|0); x<S; x+=step){
-        if(data[(y*S+x)*4+3] > 130){
-          pts.push({ x:ox+x+(Math.random()-0.5)*j, y:oy+y+(Math.random()-0.5)*j });
-        }
-      }
-    }
-    var MAX=760;                                       // 多すぎたら間引き（負荷対策）
-    if(pts.length>MAX){ var out=[], sn=pts.length/MAX; for(var i=0;i<MAX;i++) out.push(pts[(i*sn)|0]); pts=out; }
-    return { pts:pts, step:step };
+    var boxH=size, boxW=size*NAGAOKA_ASPECT;
+    var ox=cx-boxW/2, oy=cy-boxH/2, arr=nagaokaDots();
+    var pts=arr.map(function(d){ return { x:ox+d.nx*boxW, y:oy+d.ny*boxH, c:d.c }; });
+    return { pts:pts, step:size*NAGAOKA_STEP };
   }
 
   // ドローン群の状態を、中心(cx,cy)・一辺sizeの箱で生成。飛来はタップ点まわりから、散りも局所的。
@@ -4246,7 +4225,7 @@
         sx:cx + Math.cos(ang)*rad,                     // タップ点まわりの雲から集まる
         sy:cy + size*0.30 + Math.random()*size*0.8,    // 少し下から浮かび上がる
         delay:Math.random()*450, travel:1000+Math.random()*500,
-        rgb:DRONE_PAL[(Math.random()*DRONE_PAL.length)|0],
+        rgb:DRONE_COL[pt.c] || DRONE_COL.w,            // 参考写真の実際の色（白／赤緑桃金）
         ph:Math.random()*Math.PI*2, tw:0.6+Math.random()*0.8,
         bob:1.2+Math.random()*1.8, size:0.8+Math.random()*0.4,
         ex:(Math.random()-0.5)*size*1.0,               // 散る先（局所的に外へ）
@@ -4277,7 +4256,7 @@
     ctx.save();
     ctx.globalCompositeOperation="lighter";
     var T1=DRONE_T1, T2=DRONE_T1+DRONE_HOLD, T3=DRONE_TOTAL;
-    var baseR=st.step*0.58, ds=st.drones;              // ドットは控えめ＝重なりすぎず字がくっきり
+    var baseR=st.step*0.5, ds=st.drones;               // 参考写真同様、点どうしに少し隙間＝1粒ずつ見える
     for(var i=0;i<ds.length;i++){
       var d=ds[i], x,y,alpha,sc;
       if(t<T1){
@@ -4332,7 +4311,7 @@
       droneOvStars.push({ x:Math.random()*w, y:Math.random()*h*0.9, r:Math.random()<0.3?2:1,
         a:0.3+Math.random()*0.5, tw:0.5+Math.random(), ph:Math.random()*6.28 });
     }
-    droneOvSt=droneMakeState(w/2, h*0.40, Math.min(w,h)*0.62);
+    droneOvSt=droneMakeState(w/2, h*0.42, Math.min(w,h)*0.9);
     droneOvT0=performance.now();
     cancelAnimationFrame(droneOvRAF);
     droneOvRAF=requestAnimationFrame(droneOvFrame);
@@ -4467,8 +4446,8 @@
     return oc;
   }
   function arPushFw(f, x, y){
-    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置に小さめで出る）
-      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.5;
+    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置。実配置496点なので大きめに）
+      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.82;
       var cx = droneClamp(x, sz*0.5, W - sz*0.5), cy = droneClamp(y, sz*0.5, H - sz*0.5);  // 画面内に収める
       arActive.push({ f:f, droneShow:true, st:droneMakeState(cx, cy, sz), born:performance.now() });
       return;
