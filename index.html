@@ -4446,8 +4446,8 @@
     return oc;
   }
   function arPushFw(f, x, y){
-    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置。実配置496点なので大きめに）
-      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.82;
+    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置に小さめ＝約1/4サイズで）
+      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.21;
       var cx = droneClamp(x, sz*0.5, W - sz*0.5), cy = droneClamp(y, sz*0.5, H - sz*0.5);  // 画面内に収める
       arActive.push({ f:f, droneShow:true, st:droneMakeState(cx, cy, sz), born:performance.now() });
       return;
