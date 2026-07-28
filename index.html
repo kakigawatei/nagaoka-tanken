@@ -1087,23 +1087,9 @@
     box-shadow:0 3px 12px rgba(90,40,110,.4);
   }
   .ar-open-btn:active{ transform:scale(.98); }
-  /* ドローンショー */
-  .drone-open-btn{ background:linear-gradient(135deg,#123a6b,#1f7a6e); box-shadow:0 3px 12px rgba(30,90,110,.4); }
-  #drone-view{ position:fixed; inset:0; z-index:210; background:#05060f; display:none; overflow:hidden; }
-  #drone-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-  .drone-top{
-    position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center;
-    justify-content:space-between; gap:10px;
-    padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
-    background:linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,0));
-  }
-  .drone-replay{
-    position:absolute; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 28px); transform:translateX(-50%);
-    z-index:3; display:none; padding:12px 24px; border:none; border-radius:12px;
-    background:linear-gradient(135deg,#123a6b,#1f7a6e); color:#fff; font-size:15px; font-weight:800;
-    cursor:pointer; box-shadow:0 3px 14px rgba(30,90,110,.5);
-  }
-  .drone-replay:active{ transform:translateX(-50%) scale(.97); }
+  /* ドローンショー（花火館タップ時のオーバーレイ再生） */
+  #drone-show{ position:absolute; inset:0; z-index:72; display:none; overflow:hidden; }
+  #drone-show canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   #ar-view{ position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; }
   /* video は canvas への描画ソース。非表示だが drawImage が黒くならないよう完全display:noneにはしない */
   #ar-video{ position:absolute; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; }
@@ -1361,7 +1347,6 @@
     <div id="book-panel-fw" style="display:none;">
       <div class="book-progress" id="fw-progress">あつめた花火：0 / 6</div>
       <button class="ar-open-btn" id="ar-open-btn" data-i18n="ar_launch">🎆 ARカメラで打ち上げる</button>
-      <button class="ar-open-btn drone-open-btn" id="drone-open-btn" data-i18n="drone_launch">🛸 ドローンで「長岡花火」を描く</button>
       <div class="fw-grid" id="fw-grid"></div>
       <div class="settings-note" style="padding:0 14px 14px;">実績を達成すると花火が増えます。タップでもう一度打ち上げ！🎆</div>
     </div>
@@ -2358,7 +2343,6 @@
     tab_fw:{ja:"花火館",en:"Fireworks",zh_hans:"烟花馆",zh_hant:"煙火館"},
     tab_makino:{ja:"御殿",en:"Manor",zh_hans:"御殿",zh_hant:"御殿"},
     ar_launch:{ja:"🎆 ARカメラで打ち上げる",en:"🎆 Launch with AR Camera",zh_hans:"🎆 用AR相机放烟花",zh_hant:"🎆 用AR相機放煙火"},
-    drone_launch:{ja:"🛸 ドローンで「長岡花火」を描く",en:"🛸 Draw \"Nagaoka Fireworks\" with Drones",zh_hans:"🛸 用无人机绘出「长冈花火」",zh_hant:"🛸 用無人機繪出「長岡花火」"},
     nearest_loading:{ja:"現在地を取得中…",en:"Getting location…",zh_hans:"正在获取位置…",zh_hant:"正在取得位置…"},
     badge_found:{ja:"発見済",en:"Found",zh_hans:"已发现",zh_hant:"已發現"},
     badge_unfound:{ja:"未発見",en:"Not found",zh_hans:"未发现",zh_hant:"未發現"},
@@ -3923,7 +3907,7 @@
       if(has){
         cell.addEventListener("click", function(){
           playFireworkShow(f.id);
-          if(typeof launchFireworks === "function") launchFireworks(2);
+          if(!f.special && typeof launchFireworks === "function") launchFireworks(2);
         });
       }
       grid.appendChild(cell);
@@ -4013,12 +3997,17 @@
     { id:"saturn",    name:"土星",         img:"assets/fw_saturn1.png", variants:["assets/fw_saturn1.png","assets/fw_saturn2.png","assets/fw_saturn3.png","assets/fw_saturn4.png"], blurb:"輪をまとった惑星の花火。上がるたびに輪の向きが変わる。" },
     { id:"name",      name:"なまえ",       img:"",  dynamic:true, textKind:"name", blurb:"設定した自分の名前が、夜空に横一列で打ち上がる花火。名前を変えると違う文字に。" },
     { id:"date",      name:"日付（2段）",  img:"",  dynamic:true, dateMode:"stack", blurb:"今日という日が、西暦と月日の2段で夜空に打ち上がる特別な花火。" },
-    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" }
+    { id:"date_row",  name:"日付（横）",   img:"",  dynamic:true, dateMode:"row",   blurb:"今日の日付が、横一列にずらりと並んで打ち上がる特別な花火。" },
+    { id:"nagaoka",   name:"長岡花火",     img:"",  special:"drone", blurb:"ドローンのように光の点が飛来して集まり、夜空に「長岡花火」の文字を描く特別な花火。" }
   ];
   // 動的花火の画像srcを返す。dynamic(日付)は毎日その日の日付、procedural(土星)は静止1コマをcanvasで描く。
   var arDateUrl = {};   // "YYYY-M-D-mode" -> dataURL
   var arProcUrl = {};   // id -> dataURL（一覧サムネ用の静止画。ARでは毎フレーム動く別描画）
   function fwImgSrc(f){
+    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが描く文字の静止ドット画像
+      if(!arProcUrl[f.id]) arProcUrl[f.id] = droneBuildStill().toDataURL();
+      return arProcUrl[f.id];
+    }
     if(f.procedural){
       if(!arProcUrl[f.id]) arProcUrl[f.id] = arBuildSaturnCanvas().toDataURL();
       return arProcUrl[f.id];
@@ -4165,6 +4154,7 @@
   // 花火の画像を大きく打ち上げる演出（実績お祝い＆花火館の再生で使用）
   function playFireworkShow(id){
     var f = fwById(id); if(!f) return;
+    if(f.special === "drone"){ droneShowOverlay(); return; }   // 「長岡花火」＝ドローン演出をオーバーレイ再生
     var app = document.getElementById("app"); if(!app) return;
     var layer = document.getElementById("fw-show");
     if(!layer){ layer = document.createElement("div"); layer.id = "fw-show"; app.appendChild(layer); }
@@ -4174,16 +4164,17 @@
     layer.appendChild(img);
   }
 
-  /* ---------- ドローンショー（光点＝ドローンが集まって「長岡花火」を描く演出） ---------- */
-  // 実際のドローンショー（参考：夜空に「長岡花火」の文字を光点で描く）を再現。
-  // 文字を隠しcanvasに描いてマスク化→グリッドで点をサンプリング→各ドローンの目標点に。
+  /* ---------- ドローン花火「長岡花火」（光点が飛来→文字を形づくり→散る演出） ---------- */
+  // 花火ARの一種＆花火館コレクションの一つとして使う。参考＝実写のドローンショー
+  //（夜空に「長岡花火」を光点で描く・白主体＋赤緑ピンク金水色）。
+  // 文字を隠しcanvasに2段(長岡／花火)で描いてマスク化→グリッドで点をサンプリング→各ドローンの目標点に。
   // ①バラバラに飛来→②整列して文字を形づくる→③その場でキラキラ停滞→④ふわっと散る。
-  var droneView=null, droneCanvas=null, droneCtx=null, droneRAF=0, droneRunning=false;
-  var droneDpr=1, droneW=0, droneH=0, drones=[], droneT0=0, droneStars=[], droneSprites={}, droneStep=8, droneEnded=false;
+  var droneSprites={};
   // 参考画像どおり「白が主体、赤・緑・ピンク・金・水色が少し」混じる
   var DRONE_PAL=[[255,255,255],[255,255,255],[255,255,255],[255,255,255],[255,255,255],
                  [255,92,92],[124,252,102],[255,107,208],[255,210,77],[90,209,255]];
-  var DRONE_FLY=3000, DRONE_HOLD=3800, DRONE_DISP=1600;   // ms（飛来／停滞／散る）
+  var DRONE_T1=1800, DRONE_HOLD=2400, DRONE_DISP=1300;      // ms（飛来／停滞／散る）
+  var DRONE_TOTAL=DRONE_T1+DRONE_HOLD+DRONE_DISP;
   function droneClamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function droneEase(p){ return p<0.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; } // easeInOutCubic
 
@@ -4202,20 +4193,19 @@
     droneSprites[key]=c; return c;
   }
 
-  // 「長岡／花火」を2段で描き、光点の目標座標の配列を返す
+  // 「長岡／花火」を2段で描き、目標座標の配列とグリッド間隔stepを返す
   function droneBuildTargets(W,H){
     var mask=document.createElement("canvas"); mask.width=W; mask.height=H;
     var m=mask.getContext("2d");
     m.fillStyle="#fff"; m.textAlign="center"; m.textBaseline="middle";
     var fs=Math.min(W*0.40, H*0.235);
     m.font="900 "+fs+"px "+AR_TXT_FF;
-    var cx=W/2, cyB=H*0.42, gap=fs*1.04;
+    var cx=W/2, cyB=H*0.40, gap=fs*1.04;
     m.fillText("長岡", cx, cyB-gap/2);
     m.fillText("花火", cx, cyB+gap/2);
     var data;
-    try{ data=m.getImageData(0,0,W,H).data; }catch(e){ return []; }
+    try{ data=m.getImageData(0,0,W,H).data; }catch(e){ return { pts:[], step:8 }; }
     var step=Math.max(7, Math.round(Math.min(W,H)/54));
-    droneStep=step;
     var pts=[];
     for(var y=(step/2|0); y<H; y+=step){
       for(var x=(step/2|0); x<W; x+=step){
@@ -4224,57 +4214,58 @@
         }
       }
     }
-    // 多すぎたら間引き（負荷対策）
-    var MAX=820;
-    if(pts.length>MAX){
-      var out=[], sn=pts.length/MAX;
-      for(var i=0;i<MAX;i++) out.push(pts[(i*sn)|0]);
-      pts=out;
-    }
-    return pts;
+    var MAX=820;                                   // 多すぎたら間引き（負荷対策）
+    if(pts.length>MAX){ var out=[], sn=pts.length/MAX; for(var i=0;i<MAX;i++) out.push(pts[(i*sn)|0]); pts=out; }
+    return { pts:pts, step:step };
   }
 
-  function droneBuild(){
-    var pts=droneBuildTargets(droneW,droneH);
-    drones=pts.map(function(pt){
+  // ドローン群＋星の状態を(W,H)向けに生成。再生ごとに1回だけ作る。
+  function droneMakeState(W,H){
+    var built=droneBuildTargets(W,H);
+    var drones=built.pts.map(function(pt){
       return {
         tx:pt.x, ty:pt.y,
-        sx:Math.random()*droneW,                     // 画面下寄りからバラバラに飛来
-        sy:droneH*0.55 + Math.random()*droneH*0.65,
-        delay:Math.random()*650, travel:1600+Math.random()*700,
+        sx:Math.random()*W,                          // 画面下寄りからバラバラに飛来
+        sy:H*0.55 + Math.random()*H*0.65,
+        delay:Math.random()*550, travel:1150+Math.random()*550,
         rgb:DRONE_PAL[(Math.random()*DRONE_PAL.length)|0],
         ph:Math.random()*Math.PI*2, tw:0.6+Math.random()*0.8,
         bob:2+Math.random()*3, size:0.8+Math.random()*0.5,
         dvx:(Math.random()-0.5)*2, dvy:-(0.35+Math.random())
       };
     });
+    var stars=[];
+    for(var i=0;i<70;i++){
+      stars.push({ x:Math.random()*W, y:Math.random()*H*0.9, r:Math.random()<0.3?2:1,
+        a:0.3+Math.random()*0.5, tw:0.5+Math.random(), ph:Math.random()*6.28 });
+    }
+    return { drones:drones, stars:stars, step:built.step, W:W, H:H };
   }
 
-  function droneDrawBg(ctx,W,H,now){
+  // 夜空の背景＋星（オーバーレイ再生のときだけ使う。ARではカメラ映像が背景）
+  function droneDrawSky(ctx,W,H,now,st){
     ctx.globalCompositeOperation="source-over"; ctx.globalAlpha=1;
     var g=ctx.createLinearGradient(0,0,0,H);
     g.addColorStop(0,"#05060f"); g.addColorStop(0.6,"#0a1226"); g.addColorStop(1,"#0d1830");
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
-    for(var i=0;i<droneStars.length;i++){
-      var s=droneStars[i];
+    for(var i=0;i<st.stars.length;i++){
+      var s=st.stars[i];
       ctx.globalAlpha=s.a*(0.55+0.45*Math.sin(now*0.001*s.tw+s.ph));
       ctx.fillStyle="#cdd8ff"; ctx.fillRect(s.x,s.y,s.r,s.r);
     }
     ctx.globalAlpha=1; ctx.globalCompositeOperation="source-over";
   }
 
-  function droneFrame(){
-    if(!droneRunning) return;
-    var now=performance.now(), t=now-droneT0;
-    var ctx=droneCtx, W=droneW, H=droneH;
-    var T1=DRONE_FLY, T2=DRONE_FLY+DRONE_HOLD, T3=T2+DRONE_DISP;
-    if(t>=T3){ droneOnEnd(); return; }
-    droneDrawBg(ctx,W,H,now);
+  // ドローンの光点だけを加算発光で描く（背景は呼び出し側の責任）。elapsed t(ms)。
+  // まだ演出中ならtrue、終わったらfalseを返す。
+  function droneDrawDots(ctx,W,H,t,st){
+    ctx.save();
     ctx.globalCompositeOperation="lighter";
-    var baseR=droneStep*0.85;
-    for(var i=0;i<drones.length;i++){
-      var d=drones[i], x,y,alpha,sc;
+    var T1=DRONE_T1, T2=DRONE_T1+DRONE_HOLD, T3=DRONE_TOTAL;
+    var baseR=st.step*0.85, ds=st.drones;
+    for(var i=0;i<ds.length;i++){
+      var d=ds[i], x,y,alpha,sc;
       if(t<T1){
         var p=droneClamp((t-d.delay)/d.travel,0,1), e=droneEase(p);
         x=d.sx+(d.tx-d.sx)*e; y=d.sy+(d.ty-d.sy)*e;
@@ -4283,7 +4274,7 @@
         var ht=t-T1;
         x=d.tx+Math.sin(ht*0.0022*d.tw+d.ph)*d.bob;
         y=d.ty+Math.cos(ht*0.0017*d.tw+d.ph)*d.bob;
-        alpha=0.82+0.18*Math.sin(ht*0.006*d.tw+d.ph*1.7);  // キラキラ
+        alpha=0.82+0.18*Math.sin(ht*0.006*d.tw+d.ph*1.7);   // キラキラ
         sc=1;
       } else {
         var dp=droneEase(droneClamp((t-T2)/DRONE_DISP,0,1));
@@ -4294,68 +4285,46 @@
       ctx.globalAlpha=droneClamp(alpha,0,1);
       ctx.drawImage(droneSprite(d.rgb), x-r, y-r, r*2, r*2);
     }
-    ctx.globalAlpha=1; ctx.globalCompositeOperation="source-over";
-    droneRAF=requestAnimationFrame(droneFrame);
+    ctx.restore();
+    return t<T3;
   }
 
-  function droneResize(){
-    if(!droneView) return;
-    droneW=droneView.clientWidth || window.innerWidth;
-    droneH=droneView.clientHeight || window.innerHeight;
-    droneDpr=Math.min(2, window.devicePixelRatio||1);
-    droneCanvas.width=Math.round(droneW*droneDpr);
-    droneCanvas.height=Math.round(droneH*droneDpr);
-    droneCtx.setTransform(droneDpr,0,0,droneDpr,0,0);
+  // 「長岡花火」の静止ドット画像（512×512透過）。一覧サムネ＆ARピッカー用に停滞フレームを1枚焼く。
+  function droneBuildStill(){
+    var S=512, c=document.createElement("canvas"); c.width=S; c.height=S;
+    droneDrawDots(c.getContext("2d"), S, S, DRONE_T1+DRONE_HOLD*0.5, droneMakeState(S,S));
+    return c;
   }
 
-  function droneEnsureView(){
-    if(droneView) return;
-    droneView=document.createElement("div"); droneView.id="drone-view";
-    droneView.innerHTML=
-      '<canvas id="drone-canvas"></canvas>'+
-      '<div class="drone-top"><button class="ar-btn" id="drone-close">✕</button>'+
-      '<div class="ar-hint">🛸 ドローンショー「長岡花火」</div><div style="width:44px"></div></div>'+
-      '<button class="drone-replay" id="drone-replay">もう一度みる</button>';
-    document.body.appendChild(droneView);
-    droneCanvas=droneView.querySelector("#drone-canvas");
-    droneCtx=droneCanvas.getContext("2d");
-    droneView.querySelector("#drone-close").addEventListener("click", droneClose);
-    droneView.querySelector("#drone-replay").addEventListener("click", function(ev){ ev.stopPropagation(); droneStart(); });
-  }
-
-  function droneStart(){
-    droneResize();
-    droneStars=[];
-    for(var i=0;i<70;i++){
-      droneStars.push({ x:Math.random()*droneW, y:Math.random()*droneH*0.9,
-        r:Math.random()<0.3?2:1, a:0.3+Math.random()*0.5, tw:0.5+Math.random(), ph:Math.random()*6.28 });
+  // 花火館タップ時のオーバーレイ再生（夜空背景つき・一発再生・タップでスキップ）
+  var droneOv=null, droneOvC=null, droneOvCtx=null, droneOvRAF=0, droneOvSt=null, droneOvT0=0;
+  function droneShowOverlay(){
+    var app=document.getElementById("app"); if(!app) return;
+    if(!droneOv){
+      droneOv=document.createElement("div"); droneOv.id="drone-show";
+      droneOvC=document.createElement("canvas"); droneOv.appendChild(droneOvC);
+      app.appendChild(droneOv);
+      droneOvCtx=droneOvC.getContext("2d");
+      droneOv.addEventListener("click", droneOvEnd);
     }
-    droneBuild();
-    droneEnded=false;
-    var rep=document.getElementById("drone-replay"); if(rep) rep.style.display="none";
-    droneT0=performance.now();
-    droneRunning=true;
-    cancelAnimationFrame(droneRAF);
-    droneRAF=requestAnimationFrame(droneFrame);
+    droneOv.style.display="block";
+    var w=app.clientWidth, h=app.clientHeight, dpr=Math.min(2, window.devicePixelRatio||1);
+    droneOvC.width=Math.round(w*dpr); droneOvC.height=Math.round(h*dpr);
+    droneOvC.style.width=w+"px"; droneOvC.style.height=h+"px";
+    droneOvCtx.setTransform(dpr,0,0,dpr,0,0);
+    droneOvSt=droneMakeState(w,h);
+    droneOvT0=performance.now();
+    cancelAnimationFrame(droneOvRAF);
+    droneOvRAF=requestAnimationFrame(droneOvFrame);
   }
-
-  function droneOnEnd(){
-    droneRunning=false; cancelAnimationFrame(droneRAF);
-    if(droneCtx) droneDrawBg(droneCtx,droneW,droneH,performance.now());
-    droneEnded=true;
-    var rep=document.getElementById("drone-replay"); if(rep) rep.style.display="block";
+  function droneOvFrame(){
+    if(!droneOvSt) return;
+    var now=performance.now(), t=now-droneOvT0, w=droneOvSt.W, h=droneOvSt.H;
+    droneDrawSky(droneOvCtx, w, h, now, droneOvSt);
+    if(droneDrawDots(droneOvCtx, w, h, t, droneOvSt)){ droneOvRAF=requestAnimationFrame(droneOvFrame); }
+    else { droneOvEnd(); }
   }
-
-  function droneOpen(){
-    droneEnsureView();
-    droneView.style.display="block";
-    droneStart();
-  }
-
-  function droneClose(){
-    droneRunning=false; cancelAnimationFrame(droneRAF);
-    if(droneView) droneView.style.display="none";
-  }
+  function droneOvEnd(){ cancelAnimationFrame(droneOvRAF); if(droneOv) droneOv.style.display="none"; }
 
   /* ---------- ARカメラ花火（canvas合成：背景[カメラ/写真/夜空]→花火→キャラ、撮影・自動モード対応） ---------- */
   var arStream = null, arFacing = "environment", arSelFw = null;
@@ -4367,7 +4336,7 @@
   var AR_TINT  = { heart:true };         // 単色型物：打ち上げごとに全体を2色グラデで塗り替える
   var AR_HUE   = { smile:true, date:true, date_row:true, name:true }; // 多色型物：色相を毎回回転（スマイル／日付／なまえのレインボー文字）
   var AR_SIZE  = { heart:0.6, smile:0.6, date:1.0, date_row:1.0, saturn:0.62, name:1.0 }; // 標準サイズ倍率（なまえは日付横と同じくらい）
-  var AR_NOAUTO = { date:true, date_row:true, name:true }; // 自動花火では上げない（日付/なまえは手動で選んだ時だけ）
+  var AR_NOAUTO = { date:true, date_row:true, name:true, nagaoka:true }; // 自動花火では上げない（日付/なまえ/長岡花火は手動で選んだ時だけ）
   var AR_DRONE = { name:true, date:true, date_row:true }; // ドローン演出：打ち上げず、その場に点灯→停滞→ゆっくり消灯
   var AR_SIZE_VAR = 0.22;                // 打ち上げごとのサイズ揺らぎ（±22%）。基準の周りで毎回大小が変わる
   var arCanvas = null, arCtx = null, arVideo = null, arRAF = 0, arRunning = false, arDpr = 1;
@@ -4478,6 +4447,10 @@
     return oc;
   }
   function arPushFw(f, x, y){
+    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（画面中央・全面）
+      arActive.push({ f:f, droneShow:true, st:droneMakeState(arCanvas.clientWidth, arCanvas.clientHeight), born:performance.now() });
+      return;
+    }
     var big = !!AR_BIG[f.id];
     var rotMax = AR_ROT_LIM[f.id] || AR_ROT_MAX;
     // 大玉もタップ位置で開く（位置固定なし・サイズだけ大きい）
@@ -4510,6 +4483,9 @@
   var AR_D_OP=[[0,0],[0.12,1],[0.5,1],[1,0]], AR_D_SC=[[0,0.97],[0.12,1],[1,1]], AR_D_BR=[[0,1.35],[0.18,1.08],[0.5,1],[1,0.9]];
 
   function arDrawFirework(ctx, o, now){
+    if(o.droneShow){                              // ドローン花火＝カメラ映像の上に光点だけを加算描画
+      return droneDrawDots(ctx, arCanvas.clientWidth, arCanvas.clientHeight, now - o.born, o.st);
+    }
     var el = now - o.born;
     var W = arCanvas.clientWidth, H = arCanvas.clientHeight;
     if(el < o.rocketDur){
@@ -4856,7 +4832,6 @@
   (function bindAR(){
     var g = function(id){ return document.getElementById(id); };
     var ob = g("ar-open-btn"); if(ob) ob.addEventListener("click", arOpen);
-    var db = g("drone-open-btn"); if(db) db.addEventListener("click", droneOpen);
     var cb = g("ar-close");    if(cb) cb.addEventListener("click", arClose);
     var fb = g("ar-flip");     if(fb) fb.addEventListener("click", arFlip);
     var ch = g("ar-char");     if(ch) ch.addEventListener("click", function(){ arSetChar(!arCharOn); });
@@ -4874,7 +4849,7 @@
       cv.addEventListener("pointerup", arPtrUp);
       cv.addEventListener("pointercancel", arPtrUp);
     }
-    window.addEventListener("resize", function(){ if(arRunning) arResize(); if(droneRunning) droneStart(); });
+    window.addEventListener("resize", function(){ if(arRunning) arResize(); });
     document.addEventListener("visibilitychange", function(){
       if(document.hidden){ if(arStream) arStopCamera(); }
       else {
