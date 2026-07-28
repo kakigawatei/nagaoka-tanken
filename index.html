@@ -4172,7 +4172,7 @@
   var droneSprites={};
   // 色コード→RGB（参考写真から拾った実際の色。w白 r赤 g緑 p桃 y金）
   var DRONE_COL={ w:[255,255,255], r:[255,92,92], g:[124,240,110], p:[255,107,205], y:[255,205,77] };
-  var DRONE_T1=1600, DRONE_HOLD=5200, DRONE_DISP=1400;      // ms（飛来／停滞／散る。masa指摘で停滞を大幅に延長＝しっかり読める時間を確保）
+  var DRONE_T1=1600, DRONE_HOLD=3000, DRONE_DISP=1400;      // ms（飛来／停滞／散る。masa指定＝はっきり見える停滞を3秒キープ）
   var DRONE_TOTAL=DRONE_T1+DRONE_HOLD+DRONE_DISP;
   // 参考写真「長岡花火」の実ドローン配置を画像解析で抽出した実座標（496点）。
   // 各7文字= x(3桁,0-999)/y(3桁,0-999)/色(w白 r赤 g緑 p桃 y金)。箱の縦=size, 横=size*0.9625。
@@ -4267,7 +4267,7 @@
         var ht=t-T1;
         x=d.tx+Math.sin(ht*0.0022*d.tw+d.ph)*d.bob;
         y=d.ty+Math.cos(ht*0.0017*d.tw+d.ph)*d.bob;
-        alpha=0.9+0.10*Math.sin(ht*0.0035*d.tw+d.ph*1.7);   // キラキラ（暗くなりすぎず明るく安定して読める）
+        alpha=0.95+0.05*Math.sin(ht*0.0035*d.tw+d.ph*1.7);  // ほぼ一定の明るさ＝3秒しっかり見える（軽く瞬くだけ）
         sc=1;
       } else {
         var dp=droneEase(droneClamp((t-T2)/DRONE_DISP,0,1));
@@ -4446,8 +4446,8 @@
     return oc;
   }
   function arPushFw(f, x, y){
-    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置に小さめ＝約1/4サイズで）
-      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.21;
+    if(f.special === "drone"){                    // 「長岡花火」＝ドローンが飛来→文字→散る（タップ位置に小さめ＝1/4よりひと回り大きく）
+      var W = arCanvas.clientWidth, H = arCanvas.clientHeight, sz = Math.min(W, H) * 0.28;
       var cx = droneClamp(x, sz*0.5, W - sz*0.5), cy = droneClamp(y, sz*0.5, H - sz*0.5);  // 画面内に収める
       arActive.push({ f:f, droneShow:true, st:droneMakeState(cx, cy, sz), born:performance.now() });
       return;
