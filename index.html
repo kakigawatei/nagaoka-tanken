@@ -4264,11 +4264,9 @@
         x=d.sx+(d.tx-d.sx)*e; y=d.sy+(d.ty-d.sy)*e;
         alpha=0.12+0.88*p; sc=0.7+0.3*p;
       } else if(t<T2){
-        var ht=t-T1;
-        x=d.tx+Math.sin(ht*0.0022*d.tw+d.ph)*d.bob;
-        y=d.ty+Math.cos(ht*0.0017*d.tw+d.ph)*d.bob;
-        alpha=0.95+0.05*Math.sin(ht*0.0035*d.tw+d.ph*1.7);  // ほぼ一定の明るさ＝3秒しっかり見える（軽く瞬くだけ）
-        sc=1;
+        // masa指定：この配置のまま3秒ピタッと静止キープ（揺れ無し・明るさ一定）
+        x=d.tx; y=d.ty;
+        alpha=1; sc=1;
       } else {
         var dp=droneEase(droneClamp((t-T2)/DRONE_DISP,0,1));
         x=d.tx+d.ex*dp; y=d.ty+d.ey*dp;
