@@ -1365,7 +1365,7 @@
       <div id="shop-panel-item">
         <div class="shop-card warp-card">
           <div class="shop-name">🧭 ワープ（遠くのスポットへ）</div>
-          <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。※ワープで手に入れたお宝カードには通し番号（発見順）は付きません。現地で発見したカードだけに番号が付きます。</div>
+          <div class="shop-desc">遠くて行けないスポットへ、1000コインでワープして訪れます。発見や再訪（ガチャ）ができます。🎫ガチャで手に入る「ワープ券」があれば、コイン消費なしでワープできます（券を優先して使用）。※ワープで手に入れたお宝カードには通し番号（発見順）は付きません。現地で発見したカードだけに番号が付きます。</div>
           <button class="shop-buy-btn" id="warp-open-btn">ワープ先を選ぶ（<img src="assets/coin.png" class="inline-coin" alt="coin">1000）</button>
         </div>
         <div class="shop-grid" id="shop-grid"></div>
@@ -1614,7 +1614,7 @@
     <div class="shop-modal-card">
       <button class="shop-modal-close" id="warp-close" aria-label="とじる">×</button>
       <div class="warp-title">🧭 ワープ先を選ぶ</div>
-      <div class="warp-sub">1000コインで、その場所へワープして訪れます（通し番号は付きません）</div>
+      <div class="warp-sub" id="warp-sub">1000コインで、その場所へワープして訪れます（通し番号は付きません）</div>
       <div class="warp-list" id="warp-list"></div>
     </div>
   </div>
@@ -1903,7 +1903,8 @@
         radarBoost: false,
         nearestHint: false,
         doubleCoinTicket: 0,
-        treasureReplayTicket: 0
+        treasureReplayTicket: 0,
+        warpTicket: 0
       },
       settings: { mode: "gps", simLat: null, simLng: null, sfx: true },
       // Phase3 additions（後方互換：欠けていてもdefaultSaveの値で補完される）
@@ -2024,6 +2025,7 @@
     if(!save.inventory || typeof save.inventory !== "object") save.inventory = defaultSave().inventory;
     save.inventory.doubleCoinTicket = Math.max(0, Math.floor(num(save.inventory.doubleCoinTicket, 0)));
     save.inventory.treasureReplayTicket = Math.max(0, Math.floor(num(save.inventory.treasureReplayTicket, 0)));
+    save.inventory.warpTicket = Math.max(0, Math.floor(num(save.inventory.warpTicket, 0)));
     if(save.base){
       save.base.members = Math.max(1, Math.floor(num(save.base.members, 1)));
       save.base.storage = Math.max(1, Math.floor(num(save.base.storage, 1)));
@@ -2452,6 +2454,9 @@
     time_hours:{ja:"約{n}時間",en:"about {n}h",zh_hans:"约{n}小时",zh_hant:"約{n}小時"},
     time_mins:{ja:"約{n}分",en:"about {n}min",zh_hans:"约{n}分钟",zh_hant:"約{n}分鐘"},
     warp_done:{ja:"{name} へワープ！",en:"Warped to {name}!",zh_hans:"已传送到 {name}！",zh_hant:"已傳送到 {name}！"},
+    warp_done_ticket:{ja:"🎫 ワープ券で {name} へワープ！",en:"Used a Warp Ticket to warp to {name}!",zh_hans:"使用传送券传送到 {name}！",zh_hant:"使用傳送券傳送到 {name}！"},
+    warp_sub_coin:{ja:"1000コインで、その場所へワープして訪れます（通し番号は付きません）",en:"Warp to that spot for 1000 coins (no serial number).",zh_hans:"用1000金币传送到该地点（无编号）。",zh_hant:"用1000金幣傳送到該地點（無編號）。"},
+    warp_sub_ticket:{ja:"🎫 ワープ券 ×{n} 所持！券を使えばコイン消費なしでワープできます（券がなくなると1000コイン）",en:"🎫 Warp Tickets ×{n}! Use one to warp with no coins (1000 coins once they run out).",zh_hans:"🎫 传送券 ×{n}！使用券可免金币传送（券用完后需1000金币）。",zh_hant:"🎫 傳送券 ×{n}！使用券可免金幣傳送（券用完後需1000金幣）。"},
     cos_none_name:{ja:"衣装なし（デフォルト）",en:"No costume (default)",zh_hans:"无服装（默认）",zh_hant:"無服裝（預設）"},
     cos_equipped_badge:{ja:"着用中",en:"Worn",zh_hans:"穿着中",zh_hant:"穿著中"},
     cos_none_desc:{ja:"いつもの探検スタイルに戻す。",en:"Back to your usual explorer style.",zh_hans:"回到平常的探险造型。",zh_hant:"回到平常的探險造型。"},
@@ -2589,7 +2594,8 @@
     },
     gitem: {
       doubleCoinTicket:{name:{en:"Double Coin Ticket",zh_hans:"双倍金币券",zh_hant:"雙倍金幣券"}},
-      treasureReplayTicket:{name:{en:"Treasure Replay Ticket",zh_hans:"宝物重赏券",zh_hant:"寶物重賞券"}}
+      treasureReplayTicket:{name:{en:"Treasure Replay Ticket",zh_hans:"宝物重赏券",zh_hant:"寶物重賞券"}},
+      warpTicket:{name:{en:"Warp Ticket",zh_hans:"传送券",zh_hant:"傳送券"}}
     },
     grade: {
       "0":{name:{en:"Normal",zh_hans:"普通",zh_hant:"普通"}},
@@ -3396,14 +3402,17 @@
     { id:"medal",     emoji:"🧭", name:"探検隊メダル",           img:"assets/omi_medal.png" }
   ];
   function omiById(id){ for(var i=0;i<OMIYAGE.length;i++){ if(OMIYAGE[i].id === id) return OMIYAGE[i]; } return null; }
-  // 排出テーブル（wは重み）。数値・確率はここで一括調整可。
-  // ※コインは出さない（回し得を防ぐため）。おみやげ＆アイテム＆レア(券×3)のみ。
+  // 排出テーブル（wは重み。合計100＝各wがそのまま％）。数値・確率はここで一括調整可。
+  // ※コインは出さない（回し得を防ぐため）。おみやげ＆アイテム＆レア(ワープ券5%・券×3の7%)のみ。
   var GACHA_TABLE = [
-    { w:45, type:"omiyage" },
+    { w:40, type:"omiyage" },
     { w:28, type:"item", item:"doubleCoinTicket" },
     { w:20, type:"item", item:"treasureReplayTicket" },
+    { w:5,  type:"item", item:"warpTicket", jackpot:true },
     { w:7,  type:"item", item:"doubleCoinTicket", qty:3, jackpot:true }
   ];
+  // アイテムの日本語名（tlのフォールバック用）
+  var ITEM_NAME_JA = { doubleCoinTicket:"ダブルコイン券", treasureReplayTicket:"お宝再鑑賞券", warpTicket:"ワープ券" };
 
   function gachaFreeAvailable(){ return (save.gacha.freeSpins || 0) > 0; }
   // スポット訪問で無料ガチャを1回付与（上限あり）
@@ -3416,7 +3425,7 @@
     for(i=0;i<GACHA_TABLE.length;i++){ acc += GACHA_TABLE[i].w; if(r < acc){ pick = GACHA_TABLE[i]; break; } }
     if(pick.type === "item"){
       return { type:"item", item:pick.item, qty:pick.qty || 1, jackpot:!!pick.jackpot,
-        label: tl("gitem", pick.item, "name", pick.item === "doubleCoinTicket" ? "ダブルコイン券" : "お宝再鑑賞券") };
+        label: tl("gitem", pick.item, "name", ITEM_NAME_JA[pick.item] || "券") };
     }
     var o = OMIYAGE[Math.floor(Math.random()*OMIYAGE.length)];
     var have = (save.omiyage[o.id] || 0) > 0;
@@ -3436,7 +3445,7 @@
 
   function gachaPrizeEmoji(res){
     if(res.type === "omiyage") return res.emoji;
-    if(res.type === "item") return "🎟️";
+    if(res.type === "item") return res.item === "warpTicket" ? "🎫" : "🎟️";
     return "🎁";
   }
 
@@ -3520,7 +3529,7 @@
 
   function gachaResultText(res){
     if(res.type === "item"){
-      var iv = ITEM_IMG[res.item] ? '<img class="gacha-res-thumb" src="' + ITEM_IMG[res.item] + '" alt=""> ' : "";
+      var iv = ITEM_IMG[res.item] ? '<img class="gacha-res-thumb" src="' + ITEM_IMG[res.item] + '" alt=""> ' : (gachaPrizeEmoji(res) + " ");
       return (res.jackpot ? t("gacha_jackpot") : "") + iv + res.label + " ×" + (res.qty || 1);
     }
     if(res.isNew) return t("gacha_new_omi") + "<br>" + omiResultVisual(res) + res.name;
@@ -6359,13 +6368,17 @@
     var list = document.getElementById("warp-list");
     list.innerHTML = "";
     if(!DATA) return;
+    var tickets = save.inventory.warpTicket || 0;
+    var canAfford = tickets > 0 || save.coins >= WARP_COST;   // 券があれば券優先で行ける
+    var sub = document.getElementById("warp-sub");
+    if(sub) sub.innerHTML = tickets > 0 ? tf("warp_sub_ticket", {n: tickets}) : t("warp_sub_coin");
     DATA.pois.filter(poiUnlocked).forEach(function(poi){
       var dObj = DATA.districts.filter(function(d){ return d.id === poi.districtId; })[0];
       var districtName = dObj ? distName(dObj) : "";
       var found = save.found.indexOf(poi.id) !== -1;
       var btn = document.createElement("button");
       btn.className = "warp-item";
-      btn.disabled = save.coins < WARP_COST;
+      btn.disabled = !canAfford;
       btn.innerHTML = "<span class=\"warp-item-name\">" + districtName + "：" + poiName(poi) + "</span>" +
         "<span class=\"warp-item-badge" + (found ? " found" : "") + "\">" + (found ? t("badge_found2") : t("badge_unfound")) + "</span>";
       btn.addEventListener("click", function(){ doWarp(poi.id); });
@@ -6374,7 +6387,8 @@
   }
 
   function doWarp(poiId){
-    if(save.coins < WARP_COST){ toast(t("coin_short")); return; }
+    var useTicket = (save.inventory.warpTicket || 0) > 0;   // 券優先：あれば券を使う
+    if(!useTicket && save.coins < WARP_COST){ toast(t("coin_short")); return; }
     var poi = DATA.pois.filter(function(p){ return p.id === poiId; })[0];
     if(!poi) return;
     // 空振り防止：発見済みかつ再訪クールダウン中はワープしても何も起きないので課金しない
@@ -6388,7 +6402,8 @@
         return;
       }
     }
-    save.coins -= WARP_COST;
+    if(useTicket){ save.inventory.warpTicket = Math.max(0, (save.inventory.warpTicket || 0) - 1); }
+    else { save.coins -= WARP_COST; }
     save.shopPurchasedOnce = true;
     // 仮想現在地をその場所へ（sim中は現在地も更新）＋その場所を「訪れる」
     currentPos = { lat: poi.lat, lng: poi.lng };
@@ -6399,7 +6414,7 @@
     if(typeof sfxPurchase === "function") sfxPurchase();
     document.getElementById("warp-modal").classList.remove("show");
     showScreen("home");
-    toast(tf("warp_done", {name: poiName(poi)}));
+    toast(tf(useTicket ? "warp_done_ticket" : "warp_done", {name: poiName(poi)}));
     attemptDiscovery(poi, { viaWarp: true });   // コインワープ：発見/再訪は可能だが通し番号（シリアル）は付けない
     renderAll();
   }
