@@ -117,6 +117,15 @@
         "lng": 138.684
       },
       "unlockLevel": 1
+    },
+    {
+      "id": "oguni",
+      "name": "小国",
+      "center": {
+        "lat": 37.301,
+        "lng": 138.661
+      },
+      "unlockLevel": 1
     }
   ],
   "pois": [
@@ -1518,6 +1527,82 @@
         "era": "海を見下ろす天空のパワースポット",
         "blurb": "石井町の高台に鎮座する石井神社。石の鳥居が、その向こうに広がる日本海の大パノラマをまるで額縁のように切り取る。狛犬に見守られ、はるか下に青い海と海岸線を見晴らす「天空のパワースポット」。鳥居越しに沈む夕陽の神々しさは格別で、訪れる人の心を清らかにする。",
         "image": "card_ishii_jinja.png"
+      }
+    },
+    {
+      "id": "oguniwashi",
+      "districtId": "oguni",
+      "name": "小国和紙",
+      "lat": 37.294,
+      "lng": 138.663,
+      "radius": 60,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "伝統工芸",
+      "treasure": {
+        "title": "小国和紙（小国和紙生産組合）",
+        "era": "300年以上・雪ざらしの手すき和紙",
+        "blurb": "豪雪の里・小国で300年以上受け継がれてきた手すき和紙。楮（こうぞ）を晒し、雪の上に並べて自然に漂白する「雪ざらし」が名物で、強くしなやかで温かみのある紙になる。新潟県の無形文化財に指定される、雪国の手仕事の結晶。",
+        "image": "card_oguniwashi.png"
+      }
+    },
+    {
+      "id": "ogunisawa",
+      "districtId": "oguni",
+      "name": "小国沢城跡",
+      "lat": 37.300,
+      "lng": 138.653,
+      "radius": 60,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "城跡・史跡",
+      "treasure": {
+        "title": "小国沢城跡（小城山）",
+        "era": "中世の山城・源頼行ゆかり",
+        "blurb": "渋海川の支流を見下ろす標高252mの小城山に築かれた中世の山城跡。源頼行ゆかりと伝わり、菅沼城・小松入城とも呼ばれた。尾根に曲輪の跡が連なり、頂からは小国の里と山並みを一望できる。石碑がぽつんと立ち、往時をしのばせる静かな城跡。",
+        "image": "card_ogunisawa.png"
+      }
+    },
+    {
+      "id": "oguniminzoku",
+      "districtId": "oguni",
+      "name": "小国民俗資料館",
+      "lat": 37.304,
+      "lng": 138.662,
+      "radius": 55,
+      "rarity": "uncommon",
+      "coinsFirst": 160,
+      "coinsRepeat": 10,
+      "xp": 38,
+      "category": "資料館・文化",
+      "treasure": {
+        "title": "小国民俗資料館",
+        "era": "1990年開館・山里の暮らし",
+        "blurb": "小国の里の暮らしと文化を今に伝える資料館。雪国の農具や生活道具、祭りの資料、特産の八石なすにまつわる展示など、山里の営みにふれられる。丸くカーブした庇の入口が目印の、落ち着いたたたずまいの建物。",
+        "image": "card_oguniminzoku.png"
+      }
+    },
+    {
+      "id": "hachikoku",
+      "districtId": "oguni",
+      "name": "八石山",
+      "lat": 37.288,
+      "lng": 138.652,
+      "radius": 70,
+      "rarity": "rare",
+      "coinsFirst": 200,
+      "coinsRepeat": 10,
+      "xp": 45,
+      "category": "自然・名瀑",
+      "treasure": {
+        "title": "八石山（八石不動滝）",
+        "era": "標高518m・三段72mの名瀑",
+        "blurb": "柏崎と長岡の市境にそびえる標高518mの名峰・八石山。深い緑の谷あいに、三段で高さ72mを落ちる名瀑「八石不動滝」がかかり、古来より不動明王の滝として信仰を集めてきた。夏は涼やかな水音に包まれ、冬は雪あかりの静けさに沈む。",
+        "image": "card_hachikoku.png"
       }
     }
   ]

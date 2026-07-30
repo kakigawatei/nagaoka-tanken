@@ -91,6 +91,13 @@
         "zh_hans": "出云崎",
         "zh_hant": "出雲崎"
       }
+    },
+    "oguni": {
+      "name": {
+        "en": "Oguni",
+        "zh_hans": "小国",
+        "zh_hant": "小國"
+      }
     }
   },
   "pois": {
@@ -1145,6 +1152,50 @@
         "en": "Ishii Shrine sits on a rise in Ishii-cho, where a stone torii frames the grand panorama of the Japan Sea beyond like a picture frame. Watched over by guardian lion-dogs, you gaze far down at the blue sea and coastline from this 'sky power spot.' The divine sight of the sun setting through the torii is extraordinary, purifying the hearts of all who visit.",
         "zh_hans": "石井神社镇座于石井町的高台，石鸟居宛如画框般切取出彼端辽阔的日本海全景。在狛犬的守护下，从这处「天空能量景点」俯瞰远处的蓝海与海岸线。鸟居间沉落的夕阳格外神圣，涤净每位到访者的心灵。",
         "zh_hant": "石井神社鎮座於石井町的高台，石鳥居宛如畫框般切取出彼端遼闊的日本海全景。在狛犬的守護下，從這處「天空能量景點」俯瞰遠處的藍海與海岸線。鳥居間沉落的夕陽格外神聖，滌淨每位到訪者的心靈。"
+      }
+    },
+    "oguniwashi": {
+      "name": { "en": "Oguni Washi", "zh_hans": "小国和纸", "zh_hant": "小國和紙" },
+      "title": { "en": "Oguni Washi (Oguni Handmade Paper Guild)", "zh_hans": "小国和纸（小国和纸生产组合）", "zh_hant": "小國和紙（小國和紙生產組合）" },
+      "era": { "en": "Over 300 years · snow-bleached handmade paper", "zh_hans": "300余年·雪晒手抄和纸", "zh_hant": "300餘年·雪曬手抄和紙" },
+      "category": { "en": "Traditional Craft", "zh_hans": "传统工艺", "zh_hant": "傳統工藝" },
+      "blurb": {
+        "en": "Handmade washi paper passed down for over 300 years in the snow country of Oguni. Its specialty is 'yukizarashi'—bleaching kozo (paper mulberry) fibers naturally by spreading them on the snow—yielding paper that is strong, supple and warm. Designated an Intangible Cultural Property of Niigata, it is the crystallization of snow-country craftsmanship.",
+        "zh_hans": "在豪雪之乡小国传承逾300年的手抄和纸。其名产「雪晒」是将楮树纤维铺在雪上自然漂白，制成坚韧柔软又温润的纸张。被指定为新潟县无形文化财，是雪国手工艺的结晶。",
+        "zh_hant": "在豪雪之鄉小國傳承逾300年的手抄和紙。其名產「雪曬」是將楮樹纖維鋪在雪上自然漂白，製成堅韌柔軟又溫潤的紙張。被指定為新潟縣無形文化財，是雪國手工藝的結晶。"
+      }
+    },
+    "ogunisawa": {
+      "name": { "en": "Ogunisawa Castle Ruins", "zh_hans": "小国沢城迹", "zh_hant": "小國澤城跡" },
+      "title": { "en": "Ogunisawa Castle Ruins (Mt. Kojiro)", "zh_hans": "小国沢城迹（小城山）", "zh_hant": "小國澤城跡（小城山）" },
+      "era": { "en": "Medieval mountain castle · linked to Minamoto no Yoriyuki", "zh_hans": "中世山城·与源赖行有关", "zh_hant": "中世山城·與源賴行有關" },
+      "category": { "en": "Castle Ruins / Historic Site", "zh_hans": "城迹·史迹", "zh_hant": "城跡·史跡" },
+      "blurb": {
+        "en": "Ruins of a medieval mountain castle built on the 252m Mt. Kojiro, overlooking a tributary of the Shibumi River. Said to be linked to Minamoto no Yoriyuki, it was also called Suganuma or Komatsuiri Castle. Traces of earthwork enclosures line the ridge, and from the summit you can take in all of the Oguni valley and its mountains. A lone stone monument stands quietly, evoking days gone by.",
+        "zh_hans": "建于俯瞰涩海川支流的海拔252米小城山上的中世山城遗迹。相传与源赖行有关，也称菅沼城·小松入城。山脊上曲轮遗迹相连，登顶可将小国之里与群山尽收眼底。一座石碑静静矗立，令人追忆往昔。",
+        "zh_hant": "建於俯瞰澀海川支流的海拔252公尺小城山上的中世山城遺跡。相傳與源賴行有關，也稱菅沼城·小松入城。山脊上曲輪遺跡相連，登頂可將小國之里與群山盡收眼底。一座石碑靜靜矗立，令人追憶往昔。"
+      }
+    },
+    "oguniminzoku": {
+      "name": { "en": "Oguni Folk Museum", "zh_hans": "小国民俗资料馆", "zh_hant": "小國民俗資料館" },
+      "title": { "en": "Oguni Folk Museum", "zh_hans": "小国民俗资料馆", "zh_hant": "小國民俗資料館" },
+      "era": { "en": "Opened 1990 · life of the mountain villages", "zh_hans": "1990年开馆·山里生活", "zh_hant": "1990年開館·山里生活" },
+      "category": { "en": "Museum / Culture", "zh_hans": "资料馆·文化", "zh_hant": "資料館·文化" },
+      "blurb": {
+        "en": "A museum conveying the life and culture of Oguni's mountain villages. Snow-country farm tools and household implements, festival materials, and displays on the local Hachikoku eggplant let you feel the rhythm of village life. The concrete building is marked by its curved entrance canopy.",
+        "zh_hans": "传递小国山里生活与文化的资料馆。雪国的农具与生活用具、祭典资料，以及关于特产八石茄子的展示，让人感受山里的生活气息。以圆弧屋檐入口为标志、沉稳而立的建筑。",
+        "zh_hant": "傳遞小國山里生活與文化的資料館。雪國的農具與生活用具、祭典資料，以及關於特產八石茄子的展示，讓人感受山里的生活氣息。以圓弧屋簷入口為標誌、沉穩而立的建築。"
+      }
+    },
+    "hachikoku": {
+      "name": { "en": "Mt. Hachikoku", "zh_hans": "八石山", "zh_hant": "八石山" },
+      "title": { "en": "Mt. Hachikoku (Hachikoku Fudo Falls)", "zh_hans": "八石山（八石不动瀑）", "zh_hant": "八石山（八石不動瀑）" },
+      "era": { "en": "518m peak · three-tiered 72m waterfall", "zh_hans": "海拔518米·三段72米名瀑", "zh_hant": "海拔518公尺·三段72公尺名瀑" },
+      "category": { "en": "Nature / Famous Waterfall", "zh_hans": "自然·名瀑", "zh_hant": "自然·名瀑" },
+      "blurb": {
+        "en": "Mt. Hachikoku, a 518m peak rising on the border of Kashiwazaki and Nagaoka. In a deep green valley falls the famous three-tiered, 72m 'Hachikoku Fudo Falls,' revered since ancient times as a waterfall of Fudo Myo-o. In summer it is wrapped in cool sounds of water; in winter it sinks into the stillness of snow-lantern light.",
+        "zh_hans": "耸立于柏崎与长冈市界的海拔518米名峰八石山。深绿的谷间垂挂着三段、高72米的名瀑「八石不动瀑」，自古作为不动明王之瀑广受信仰。夏日被清凉水声环绕，冬日沉入雪灯般的静谧。",
+        "zh_hant": "聳立於柏崎與長岡市界的海拔518公尺名峰八石山。深綠的谷間垂掛著三段、高72公尺的名瀑「八石不動瀑」，自古作為不動明王之瀑廣受信仰。夏日被清涼水聲環繞，冬日沉入雪燈般的靜謐。"
       }
     }
   }
