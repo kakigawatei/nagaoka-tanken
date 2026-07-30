@@ -800,6 +800,11 @@
     display:none; align-items:center; justify-content:center; padding:24px;
   }
   #login-modal.show{ display:flex; }
+  #gift-modal{
+    position:absolute; inset:0; background:rgba(20,14,8,0.72); z-index:61;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  #gift-modal.show{ display:flex; }
   .login-modal-card{
     width:100%; max-width:320px; background:var(--card-bg); border-radius:18px;
     padding:22px 20px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.45);
@@ -1563,6 +1568,15 @@
     </div>
   </div>
 
+  <!-- ワープ券プレゼント（配布キャンペーン） -->
+  <div id="gift-modal">
+    <div class="login-modal-card">
+      <div class="login-title">🎫 ワープ券プレゼント！</div>
+      <div class="login-reward" id="gift-reward"></div>
+      <button class="login-close-btn" id="gift-close-btn">うけとる</button>
+    </div>
+  </div>
+
   <!-- アプリ内お知らせ -->
   <div id="anno-modal">
     <div class="anno-card">
@@ -1950,7 +1964,9 @@
       // アプリ内お知らせ：既読にしたお知らせidの配列（Firestore announcements のドキュメントid）（後方互換：欠けていてもdefaultSave()の値で補完）
       seenAnnouncements: [],
       // ミニアンケート：回答済みアンケートidの配列（Firestore surveys のドキュメントid）（後方互換）
-      seenSurveys: []
+      seenSurveys: [],
+      // 配布キャンペーン：受け取り済みプレゼントidの配列（ワープ券配布など・再受け取り防止）
+      claimedGifts: []
     };
   }
 
@@ -3279,6 +3295,40 @@
       mEl.style.display = "none";
     }
     document.getElementById("login-modal").classList.add("show");
+  }
+
+  /* ---------- 配布キャンペーン（全ユーザーにワープ券プレゼント） ---------- */
+  // 各日の指定時刻(JST)を過ぎてから最初にアプリを開いたとき、その日ぶんを受け取れる（各id 1回のみ）。
+  // 端末で動くPWAのため「その時刻以降に開いたら受け取り」方式。日程・枚数はここで調整可。
+  var WARP_GIFTS = [
+    { id:"warpgift_20260801", at: Date.parse("2026-08-01T17:00:00+09:00"), tickets:1 },
+    { id:"warpgift_20260802", at: Date.parse("2026-08-02T17:00:00+09:00"), tickets:2 },
+    { id:"warpgift_20260803", at: Date.parse("2026-08-03T17:00:00+09:00"), tickets:2 }
+  ];
+
+  function checkWarpGifts(){
+    if(!Array.isArray(save.claimedGifts)) save.claimedGifts = [];
+    var now = Date.now(), granted = 0;
+    for(var i=0;i<WARP_GIFTS.length;i++){
+      var g = WARP_GIFTS[i];
+      if(now >= g.at && save.claimedGifts.indexOf(g.id) === -1){
+        save.inventory.warpTicket = (save.inventory.warpTicket || 0) + g.tickets;
+        save.claimedGifts.push(g.id);
+        granted += g.tickets;
+      }
+    }
+    if(granted > 0){
+      persist();
+      renderAll();
+      showGiftModal(granted);
+      if(typeof sfxDiscoveryFanfare === "function") sfxDiscoveryFanfare();
+    }
+  }
+
+  function showGiftModal(n){
+    document.getElementById("gift-reward").innerHTML =
+      "🎫 ワープ券 ×" + n + "<br><span style=\"font-size:12.5px;color:var(--ink-soft);font-weight:400;\">遠くのスポットへ、コインなしでワープできます</span>";
+    document.getElementById("gift-modal").classList.add("show");
   }
 
   /* ---------- 探検隊の拠点（放置コイン採取） ---------- */
@@ -6692,6 +6742,7 @@
       document.getElementById("bottom-nav").style.display = "flex";
       applyMode();
       checkLoginBonus();   // 開いた日にまだ受け取っていなければログインボーナスを表示
+      checkWarpGifts();    // 配布キャンペーン（ワープ券）の未受取ぶんがあれば受け取り
     });
 
     // 隠し開発モード切替：ホームタイトルを3秒以内に7回タップでON/OFF
@@ -6715,6 +6766,9 @@
 
     document.getElementById("login-close-btn").addEventListener("click", function(){
       document.getElementById("login-modal").classList.remove("show");
+    });
+    document.getElementById("gift-close-btn").addEventListener("click", function(){
+      document.getElementById("gift-modal").classList.remove("show");
     });
 
     document.getElementById("base-collect-btn").addEventListener("click", collectBase);
