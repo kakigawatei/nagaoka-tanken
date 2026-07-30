@@ -3327,7 +3327,8 @@
 
   function showGiftModal(n){
     document.getElementById("gift-reward").innerHTML =
-      "🎫 ワープ券 ×" + n + "<br><span style=\"font-size:12.5px;color:var(--ink-soft);font-weight:400;\">遠くのスポットへ、コインなしでワープできます</span>";
+      "<img src=\"assets/item_warp.png\" alt=\"\" style=\"width:84px;height:84px;object-fit:contain;display:block;margin:2px auto 8px;\">" +
+      "ワープ券 ×" + n + "<br><span style=\"font-size:12.5px;color:var(--ink-soft);font-weight:400;\">遠くのスポットへ、コインなしでワープできます</span>";
     document.getElementById("gift-modal").classList.add("show");
   }
 
@@ -3502,7 +3503,8 @@
   // 券（アイテム）のイラスト対応表。id → 画像パス。
   var ITEM_IMG = {
     doubleCoinTicket: "assets/item_doublecoin.png",
-    treasureReplayTicket: "assets/item_replay.png"
+    treasureReplayTicket: "assets/item_replay.png",
+    warpTicket: "assets/item_warp.png"
   };
 
   // 開封時に g-prize に入れる中身：背後の光バースト(g-prize-fx)＋イラスト or 絵文字。
