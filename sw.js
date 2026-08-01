@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v197";
+var CACHE_VERSION = "v198";
 var CACHE_NAME = "nagaoka-tanken-" + CACHE_VERSION;
 
 // SW自身の場所を基準に相対パスで解決（GitHub Pagesのサブパス配下でも正しく動くように）
@@ -293,7 +293,9 @@ var PRECACHE_URLS = [
   "assets/card_oguniwashi.png", "assets/card_oguniwashi_deluxe.png",
   "assets/card_ogunisawa.png", "assets/card_ogunisawa_deluxe.png",
   "assets/card_oguniminzoku.png", "assets/card_oguniminzoku_deluxe.png",
-  "assets/card_hachikoku.png", "assets/card_hachikoku_deluxe.png"
+  "assets/card_hachikoku.png", "assets/card_hachikoku_deluxe.png",
+  // 栄凉寺（牧野家フラッグシップ 2026-08-01）
+  "assets/card_eiryoji.png", "assets/card_eiryoji_deluxe.png"
 ];
 
 self.addEventListener("install", function (event) {
