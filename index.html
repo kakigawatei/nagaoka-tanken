@@ -1289,16 +1289,23 @@
     <div class="base-card">
       <div class="base-head" data-i18n="base_head">🏕️ 探検隊の拠点</div>
       <div class="base-sub" data-i18n="base_sub">留守の間も隊員がコインを集めてくれます</div>
-      <div class="base-accrued-line">たまっているコイン：<b id="base-accrued">0</b> / <span id="base-cap">0</span></div>
+      <div class="base-accrued-line"><span data-i18n="base_accrued_label">たまっているコイン：</span><b id="base-accrued">0</b> / <span id="base-cap">0</span></div>
       <button class="base-collect-btn" id="base-collect-btn" data-i18n="base_collect">回収する</button>
       <div class="base-up-row">
-        <div class="base-up-info">隊員 <b id="base-members">1</b>人（採取 +<span id="base-rate">15</span>/時）</div>
+        <div class="base-up-info" id="base-crew-info">隊員 <b>1</b>人</div>
         <button class="base-up-btn" id="base-hire-btn">雇う（150）</button>
       </div>
       <div class="base-up-row">
-        <div class="base-up-info">倉庫 Lv<b id="base-storage">1</b>（貯蔵 <span id="base-caphours">4</span>時間）</div>
+        <div class="base-up-info" id="base-storage-info">倉庫 Lv<b>1</b></div>
         <button class="base-up-btn" id="base-storage-btn">拡張（200）</button>
       </div>
+    </div>
+
+    <!-- デイリーミッション（2026-08-01追加）: 毎日3つ・達成で自動でコイン付与 -->
+    <div class="base-card" id="daily-missions-card" style="display:none;">
+      <div class="base-head" data-i18n="msn_head">📋 きょうのミッション</div>
+      <div id="daily-missions-list"></div>
+      <div class="base-sub" id="daily-missions-note" style="margin-top:6px;"></div>
     </div>
   </div>
 
@@ -2326,6 +2333,25 @@
    * ※機械翻訳ベース（後で手直し可）。図鑑の解説文などはPhase2で対応予定。 */
   var LANG_KEY = "tekuteku_lang";
   var I18N = {
+    /* --- デイリーミッション（2026-08-01追加） --- */
+    msn_head:{ja:"📋 きょうのミッション",en:"📋 Today's Missions",zh_hans:"📋 今日任务",zh_hant:"📋 今日任務"},
+    msn_visit:{ja:"スポットを1か所たずねる",en:"Visit any spot",zh_hans:"造访1个景点",zh_hant:"造訪1個景點"},
+    msn_gacha:{ja:"ガチャを1回まわす",en:"Spin the gacha once",zh_hans:"转1次扭蛋",zh_hant:"轉1次扭蛋"},
+    msn_collect:{ja:"拠点のコインを回収する",en:"Collect base coins",zh_hans:"收取基地金币",zh_hant:"收取基地金幣"},
+    msn_book:{ja:"図鑑でカードをながめる",en:"View a card in the collection",zh_hans:"在图鉴中欣赏卡片",zh_hant:"在圖鑑中欣賞卡片"},
+    msn_shop:{ja:"地図タブでお店をチェック",en:"Check a shop on the map",zh_hans:"在地图上查看店铺",zh_hant:"在地圖上查看店鋪"},
+    msn_all_note:{ja:"3つ達成でボーナス +{n}コイン",en:"Complete all 3 for +{n} bonus coins",zh_hans:"完成3项奖励 +{n}金币",zh_hant:"完成3項獎勵 +{n}金幣"},
+    msn_all_done:{ja:"🎉 きょうのミッション全達成！",en:"🎉 All missions complete!",zh_hans:"🎉 今日任务全部完成！",zh_hant:"🎉 今日任務全部完成！"},
+    msn_toast:{ja:"ミッション達成！ +{n}コイン",en:"Mission complete! +{n} coins",zh_hans:"任务完成！+{n}金币",zh_hant:"任務完成！+{n}金幣"},
+    msn_all_toast:{ja:"全ミッション達成ボーナス +{n}コイン！",en:"All-missions bonus +{n} coins!",zh_hans:"全部完成奖励 +{n}金币！",zh_hant:"全部完成獎勵 +{n}金幣！"},
+    /* --- i18n仕上げ（ハードコード解消 2026-08-01） --- */
+    badge_deluxe:{ja:"✦豪華版",en:"✦Deluxe",zh_hans:"✦豪华版",zh_hant:"✦豪華版"},
+    base_collected:{ja:"拠点から {n} コイン回収！",en:"Collected {n} coins from base!",zh_hans:"从基地收取了{n}金币！",zh_hant:"從基地收取了{n}金幣！"},
+    base_accrued_label:{ja:"たまっているコイン：",en:"Stored coins: ",zh_hans:"已积攒金币：",zh_hant:"已積攢金幣："},
+    crew_info:{ja:"隊員 <b>{n}</b>人（採取 +{r}/時）",en:"Crew: <b>{n}</b> (+{r}/hr)",zh_hans:"队员 <b>{n}</b>人（+{r}/时）",zh_hant:"隊員 <b>{n}</b>人（+{r}/時）"},
+    storage_info:{ja:"倉庫 Lv<b>{lv}</b>（貯蔵 {h}時間）",en:"Storage Lv<b>{lv}</b> ({h}h cap)",zh_hans:"仓库 Lv<b>{lv}</b>（储存{h}小时）",zh_hant:"倉庫 Lv<b>{lv}</b>（儲存{h}小時）"},
+    gift_warp:{ja:"ワープ券 ×{n}",en:"Warp Ticket ×{n}",zh_hans:"传送券 ×{n}",zh_hant:"傳送券 ×{n}"},
+    gift_warp_sub:{ja:"遠くのスポットへ、コインなしでワープできます",en:"Warp to distant spots without spending coins",zh_hans:"无需金币即可传送到远处景点",zh_hant:"無需金幣即可傳送到遠處景點"},
     nav_home:{ja:"ホーム",en:"Home",zh_hans:"主页",zh_hant:"主頁"},
     nav_map:{ja:"マップ",en:"Map",zh_hans:"地图",zh_hant:"地圖"},
     nav_book:{ja:"図鑑",en:"Cards",zh_hans:"图鉴",zh_hant:"圖鑑"},
@@ -3205,6 +3231,77 @@
     return { streak: save.streak, streakBonus: streakBonus, missionBonus: missionBonus, total: streakBonus + missionBonus };
   }
 
+  /* ---------- デイリーミッション（2026-08-01） ----------
+   * 毎日3つ（スポット訪問＝固定＋日替わり2つ）。達成した瞬間に自動でコイン付与（受取ボタン無し）。
+   * 進捗は save.missions = { date, done:[], allClaimed } に保存。日付が変わるとリセット。
+   * 報酬額はここで一括調整可。 */
+  var MSN_REWARD = 40;        // 1ミッション達成
+  var MSN_ALL_BONUS = 80;     // 3つ全達成ボーナス
+  var MSN_POOL = {
+    m_visit:   { icon:"🧭", key:"msn_visit" },
+    m_gacha:   { icon:"🎰", key:"msn_gacha" },
+    m_collect: { icon:"🏕️", key:"msn_collect" },
+    m_book:    { icon:"📖", key:"msn_book" },
+    m_shop:    { icon:"🏪", key:"msn_shop" }
+  };
+  // 日替わり2枠の組み合わせ（6通りを日付で巡回＝全員同じお題）
+  var MSN_COMBOS = [
+    ["m_gacha","m_collect"],["m_gacha","m_book"],["m_gacha","m_shop"],
+    ["m_collect","m_book"],["m_collect","m_shop"],["m_book","m_shop"]
+  ];
+  function todayMissions(){
+    var n = new Date();
+    var h = n.getFullYear()*372 + (n.getMonth()+1)*31 + n.getDate();
+    return ["m_visit"].concat(MSN_COMBOS[h % MSN_COMBOS.length]);
+  }
+  function ensureMissions(){
+    var d = todayStr();
+    if(!save.missions || save.missions.date !== d){
+      save.missions = { date: d, done: [], allClaimed: false };
+    }
+    return save.missions;
+  }
+  function markMission(id){
+    try{
+      if(!save) return;
+      var ms = ensureMissions();
+      if(todayMissions().indexOf(id) === -1) return;
+      if(ms.done.indexOf(id) !== -1) return;
+      ms.done.push(id);
+      save.coins += MSN_REWARD;
+      save.totalCoinsEarned += MSN_REWARD;
+      var allDone = todayMissions().every(function(m){ return ms.done.indexOf(m) !== -1; });
+      if(allDone && !ms.allClaimed){
+        ms.allClaimed = true;
+        save.coins += MSN_ALL_BONUS;
+        save.totalCoinsEarned += MSN_ALL_BONUS;
+        setTimeout(function(){ toast(tf("msn_all_toast", {n: MSN_ALL_BONUS})); }, 900);
+      }
+      persist();
+      toast(tf("msn_toast", {n: MSN_REWARD}));
+      if(typeof sfxCoin === "function") sfxCoin();
+      var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
+      renderDailyMissions();
+    }catch(e){ /* ミッションは飾り。失敗しても本体の処理を止めない */ }
+  }
+  function renderDailyMissions(){
+    var card = document.getElementById("daily-missions-card");
+    var list = document.getElementById("daily-missions-list");
+    if(!card || !list) return;
+    var ms = ensureMissions();
+    card.style.display = "block";
+    list.innerHTML = todayMissions().map(function(id){
+      var m = MSN_POOL[id];
+      var done = ms.done.indexOf(id) !== -1;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 2px;' + (done ? 'opacity:.75;' : '') + '">' +
+        '<span style="font-size:18px;">' + (done ? "✅" : m.icon) + '</span>' +
+        '<span style="flex:1;' + (done ? 'text-decoration:line-through;' : '') + '">' + t(m.key) + '</span>' +
+        '<span style="font-weight:700;color:var(--accent,#b8860b);white-space:nowrap;">+' + MSN_REWARD + '</span></div>';
+    }).join("");
+    var note = document.getElementById("daily-missions-note");
+    if(note) note.textContent = ms.allClaimed ? t("msn_all_done") : tf("msn_all_note", {n: MSN_ALL_BONUS});
+  }
+
   function consumeDoubleCoin(){
     if(save.inventory.doubleCoinTicket > 0){
       save.inventory.doubleCoinTicket -= 1;
@@ -3331,7 +3428,7 @@
   function showGiftModal(n){
     document.getElementById("gift-reward").innerHTML =
       "<img src=\"assets/item_warp.png\" alt=\"\" style=\"width:84px;height:84px;object-fit:contain;display:block;margin:2px auto 8px;\">" +
-      "ワープ券 ×" + n + "<br><span style=\"font-size:12.5px;color:var(--ink-soft);font-weight:400;\">遠くのスポットへ、コインなしでワープできます</span>";
+      tf("gift_warp", {n: n}) + "<br><span style=\"font-size:12.5px;color:var(--ink-soft);font-weight:400;\">" + t("gift_warp_sub") + "</span>";
     document.getElementById("gift-modal").classList.add("show");
   }
 
@@ -3375,7 +3472,8 @@
     if(typeof sfxCoin === "function") sfxCoin();
     checkAchievements();
     renderAll();
-    toast("拠点から " + amt + " コイン回収！");
+    toast(tf("base_collected", {n: amt}));
+    markMission("m_collect");
   }
 
   function hireMember(){
@@ -3408,10 +3506,8 @@
     var cap = baseCapCoins();
     document.getElementById("base-accrued").textContent = accrued;
     document.getElementById("base-cap").textContent = cap;
-    document.getElementById("base-members").textContent = save.base.members;
-    document.getElementById("base-rate").textContent = baseRatePerHour();
-    document.getElementById("base-storage").textContent = save.base.storage;
-    document.getElementById("base-caphours").textContent = baseCapHours();
+    document.getElementById("base-crew-info").innerHTML = tf("crew_info", {n: save.base.members, r: baseRatePerHour()});
+    document.getElementById("base-storage-info").innerHTML = tf("storage_info", {lv: save.base.storage, h: baseCapHours()});
 
     var collectBtn = document.getElementById("base-collect-btn");
     collectBtn.disabled = accrued <= 0;
@@ -3571,6 +3667,7 @@
     var res = rollGacha();
     applyGachaResult(res);
     persist();
+    markMission("m_gacha");
     // モーダル表示中にホーム全体を再描画すると、ガイド画像のリロードでリフロー→画面がズレるため、
     // ここではcoin表示と拠点ボタンだけ更新する（おみやげ/所持品は図鑑を開いたとき反映）。
     var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
@@ -5009,6 +5106,7 @@
       checkAchievements();
       checkCostumeUnlock(poi.id);
       maybeMakinoIntro();   // 発見数が条件に達したら牧野家が登場
+      markMission("m_visit");
       renderAll();
       // 友達紹介：実GPSでの初カード取得が「紹介成立」の条件（ワープ/シミュレーションは対象外）
       if(isRealVisit){
@@ -5036,6 +5134,7 @@
         serialNo: (save.serials[poi.id] ? save.serials[poi.id].no : null),
         serialPending: serialPending2 && !save.serials[poi.id] });
       checkAchievements();
+      markMission("m_visit");
       if(hasDeluxe(poi) && count === DELUXE_VISIT_THRESHOLD){
         setTimeout(function(){ toast(tf("deluxe_upgraded", {title: poiTitle(poi)})); }, 1600);
       }
@@ -5450,6 +5549,7 @@
     setGuideMood("idle");
     renderHomeNearest();
     renderBaseCard();
+    renderDailyMissions();
   }
 
   function distanceBucket(d){
@@ -5782,6 +5882,7 @@
   }
 
   function showShopModal(shop){
+    markMission("m_shop");
     currentModalShop = shop;
     shopModalStep = "detail";
     shopModalPinError = false;
@@ -5984,7 +6085,7 @@
       if(found){
         var stars = visitStars(poi.id);
         var starHtml = stars > 0 ? '<div class="card-stars">' + new Array(stars+1).join("★") + '</div>' : '';
-        var deluxeBadge = deluxeUnlocked(poi) ? '<div class="deluxe-badge">✦豪華版</div>' : '';
+        var deluxeBadge = deluxeUnlocked(poi) ? '<div class="deluxe-badge">' + t("badge_deluxe") + '</div>' : '';
         var serialBadge = (save.serials[poi.id]) ? '<div class="serial-badge">No.' + save.serials[poi.id].no + '</div>' : '';
         card.innerHTML =
           '<div class="thumb-wrap">' +
@@ -6040,6 +6141,7 @@
   }
 
   function showBookDetail(poi, found){
+    if(found) markMission("m_book");
     var detail = document.getElementById("book-detail");
     detail.style.display = "block";
     if(found){
