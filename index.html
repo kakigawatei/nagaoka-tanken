@@ -1515,6 +1515,7 @@
     <div class="discover-sub" id="discover-sub"></div>
     <div class="discover-rewards" id="discover-rewards"></div>
     <div class="discover-serial" id="discover-serial" style="display:none;"></div>
+    <button class="discover-close-btn" id="discover-photo-btn" style="margin-bottom:8px;">📸 記念写真をつくる</button>
     <button class="discover-close-btn" id="discover-close-btn" data-i18n="discover_close">とじる</button>
   </div>
 
@@ -1667,6 +1668,18 @@
           <button class="ar-mbtn" id="ar-save">保存</button>
           <button class="ar-mbtn" id="ar-modal-close">閉じる</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 記念写真プレビュー（発見演出・図鑑から。ar-modalのスタイルを流用し、こちらはfixedで全画面） -->
+  <div class="ar-modal" id="photo-modal" style="display:none; position:fixed; z-index:1200;">
+    <div class="ar-modal-inner">
+      <img id="photo-shot" alt="記念写真">
+      <div class="ar-modal-btns">
+        <button class="ar-mbtn primary" id="photo-share" data-i18n="photo_share">共有する</button>
+        <button class="ar-mbtn" id="photo-save" data-i18n="photo_save">保存</button>
+        <button class="ar-mbtn" id="photo-close" data-i18n="discover_close">とじる</button>
       </div>
     </div>
   </div>
@@ -2352,6 +2365,14 @@
     storage_info:{ja:"倉庫 Lv<b>{lv}</b>（貯蔵 {h}時間）",en:"Storage Lv<b>{lv}</b> ({h}h cap)",zh_hans:"仓库 Lv<b>{lv}</b>（储存{h}小时）",zh_hant:"倉庫 Lv<b>{lv}</b>（儲存{h}小時）"},
     gift_warp:{ja:"ワープ券 ×{n}",en:"Warp Ticket ×{n}",zh_hans:"传送券 ×{n}",zh_hant:"傳送券 ×{n}"},
     gift_warp_sub:{ja:"遠くのスポットへ、コインなしでワープできます",en:"Warp to distant spots without spending coins",zh_hans:"无需金币即可传送到远处景点",zh_hant:"無需金幣即可傳送到遠處景點"},
+    /* --- 記念写真（2026-08-01追加） --- */
+    photo_btn:{ja:"📸 記念写真をつくる",en:"📸 Make a Photo Card",zh_hans:"📸 制作纪念照",zh_hant:"📸 製作紀念照"},
+    photo_share:{ja:"共有する",en:"Share",zh_hans:"分享",zh_hant:"分享"},
+    photo_save:{ja:"保存",en:"Save",zh_hans:"保存",zh_hant:"保存"},
+    photo_making:{ja:"作成中…",en:"Creating…",zh_hans:"制作中…",zh_hant:"製作中…"},
+    photo_found_on:{ja:"{date} 発見",en:"Discovered {date}",zh_hans:"{date} 发现",zh_hant:"{date} 發現"},
+    photo_serial:{ja:"全国 No.{n} 発見者",en:"Discoverer No.{n} nationwide",zh_hans:"全国第{n}位发现者",zh_hant:"全國第{n}位發現者"},
+    photo_share_text:{ja:"ながおか探検録で「{title}」を発見！ #ながおか探検録",en:"Found \"{title}\" in Nagaoka Tanken-roku! #ながおか探検録",zh_hans:"在「长冈探险录」发现了「{title}」！ #ながおか探検録",zh_hant:"在「長岡探險錄」發現了「{title}」！ #ながおか探検録"},
     nav_home:{ja:"ホーム",en:"Home",zh_hans:"主页",zh_hant:"主頁"},
     nav_map:{ja:"マップ",en:"Map",zh_hans:"地图",zh_hant:"地圖"},
     nav_book:{ja:"図鑑",en:"Cards",zh_hans:"图鉴",zh_hant:"圖鑑"},
@@ -4908,6 +4929,96 @@
     a.href = arShotUrl; a.download = "nagaoka-hanabi.jpg";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
+
+  /* ---------- 発見の記念写真（2026-08-01） ----------
+   * カード絵＋スポット名＋発見日＋通し番号＋アプリ名を1枚に合成して共有シートへ。
+   * 発見演出の「📸」と図鑑カード詳細の「📸」から呼ばれる。 */
+  var photoBlob = null, photoUrl = null, photoPoi = null;
+  function photoRoundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function photoFoundDate(poi){
+    var v = save.visits[poi.id];
+    if(v && v.realVisits && v.realVisits.length){ var d=new Date(v.realVisits[0]); return d.getFullYear()+"."+(d.getMonth()+1)+"."+d.getDate(); }
+    if(v && v.lastDate){ var p=(""+v.lastDate).split("-"); if(p.length===3) return p[0]+"."+(+p[1])+"."+(+p[2]); }
+    var n=new Date(); return n.getFullYear()+"."+(n.getMonth()+1)+"."+n.getDate();
+  }
+  function makeMemorialPhoto(poi){
+    photoPoi = poi;
+    toast(t("photo_making"));
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var W=1080, H=1700;
+        var c=document.createElement("canvas"); c.width=W; c.height=H;
+        var x=c.getContext("2d");
+        // 背景: あたたかい紙風グラデ＋にじみ
+        var bg=x.createLinearGradient(0,0,0,H);
+        bg.addColorStop(0,"#f6ecd7"); bg.addColorStop(.55,"#efe0c2"); bg.addColorStop(1,"#e4cfa4");
+        x.fillStyle=bg; x.fillRect(0,0,W,H);
+        x.globalAlpha=.16;
+        x.fillStyle="#c9a25e"; x.beginPath(); x.arc(W*0.12,H*0.08,190,0,7); x.fill();
+        x.fillStyle="#8fae7c"; x.beginPath(); x.arc(W*0.92,H*0.94,230,0,7); x.fill();
+        x.globalAlpha=1;
+        // ヘッダー
+        x.textAlign="center"; x.fillStyle="#6b4a1b";
+        x.font="700 46px -apple-system,'Hiragino Sans',sans-serif";
+        x.fillText("🧭 ながおか探検録", W/2, 96);
+        x.fillStyle="#a3854f"; x.fillRect(W/2-160, 122, 320, 3);
+        // カード絵（角丸＋影）
+        var cw=760, ch=Math.round(cw*img.height/img.width), cx0=(W-cw)/2, cy0=170;
+        x.save();
+        x.shadowColor="rgba(80,55,10,.38)"; x.shadowBlur=34; x.shadowOffsetY=14;
+        photoRoundRect(x,cx0,cy0,cw,ch,26); x.fillStyle="#fff"; x.fill();
+        x.restore();
+        x.save(); photoRoundRect(x,cx0,cy0,cw,ch,26); x.clip();
+        x.drawImage(img,cx0,cy0,cw,ch); x.restore();
+        // スポット名（長ければ縮小）
+        var ty=cy0+ch+86; x.fillStyle="#4a3410";
+        var fs=56, name=poiTitle(poi);
+        x.font="800 "+fs+"px -apple-system,'Hiragino Sans',sans-serif";
+        while(x.measureText(name).width > W-140 && fs>30){ fs-=2; x.font="800 "+fs+"px -apple-system,'Hiragino Sans',sans-serif"; }
+        x.fillText(name, W/2, ty);
+        // 発見日
+        x.font="500 36px -apple-system,'Hiragino Sans',sans-serif"; x.fillStyle="#7a5c26";
+        x.fillText(tf("photo_found_on",{date:photoFoundDate(poi)}), W/2, ty+62);
+        // 通し番号（あれば金色で）
+        if(save.serials[poi.id]){
+          x.font="700 40px -apple-system,'Hiragino Sans',sans-serif"; x.fillStyle="#b8860b";
+          x.fillText("✦ "+tf("photo_serial",{n:save.serials[poi.id].no})+" ✦", W/2, ty+126);
+        }
+        // フッター
+        x.font="500 30px -apple-system,'Hiragino Sans',sans-serif"; x.fillStyle="#967a49";
+        x.fillText("#ながおか探検録", W/2, H-56);
+        c.toBlob(function(blob){
+          if(!blob) return;
+          photoBlob=blob;
+          if(photoUrl) URL.revokeObjectURL(photoUrl);
+          photoUrl=URL.createObjectURL(blob);
+          var sh=document.getElementById("photo-shot"); if(sh) sh.src=photoUrl;
+          var m=document.getElementById("photo-modal"); if(m) m.style.display="flex";
+        }, "image/jpeg", 0.92);
+      }catch(e){ /* canvas失敗時は静かに諦める（本体進行に影響させない） */ }
+    };
+    img.src = "assets/" + cardImageFor(poi);
+  }
+  function photoShare(){
+    if(!photoBlob) return;
+    var file = new File([photoBlob], "nagaoka-tanken.jpg", { type:"image/jpeg" });
+    var text = photoPoi ? tf("photo_share_text",{title:poiTitle(photoPoi)}) : "#ながおか探検録";
+    if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+      navigator.share({ files:[file], text:text }).catch(function(){});
+    } else { photoSave(); }
+  }
+  function photoSave(){
+    if(!photoUrl) return;
+    var a=document.createElement("a");
+    a.href=photoUrl; a.download="nagaoka-tanken.jpg";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+  function photoClose(){ var m=document.getElementById("photo-modal"); if(m) m.style.display="none"; }
   function arOpen(){
     var view = document.getElementById("ar-view"); if(!view) return;
     arCanvas = document.getElementById("ar-canvas");
@@ -5142,7 +5253,11 @@
     }
   }
 
+  var overlayPoi = null;   // 記念写真の対象（いま演出中のスポット）
   function showDiscoveryOverlay(poi, opts){
+    overlayPoi = poi;
+    var pb = document.getElementById("discover-photo-btn");
+    if(pb) pb.textContent = t("photo_btn");
     var overlay = document.getElementById("discovery-overlay");
     var chestImg = document.getElementById("chest-img");
     var title = document.getElementById("discover-title");
@@ -6175,7 +6290,10 @@
         visitDatesInfo +
         deluxeInfo +
         '<p>' + poiBlurb(poi) + '</p>' +
+        '<button class="settings-btn" id="btn-memorial-photo" style="margin-top:10px;">' + t("photo_btn") + '</button>' +
         (replayCount > 0 ? '<button class="settings-btn" id="btn-replay-treasure" style="margin-top:10px;">' + tf("replay_btn", {n: replayCount}) + '</button>' : '');
+      var photoBtn = document.getElementById("btn-memorial-photo");
+      if(photoBtn){ photoBtn.addEventListener("click", function(){ makeMemorialPhoto(poi); }); }
       var replayBtn = document.getElementById("btn-replay-treasure");
       if(replayBtn){
         replayBtn.addEventListener("click", function(){
@@ -6850,6 +6968,11 @@
   function wireEvents(){
     var msScene = document.getElementById("makino-scene");
     if(msScene) msScene.addEventListener("click", msAdvance);
+    var _pb=document.getElementById("discover-photo-btn");
+    if(_pb) _pb.addEventListener("click", function(){ if(overlayPoi) makeMemorialPhoto(overlayPoi); });
+    var _ps=document.getElementById("photo-share"); if(_ps) _ps.addEventListener("click", photoShare);
+    var _pv=document.getElementById("photo-save"); if(_pv) _pv.addEventListener("click", photoSave);
+    var _pc=document.getElementById("photo-close"); if(_pc) _pc.addEventListener("click", photoClose);
     document.getElementById("btn-start").addEventListener("click", function(){
       showScreen("home");
       document.getElementById("bottom-nav").style.display = "flex";
