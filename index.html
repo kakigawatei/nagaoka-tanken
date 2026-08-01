@@ -996,6 +996,11 @@
   #book-panel-makino{ padding:8px 0 14px; }
   /* 殿のイラストはスクロールしても上部に固定（年貢を納めた時の表情/吹き出しが常に見えるように） */
   .makino-tono-sticky{ position:sticky; top:0; z-index:5; background:var(--paper); padding:2px 0 6px; }
+  .mk-deco{ position:absolute; font-size:20px; z-index:1; pointer-events:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
+  .mk-lantern{ animation:mkSway 3s ease-in-out infinite alternate; transform-origin:top center; }
+  @keyframes mkSway{ from{transform:rotate(-6deg);} to{transform:rotate(6deg);} }
+  .mk-petal{ position:absolute; top:-8%; font-size:14px; z-index:1; pointer-events:none; animation:mkFall 5s linear infinite; opacity:.85; }
+  @keyframes mkFall{ 0%{transform:translateY(0) rotate(0);} 100%{transform:translateY(150px) rotate(180deg); opacity:0;} }
   .makino-tono{ position:relative; width:100%; max-width:340px; margin:4px auto 4px; aspect-ratio:4/3;
     background:#e5d3ad center/cover no-repeat; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
     display:flex; align-items:flex-end; justify-content:center; }
@@ -2373,6 +2378,15 @@
     photo_found_on:{ja:"{date} 発見",en:"Discovered {date}",zh_hans:"{date} 发现",zh_hant:"{date} 發現"},
     photo_serial:{ja:"全国 No.{n} 発見者",en:"Discoverer No.{n} nationwide",zh_hans:"全国第{n}位发现者",zh_hant:"全國第{n}位發現者"},
     photo_share_text:{ja:"ながおか探検録で「{title}」を発見！ #ながおか探検録",en:"Found \"{title}\" in Nagaoka Tanken-roku! #ながおか探検録",zh_hans:"在「长冈探险录」发现了「{title}」！ #ながおか探検録",zh_hant:"在「長岡探險錄」發現了「{title}」！ #ながおか探検録"},
+    /* --- 殿の日替わり注文（2026-08-01） --- */
+    mk_order_title:{ja:"📜 きょうのお達し",en:"📜 Today's Request",zh_hans:"📜 今日的谕令",zh_hant:"📜 今日的諭令"},
+    mk_order_req:{ja:"殿の所望：「{name}」をひとつ献上せよ",en:"The lord desires one {name}",zh_hans:"殿下想要：献上一个「{name}」",zh_hant:"殿下想要：獻上一個「{name}」"},
+    mk_order_reward:{ja:"達成で 好感度+{f}・コイン+{c}",en:"Reward: favor +{f}, coins +{c}",zh_hans:"完成奖励：好感+{f}、金币+{c}",zh_hant:"完成獎勵：好感+{f}、金幣+{c}"},
+    mk_order_btn:{ja:"「{name}」を納める",en:"Offer {name}",zh_hans:"献上「{name}」",zh_hant:"獻上「{name}」"},
+    mk_order_hint:{ja:"「{name}」のダブりがまだ無い（ガチャで手に入れよう）",en:"No spare {name} yet — try the gacha!",zh_hans:"还没有多余的「{name}」（去扭蛋获取吧）",zh_hant:"還沒有多餘的「{name}」（去扭蛋獲取吧）"},
+    mk_order_nodup:{ja:"その品のダブりがまだ無いのじゃ（図鑑用に1個は残す）",en:"You have no spare of that item (one is kept for the collection)",zh_hans:"该物品还没有多余的（图鉴需保留1个）",zh_hant:"該物品還沒有多餘的（圖鑑需保留1個）"},
+    mk_order_claimed:{ja:"本日のお達しは達成済み。また明日！",en:"Today's request is complete. See you tomorrow!",zh_hans:"今日谕令已完成，明天再来！",zh_hant:"今日諭令已完成，明天再來！"},
+    mk_order_done_toast:{ja:"お達し達成！ 好感度+{f}・コイン+{c}",en:"Request complete! Favor +{f}, coins +{c}",zh_hans:"谕令完成！好感+{f}、金币+{c}",zh_hant:"諭令完成！好感+{f}、金幣+{c}"},
     nav_home:{ja:"ホーム",en:"Home",zh_hans:"主页",zh_hant:"主頁"},
     nav_map:{ja:"マップ",en:"Map",zh_hans:"地图",zh_hant:"地圖"},
     nav_book:{ja:"図鑑",en:"Cards",zh_hans:"图鉴",zh_hant:"圖鑑"},
@@ -3935,6 +3949,76 @@
     ]};
   }
 
+  /* ---------- 殿の日替わり注文「きょうのお達し」（2026-08-01 年貢ゲーム完成版） ----------
+   * 毎日1件、殿が特定のおみやげを指名。ダブりから納めると通常の年貢に加えて
+   * ボーナス好感度＋コイン。favor経済のペースメーカー（通常納品1個=favor2に対し
+   * お達し達成=favor25相当なので、毎日やると出世・解禁が体感2〜3倍速くなる）。 */
+  var MAKINO_ORDER_FAVOR = 23;   // お達しボーナス好感度（通常納品の+2と合わせて計25）
+  var MAKINO_ORDER_COIN = 100;   // お達しボーナスコイン
+  function ensureMakinoOrder(){
+    var d = todayStr();
+    var o = save.makino.order;
+    if(!o || o.date !== d){
+      var n = new Date();
+      var h = n.getFullYear()*372 + (n.getMonth()+1)*31 + n.getDate();
+      save.makino.order = { omi: OMIYAGE[h % OMIYAGE.length].id, date: d, done: false };
+    }
+    return save.makino.order;
+  }
+  function fulfillMakinoOrder(){
+    var o = ensureMakinoOrder();
+    if(o.done) return;
+    var cnt = save.omiyage[o.omi] || 0;
+    if(cnt < 2){ toast(t("mk_order_nodup")); return; }
+    tributeOmiyage(o.omi);                 // 通常の年貢として納める（favor+2・解禁判定込み）
+    o.done = true;
+    save.makino.favor += MAKINO_ORDER_FAVOR;
+    save.coins += MAKINO_ORDER_COIN;
+    save.totalCoinsEarned += MAKINO_ORDER_COIN;
+    var rankUp = applyMakinoRank();
+    var newly = applyMakinoUnlocks();
+    persist();
+    var hc = document.getElementById("home-coins"); if(hc) hc.textContent = save.coins;
+    toast(tf("mk_order_done_toast", {f: MAKINO_ORDER_FAVOR + MAKINO_FAVOR_PER, c: MAKINO_ORDER_COIN}));
+    var scenes = [];
+    if(rankUp >= 0) scenes.push(makinoRankScene(rankUp));
+    newly.forEach(function(pid){ scenes.push(makinoUnlockScene(pid)); });
+    renderMakino();
+    if(scenes.length){ playMakinoScenes(scenes, function(){ renderMakino(); }); }
+  }
+  function makinoOrderHtml(){
+    if(!makinoActive()) return "";
+    var o = ensureMakinoOrder();
+    var om = omiById(o.omi);
+    if(!om) return "";
+    var oName = tl("omi", om.id, "name", om.name);
+    var th = om.img ? '<img class="makino-odachi-thumb" src="' + om.img + '" alt="">' : '<span class="makino-odachi-thumb">' + om.emoji + '</span>';
+    var cnt = save.omiyage[o.omi] || 0;
+    var body;
+    if(o.done){
+      body = '<div class="makino-bar-label">✅ ' + t("mk_order_claimed") + '</div>';
+    } else if(cnt >= 2){
+      body = '<button class="makino-tribute-btn" id="makino-order-btn" style="width:auto;padding:8px 18px;">' + tf("mk_order_btn", {name: oName}) + '</button>';
+    } else {
+      body = '<div class="makino-bar-label">' + tf("mk_order_hint", {name: oName}) + '</div>';
+    }
+    return '<div class="makino-unlock" id="makino-order-card">' +
+      '<div class="makino-unlock-title">' + t("mk_order_title") + '</div>' +
+      '<div class="makino-odachi-item"><div class="makino-odachi">' + th +
+      '<span>' + tf("mk_order_req", {name: oName}) + '<br><span style="font-size:12px;color:var(--ink-soft);">' + tf("mk_order_reward", {f: MAKINO_ORDER_FAVOR + MAKINO_FAVOR_PER, c: MAKINO_ORDER_COIN}) + '</span></span></div>' +
+      body + '</div></div>';
+  }
+  /* 御殿の賑わい: 好感度段階で庭が華やぐ（花→提灯→桜吹雪）。アート無しのCSS/絵文字演出 */
+  function makinoDecoHtml(moodIdx){
+    if(moodIdx <= 0) return "";
+    var d = "";
+    if(moodIdx >= 1) d += '<span class="mk-deco" style="left:4%;bottom:6%;">🌸</span><span class="mk-deco" style="right:5%;bottom:8%;">🌸</span>';
+    if(moodIdx >= 2) d += '<span class="mk-deco mk-lantern" style="left:3%;top:8%;">🏮</span><span class="mk-deco mk-lantern" style="right:3%;top:8%;">🏮</span>';
+    if(moodIdx >= 3) d += '<span class="mk-deco" style="left:14%;bottom:4%;">🌷</span><span class="mk-deco" style="right:14%;bottom:4%;">🌼</span>';
+    if(moodIdx >= 4) d += '<span class="mk-petal" style="left:20%;">🌸</span><span class="mk-petal" style="left:55%;animation-delay:1.6s;">🌸</span><span class="mk-petal" style="left:80%;animation-delay:3.1s;">🌸</span>';
+    return d;
+  }
+
   // おみやげを1個、年貢として納める（ダブり＝2個以上のときのみ。図鑑用に最低1個は残す）。
   function tributeOmiyage(id){
     var cnt = save.omiyage[id] || 0;
@@ -4038,6 +4122,7 @@
                 : (moodIdx >= 2 ? "assets/makino_tono_happy.png" : "assets/makino_tono.png");
     var tono = '<div class="makino-tono-sticky">' +
       '<div class="makino-tono" id="makino-tono-box" style="background-image:url(assets/makino_hall.png)">' +
+      makinoDecoHtml(moodIdx) +
       '<div class="makino-tono-bubble" id="makino-tono-bubble"></div>' +
       '<img src="' + tonoImg + '" alt="牧野の殿" onerror="this.style.display=\'none\';var ph=this.parentNode.querySelector(\'.makino-tono-ph\');if(ph)ph.style.display=\'flex\';">' +
       '<div class="makino-tono-ph" style="display:none;">🏯<span>' + t("mk_tono_ph") + '</span></div>' +
@@ -4064,11 +4149,13 @@
         '<div class="makino-favor">' + tf("mk_favor_label", {favor: favor, mood: tl("mood", String(moodIdx), "name", moodStages[moodIdx])}) + '</div>' +
         rankBar +
       '</div>' +
+      makinoOrderHtml() +
       unlockHtml +
       '<div class="makino-tribute-title">' + t("mk_tribute_title") + '</div>' +
       '<div class="makino-tribute-grid">' + tributeCells + '</div>' +
       '<div class="settings-note" style="padding:0 14px 14px;">' + t("mk_note") + '</div>';
     Array.prototype.slice.call(panel.querySelectorAll(".makino-tribute-btn")).forEach(function(btn){
+      if(btn.id === "makino-order-btn"){ btn.addEventListener("click", fulfillMakinoOrder); return; }
       btn.addEventListener("click", function(){ tributeOmiyage(btn.getAttribute("data-omi")); });
     });
   }
