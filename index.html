@@ -5247,6 +5247,8 @@
   }
 
   function tick(){
+    // バックグラウンド中は毎秒の距離計算・DOM更新を止める（電池・CPU対策 2026-08-01）
+    if(document.hidden) return;
     if(save.settings.mode === "gps"){
       // currentPos updated via geolocation callback
     }
@@ -5986,7 +5988,10 @@
         var serialBadge = (save.serials[poi.id]) ? '<div class="serial-badge">No.' + save.serials[poi.id].no + '</div>' : '';
         card.innerHTML =
           '<div class="thumb-wrap">' +
-            '<img class="thumb" src="assets/' + cardImageFor(poi) + '" alt="' + poiTitle(poi) + '">' +
+            /* グリッドは軽量サムネ(thumbs/*.webp 約40KB)を読む。無ければ原寸PNGへフォールバック。
+               原寸(2.4MB×枚数)を直読みしていた頃は図鑑タブが激重だった（2026-08-01改修） */
+            '<img class="thumb" loading="lazy" decoding="async" src="assets/thumbs/' + cardImageFor(poi).replace(/\.png$/, ".webp") + '"' +
+              ' onerror="this.onerror=null;this.src=\'assets/' + cardImageFor(poi) + '\';" alt="' + poiTitle(poi) + '">' +
             starHtml + deluxeBadge + serialBadge +
           '</div>' +
           '<div class="info"><div class="title">' + poiTitle(poi) + '</div><div class="era">' + poiEra(poi) + '</div></div>';
@@ -6781,7 +6786,11 @@
     document.getElementById("base-hire-btn").addEventListener("click", hireMember);
     document.getElementById("base-storage-btn").addEventListener("click", upgradeStorage);
     // 拠点の採取量を数秒ごとに更新（ホーム表示中のみ）
-    setInterval(function(){ if(currentScreen === "home") renderBaseCard(); }, 5000);
+    setInterval(function(){ if(!document.hidden && currentScreen === "home") renderBaseCard(); }, 5000);
+    // 配布キャンペーン: 起動しっぱなしの端末でも、画面復帰時と毎分のチェックで
+    // 17時解禁のワープ券を受け取れるように（起動時1回だけでは取り逃す 2026-08-01）
+    setInterval(function(){ if(!document.hidden) checkWarpGifts(); }, 60000);
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkWarpGifts(); });
 
     document.getElementById("home-gacha-btn").addEventListener("click", function(ev){
       openGachaModal(ev.currentTarget.getAttribute("data-poi"));
