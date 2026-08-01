@@ -6791,6 +6791,19 @@
     // 17時解禁のワープ券を受け取れるように（起動時1回だけでは取り逃す 2026-08-01）
     setInterval(function(){ if(!document.hidden) checkWarpGifts(); }, 60000);
     document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkWarpGifts(); });
+    // イベント限定スポット（例: 柿川灯籠流し 8/1 17時〜）の解禁を開きっぱなしでも反映:
+    // 出現状態が変わった瞬間に地図とホームを描き直す（従来はタブ切替まで気づけなかった）
+    var lastEventLive = null;
+    setInterval(function(){
+      if(document.hidden || !DATA) return;
+      var live = DATA.pois.some(function(p){ return poiEvent(p) && eventLiveNow(p); });
+      if(lastEventLive === null){ lastEventLive = live; return; }
+      if(live !== lastEventLive){
+        lastEventLive = live;
+        if(currentScreen === "map") renderMap();
+        renderHomeFull();
+      }
+    }, 30000);
 
     document.getElementById("home-gacha-btn").addEventListener("click", function(ev){
       openGachaModal(ev.currentTarget.getAttribute("data-poi"));
