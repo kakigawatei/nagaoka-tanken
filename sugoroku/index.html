@@ -28,10 +28,13 @@
 <div id="panel"><div id="msg">サイコロを振って、長岡を旅しよう。分かれ道では行き先を選べます。</div>
 <div class="row" id="dirs" style="display:none"></div>
 <div class="row" id="hand" style="display:none"></div>
-<div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button></div>
+<div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
 <div id="stock"></div></div>
 </div>
 <script src="data/board_v2.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 /* ながおかスゴ録 v2（2026-09-10 ポム）— 桃鉄型の路線網。OSM の道路・鉄道に沿った 963 マス（data/board_v2.json→board_v2.js）
    ・サイコロ 60分に1回・3回まで貯まる／分かれ道で行き先を選ぶ／目的地（探検録のスポット）に着くとご褒美→次の目的地
@@ -47,8 +50,25 @@ const RIVALS = [{ id: "kon", name: "コン", icon: "🦊" }, { id: "kabuto", nam
 const newRivals = () => RIVALS.map(r => ({ id: r.id, pos: START, prev: null, money: R.startMoney, owned: [], dest: null, reached: 0 }));
 let S = load() || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
 if (!S.rivals) { S.rivals = newRivals(); S.cards = S.cards || []; S.skip = 0; }
-const ownerOf = pid => S.owned.includes(pid) ? "you" : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
-const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+/* ---- 共有盤面（Firestore）---- */
+let FB = null, UID = null, OTHERS = {}, PROPS = {};   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
+try { firebase.initializeApp({ apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" }); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); }
+const ownerOf = pid => S.owned.includes(pid) ? "you" : (PROPS[pid] && PROPS[pid].owner && PROPS[pid].owner !== UID) ? "p:" + PROPS[pid].owner : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
+const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((OTHERS[o.slice(2)] || {}).name || "旅人") : ((RIVALS.find(r => r.id === o) || {}).name || "");
+async function cloudStart() { if (!FB) return; try {
+    const cred = await firebase.auth().signInAnonymously(); UID = cred.user.uid;
+    const ref = FB.collection("sugoroku_players").doc(UID); const snap = await ref.get();
+    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
+    else await cloudPush();
+    FB.collection("sugoroku_players").where("updatedAt", ">", Date.now() - 7 * 86400000).onSnapshot(q => { OTHERS = {}; q.forEach(d => { if (d.id !== UID) OTHERS[d.id] = d.data(); }); draw(); });
+    FB.collection("sugoroku_props").onSnapshot(q => { PROPS = {}; q.forEach(d => { PROPS[d.id] = d.data(); }); draw(); hud(); });
+    hud(); draw();
+  } catch (e) { console.warn("cloud start failed", e); } }
+let pushTimer = null;
+function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
+/* 物件を買う: 早い者勝ちをトランザクションで */
+async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { return false; } }
+const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
 /* 座標 → 画面: 緯度経度をメルカトルで平面に。カメラはコマを追う */
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR = devicePixelRatio || 1; let W, H;
@@ -65,6 +85,7 @@ function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; 
     const owner = n.prop ? ownerOf(n.prop) : null;
     ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 14 : 9) * DPR, 0, 7); ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
+  Object.values(OTHERS).forEach(o => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${22 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🐑", q.x + 12 * DPR, q.y - 24 * DPR); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${26 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(RIVALS[i].icon, q.x + (i - 1) * 14 * DPR, q.y - 30 * DPR); });
   const p = scr(tokenPos || P[S.pos]); ctx.font = `${36 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🦙", p.x, p.y - 8 * DPR); }
 addEventListener("resize", () => { layout(); draw(); });
@@ -141,9 +162,9 @@ function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
   if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; pickDest(); $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ ご褒美 +${bonus}万両　次は ${stName(byId[S.dest])}`; }
   const owner = prop ? ownerOf(prop.id) : null;
-  if (prop && owner && owner !== "you") { const toll = income(prop, owner); S.money = Math.max(0, S.money - toll); S.rivals.find(r => r.id === owner).money += toll; $("msg").textContent = `${RIVALS.find(r => r.id === owner).name} の ${prop.name}。通行料 −${toll}万両`; return; }
+  if (prop && owner && owner !== "you") { const toll = income(prop, owner); S.money = Math.max(0, S.money - toll); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
   if (prop && !owner) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
-    $("cBuy").onclick = () => { S.money -= prop.price; S.owned.push(prop.id); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
+    $("cBuy").onclick = async () => { $("cBuy").disabled = true; const ok = await cloudBuy(prop.id); if (!ok) { $("card").style.display = "none"; $("msg").textContent = `${prop.name} は一足先に別の旅人が買ってしまった！`; hud(); return; } S.money -= prop.price; S.owned.push(prop.id); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; hud(); }; return; }
   if (prop) { const inc = income(prop, "you"); const mul = seasonMul(prop); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両` + (mul > 1 ? `（${monthNow()}月の書き入れ時 ×${mul}）` : "") + (monopoly(prop, "you") ? "（独占 ×2）" : ""); return; }
   if (S.pos === S.dest) return;
@@ -157,11 +178,12 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
   if (S.turn % TURNS_PER_YEAR === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
 $("roll").onclick = roll;
+$("nameBtn").onclick = () => { const v = prompt("旅人の名前（順位や物件に出ます）", S.name || ""); if (v !== null) { S.name = v.trim().slice(0, 12) || "旅人"; save(); $("msg").textContent = `名前を「${S.name}」にした。`; } };
 function renderHand() { const box = $("hand"); box.innerHTML = ""; if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
-$("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
+$("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
 refill(); const today = new Date().toDateString(); if (S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
-layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000);
+layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); cloudStart();
 </script>
 </body></html>
