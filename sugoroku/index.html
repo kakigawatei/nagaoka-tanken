@@ -59,6 +59,14 @@ const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a
 B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
 const edgePts = (a, b) => EPTS[a + "-" + b] || [[byId[a].lat, byId[a].lng], [byId[b].lat, byId[b].lng]];
 const START = NODES.find(n => n.station === "nagaoka_st").id;
+/* 物件駅: 元の18物件を駅（station）ごとに束ね、3件未満の駅には伏せ名の物件を足す（価格・収益率は桃鉄風のレンジ） */
+const GEN = { "飲食": ["らーめん処", "そば処", "甘味処", "喫茶"], "観光": ["みやげ処", "資料館", "遊覧船", "展望台"], "工芸": ["工房", "問屋", "ギャラリー"], "酒蔵": ["直売所", "酒房"], "市場": ["浜焼き屋", "干物屋"], "宿": ["民宿", "湯宿"], "生産": ["直売所", "加工場"], "食": ["茶屋", "総菜屋"], "醸造": ["直売所"] };
+let _seed = 20260910; const srand = () => { _seed = (_seed * 1103515245 + 12345) & 0x7fffffff; return _seed / 0x7fffffff; };   // 全端末で同じ物件リスト（デク指摘）
+(function expand() { const byStation = {}; B.properties.forEach(p => (byStation[p.station] = byStation[p.station] || []).push(p)); let seq = 100;
+  Object.keys(byStation).forEach(st => { const list = byStation[st]; const base = list[0]; const stn = B.stations.find(x => x.id === st); const town = (stn ? stn.area : "") || "";
+    let k = 0; while (list.length < 3 + (base.price >= 800 ? 2 : 0)) { const kinds = GEN[base.kind] || ["商店"]; const nm = `${town}の${kinds[k % kinds.length]}${k >= kinds.length ? k + 1 : ""}`; const price = Math.round((100 + srand() * 600) / 10) * 10; const y = [0.05, 0.08, 0.1, 0.12, 0.15][Math.floor(srand() * 5)]; const q = { id: "g" + (seq++), station: st, name: nm, kind: base.kind, price, yield: y, note: "" }; B.properties.push(q); list.push(q); k++; } });
+})();
+const stationProps = st => B.properties.filter(q => q.station === st);
 const KEY = "nagaoka_sugoroku_v3";   // 盤面 v3（道路網を広げた）で保存を切り替え
 const TURNS_PER_YEAR = 12 * (R.turnsPerMonth || 1) * 3;   // 1か月＝3手番（36手番で1年）。ルール値から一本化（デク指摘10）
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
@@ -83,7 +91,7 @@ async function cloudStart() { if (!FB) return; try {
 let pushTimer = null;
 function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
 /* 物件を買う: 早い者勝ちをトランザクションで */
-async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { return false; } }
+async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; console.warn("cloudBuy fallback local", e && e.code); return true; } }   // ルール未設定・オフラインは端末側で成立させる
 const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
 /* 座標 → 画面: 緯度経度をメルカトルで平面に。カメラはコマを追う */
@@ -100,25 +108,29 @@ const mercY = lat => -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 18
 const TP = (() => { const conv = list => list.map(o => ({ k: o.k, pts: o.pts.map(p => [p[1], mercY(p[0])]) })); return { water: conv(T.water), land: conv(T.land) }; })();   // [x=lng, y=mercY]
 function inView(pts, pad) { let minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9; for (const p of pts) { if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0]; if (p[1] < miny) miny = p[1]; if (p[1] > maxy) maxy = p[1]; } const a = scr({ x: minx, y: miny }), b = scr({ x: maxx, y: maxy }); return !(b.x < -pad || a.x > W + pad || b.y < -pad || a.y > H + pad); }
 function poly(pts, fill, stroke, lw) { ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[0], y: p[1] }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); if (fill) { ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw * DPR; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke(); } }
-const FILL = { farmland: "#e9e2a3", forest: "#9dbd7a", wood: "#9dbd7a", scrub: "#b9c98e", grassland: "#cfd99a", residential: "#e6dccb", industrial: "#d9d4cc", commercial: "#e2d6c4", retail: "#e2d6c4", water: "#8fc3e6" };
+const FILL = { farmland: "#f2ec9c", forest: "#5f9a4c", wood: "#5f9a4c", scrub: "#9fc06b", grassland: "#bcd47a", residential: "#efe3cf", industrial: "#ddd6cb", commercial: "#eadcc6", retail: "#eadcc6", water: "#6fb6e6" };
 function drawTerrain() {
-  ctx.fillStyle = "#dfe6bf"; ctx.fillRect(0, 0, W, H);                       // 陸の地色
+  ctx.fillStyle = "#cfe08e"; ctx.fillRect(0, 0, W, H);                       // 陸の地色（黄緑）
   const z = zoom; const skipSmall = z < 9000;
   for (const o of TP.land) { if (skipSmall && o.pts.length < 8) continue; if (!inView(o.pts, 40)) continue; poly(o.pts, FILL[o.k] || "#dfe6bf"); }
   for (const o of TP.water) { if (o.k === "water") { if (!inView(o.pts, 40)) continue; poly(o.pts, FILL.water); } }
   for (const o of TP.water) { if (o.k === "river" || o.k === "canal") { if (!inView(o.pts, 40)) continue; poly(o.pts, null, "#8fc3e6", o.k === "river" ? 9 : 4); } }
   /* 海: 海岸線（陸が右手）の西側を塗る → 海岸線の点列を西の画面外まで閉じて塗る */
-  for (const o of TP.water) { if (o.k !== "coastline") continue; if (!inView(o.pts, 4000)) continue; const pts = o.pts; const far = pts.map(p => p[0]).reduce((a, b) => Math.min(a, b)) - 0.5; const closed = [[far, pts[0][1]]].concat(pts, [[far, pts[pts.length - 1][1]]]); poly(closed, "#7fb5dc"); poly(pts, null, "#5f9ac7", 3); }
+  for (const o of TP.water) { if (o.k !== "coastline") continue; if (!inView(o.pts, 4000)) continue; const pts = o.pts; const far = pts.map(p => p[0]).reduce((a, b) => Math.min(a, b)) - 0.5; const closed = [[far, pts[0][1]]].concat(pts, [[far, pts[pts.length - 1][1]]]); poly(closed, "#5aa9e0"); poly(pts, null, "#2f7fbf", 3); }
 }
 function drawTracks() {
   ctx.lineJoin = "round"; ctx.lineCap = "round";
   const pass = (color, w) => { ctx.strokeStyle = color; ctx.lineWidth = w * DPR; for (const e of B.edges) { const pts = e.pts; if (!pts) continue; const a = scr(P[e.a]), b = scr(P[e.b]); if (Math.max(a.x, b.x) < -200 || Math.min(a.x, b.x) > W + 200 || Math.max(a.y, b.y) < -200 || Math.min(a.y, b.y) > H + 200) continue; ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[1], y: mercY(p[0]) }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); } };
-  pass("#8a7a66", 13); pass("#fff8e8", 9);   // 道路帯（縁取り＋薄い帯）＝線路
+  pass("#4a3f35", 14); pass("#fff8e8", 10);   // 道路帯（濃い縁取り＋クリーム）＝線路
+  if (zoom > 7000) { ctx.setLineDash([3 * DPR, 10 * DPR]); ctx.strokeStyle = "#9a8a76"; ctx.lineWidth = 6 * DPR; for (const e of B.edges) { const pts = e.pts; if (!pts) continue; const a = scr(P[e.a]), b = scr(P[e.b]); if (Math.max(a.x, b.x) < -200 || Math.min(a.x, b.x) > W + 200 || Math.max(a.y, b.y) < -200 || Math.min(a.y, b.y) > H + 200) continue; ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[1], y: mercY(p[0]) }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); } ctx.setLineDash([]); }   // 枕木風の短線
 }
 let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawTracks();
   NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
     const owner = n.prop ? ownerOf(n.prop) : null;
-    ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 11 : 7) * DPR, 0, 7); ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
+    ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.lineWidth = 3 * DPR; ctx.strokeStyle = "#3a2f26";
+    if (n.t === "prop") { const r = 12 * DPR; ctx.beginPath(); ctx.rect(p.x - r, p.y - r, 2 * r, 2 * r); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#3a2f26"; ctx.fillRect(p.x - r, p.y - r, 2 * r, 5 * DPR); }   // 物件駅＝看板風の四角
+    else { ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 11 : 7) * DPR, 0, 7); ctx.fill(); ctx.stroke(); }
+    if (S.dest === n.id) { ctx.fillStyle = "#d9552f"; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.lineTo(p.x + 34 * DPR, p.y - 33 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 26 * DPR); ctx.fill(); ctx.strokeStyle = "#3a2f26"; ctx.lineWidth = 2 * DPR; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.stroke(); }   // 目的地＝旗
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
   Object.values(OTHERS).forEach(o => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${22 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🐑", q.x + 12 * DPR, q.y - 24 * DPR); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${26 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(RIVALS[i].icon, q.x + (i - 1) * 14 * DPR, q.y - 30 * DPR); });
@@ -131,9 +143,12 @@ cv.addEventListener("pointerup", () => drag = null); cv.addEventListener("pointe
 const $ = id => document.getElementById(id); let busy = false;
 const stName = n => (n.name || (n.t === "dest" ? n.station : "")).replace(/（.*?）|／.*$/g, "");
 function hops(from, to) { const q = [from], d = { [from]: 0 }; while (q.length) { const u = q.shift(); if (u === to) return d[u]; for (const v of ADJ[u] || []) if (d[v] === undefined) { d[v] = d[u] + 1; q.push(v); } } return 999; }
-const destBonus = hp => 200 + 30 * Math.min(hp, 40) + 50 * S.reached;   // マス間隔 700m に合わせて距離の重みを上げた   // 遠いほど高い（デク提案4）
-function pickDest() { const cands = NODES.filter(n => n.t === "dest" && n.id !== S.pos && n.id !== S.dest); S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
-let hud = function () { if (!S.dest) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
+const yearNow = () => 1 + Math.floor(S.turn / TURNS_PER_YEAR);
+const destBonus = hp => 300 + 200 * (yearNow() - 1) + 20 * Math.min(hp, 40);   // 桃鉄風: 年が進むほど援助金が増える（1年目300万両〜）   // 遠いほど高い（デク提案4）
+function pickDest() { const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos && n.id !== S.dest); S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
+/* ルーレット演出: 候補の名前を高速で回して止める（0.9秒） */
+async function roulette() { const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } pickDest(); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; }
+let hud = function () { if (!S.dest || !byId[S.dest]) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const hp = hops(S.pos, S.dest); $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・ご褒美 ${S.destBonus || destBonus(hp)}万両`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
 async function tween(a, b) { const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
@@ -152,14 +167,24 @@ async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; 
     let to = nexts[0];
     if (nexts.length > 1) { if (S.guide > 0) { const D = P[S.dest]; nexts.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); to = nexts[0]; S.guide--; } else { $("msg").textContent = `分かれ道。残り ${steps} マス。どちらへ？`; to = await chooseDir(nexts.map(x => ({ to: x }))); } }
     await tween(S.pos, to); prev = S.pos; S.pos = to; steps--; if (S.pos === S.dest) break; }
-  S.prev = prev; S.turn++; draw(); arrive(); rivalsMove(); save(); busy = false; hud(); }
+  S.prev = prev; S.turn++; draw(); arrive(); rivalsMove(); settlement(); save(); busy = false; hud(); }
 /* ---- ライバル（CPU）: プレイヤーが振るたびに1〜6歩。分岐は目的地に近づく方へ。物件に止まると買う ---- */
-function rivalsMove() { if (S.rivalSkip > 0) { S.rivalSkip--; return; }
-  S.rivals.forEach((r, i) => { if (!r.dest || r.dest === r.pos) { const c = NODES.filter(n => n.t === "dest" && n.id !== r.pos); r.dest = c[Math.floor(Math.random() * c.length)].id; }
+/* ゆきんこ（貧乏神役）: 到着の瞬間、目的地から最も遠い旅人へ。毎手番いたずら。同じマスに止まるとなすりつけ */
+const WHO = () => [{ id: "you", pos: S.pos }].concat(S.rivals.map(r => ({ id: r.id, pos: r.pos })));
+function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; if (far === "you") $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; }
+function yukinkoAct() { if (!S.yukinko) return; const acts = ["spend", "sell", "card"]; const a = acts[Math.floor(Math.random() * acts.length)];
+  if (S.yukinko === "you") { if (a === "spend" || !S.owned.length && !S.cards.length) { const v = Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15))); S.money -= v; $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; }
+    else if (a === "sell" && S.owned.length) { S.owned.sort((x, y) => pv(y).price - pv(x).price); const id = S.owned.splice(0, 1)[0]; S.money += Math.round(pv(id).price * 0.5); $("msg").textContent += `　❄ ゆきんこが ${pv(id).name} を半値で売り払った`; }
+    else if (S.cards.length) { const id = S.cards.splice(Math.floor(Math.random() * S.cards.length), 1)[0]; const c = CARDS.find(x => x.id === id); $("msg").textContent += `　❄ ゆきんこが ${c ? c.name : "カード"} を捨てた`; } }
+  else { const r = S.rivals.find(x => x.id === S.yukinko); if (!r) return; if (a === "sell" && r.owned.length) { const id = r.owned.splice(Math.floor(Math.random() * r.owned.length), 1)[0]; r.money += Math.round(pv(id).price * 0.5); } else r.money = Math.max(0, r.money - 60); }
+  /* なすりつけ: ゆきんこ持ちと同じマスにいる旅人へ */
+  const holder = WHO().find(w => w.id === S.yukinko); if (!holder) { S.yukinko = null; return; } const same = WHO().filter(w => w.id !== S.yukinko && w.pos === holder.pos); if (same.length) { S.yukinko = same[0].id; $("msg").textContent += `　❄ ゆきんこが ${S.yukinko === "you" ? "あなた" : RIVALS.find(x => x.id === S.yukinko).name} に乗り移った`; } }
+function rivalsMove() { yukinkoAct(); if (S.rivalSkip > 0) { S.rivalSkip--; return; }
+  S.rivals.forEach((r, i) => { r.dest = S.dest;   // 桃鉄: 目的地は全員共通
     let steps = 1 + Math.floor(Math.random() * 6), prev = r.prev;
     while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; const D = P[r.dest]; nx.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; if (r.pos === r.dest) break; }
     r.prev = prev; const n = byId[r.pos];
-    if (r.pos === r.dest) { r.money += 300 + 50 * r.reached; r.reached++; r.dest = null; }
+    if (r.pos === r.dest) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); setTimeout(roulette, 900); }
     if (n.prop) { const pr = pv(n.prop), o = ownerOf(n.prop); if (!o && r.money >= pr.price && Math.random() < 0.7) { r.money -= pr.price; r.owned.push(n.prop); S.log.push(`${RIVALS[i].name} が ${pr.name} を買った`); }
       else if (o === "you") { const toll = income(pr, "you"); r.money = Math.max(0, r.money - toll); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
     else if (n.t === "blue") r.money += 40; else if (n.t === "red") r.money = Math.max(0, r.money - 30); }); }
@@ -171,7 +196,11 @@ const CARDS = [
   { id: "abura", name: "あぶらげカード", desc: "所持金 +200万両", use: () => { S.money += 200; } },
   { id: "yuki", name: "雪おろしカード", desc: "ライバル全員を1回休みに", use: () => { S.rivalSkip = 1; } },
 ];
-function giveCard() { const c = CARDS[Math.floor(Math.random() * CARDS.length)]; if (S.cards.length >= 4) { $("msg").textContent = "黄マス。でも手札がいっぱい（4枚まで）。"; return; } S.cards.push(c.id); $("msg").textContent = `黄マス。${c.name} を手に入れた！（${c.desc}）`; }
+const HAND_MAX = 8;
+function giveCard() { const c = CARDS[Math.floor(Math.random() * CARDS.length)]; if (S.cards.length >= HAND_MAX) { $("msg").textContent = `黄マス。でも手札がいっぱい（${HAND_MAX}枚まで）。`; return; } S.cards.push(c.id); $("msg").textContent = `黄マス。${c.name} を手に入れた！（${c.desc}）`; }
+/* カード売り場: 100万両で1枚（借金してでも買える） */
+function cardShop() { $("cTitle").textContent = "🃏 カード売り場"; $("cBody").innerHTML = ""; const box = $("cBody"); CARDS.forEach(c => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${c.name}<br><small>${c.desc}</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; b.textContent = "100万両"; b.disabled = S.cards.length >= HAND_MAX || S.money < -900; b.onclick = () => { S.money -= 100; S.cards.push(c.id); $("msg").textContent = `${c.name} を買った。`; save(); hud(); closeCard(); }; row.appendChild(b); box.appendChild(row); });
+  $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
 function useCard(idx) { const c = CARDS.find(x => x.id === S.cards[idx]); if (!c) return; c.use(); S.cards.splice(idx, 1); $("msg").textContent = `${c.name} を使った。${c.desc}`; save(); hud(); }
 /* ---- 紫マスの長岡イベント ---- */
 const EVENTS = [
@@ -196,13 +225,19 @@ function seasonMul(pr) { const m = monthNow(); const id = pr.id;
   return 1; }
 /* エリア独占: 同じ駅エリアの物件を全部持つと収益2倍 */
 const areaOf = pr => (B.stations.find(st => st.id === pr.station) || {}).area || pr.station;
-function monopoly(pr, who) { const same = B.properties.filter(q => areaOf(q) === areaOf(pr)); return same.length > 1 && same.every(q => ownerOf(q.id) === who); }
+function monopoly(pr, who) { const same = B.properties.filter(q => q.station === pr.station); return same.length > 1 && same.every(q => ownerOf(q.id) === who); }
 function income(pr, who) { let v = Math.round(pr.price * pr.yield * seasonMul(pr)); if (monopoly(pr, who)) v *= 2; if (who === "you" && S.komeInvest) v = Math.round(v * (1 + 0.05 * S.komeInvest)); return v; }
+function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("cTitle").textContent = `${(stn && stn.name || "").replace(/（.*?）|／.*$/g, "")} の物件`; $("cBody").innerHTML = ""; const box = $("cBody");
+  list.forEach(q => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${q.name}<br><small>${q.kind}・実り ${Math.round(q.yield * 100)}%</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; b.textContent = q.price + "万両"; b.disabled = S.money < q.price;
+    b.onclick = async () => { b.disabled = true; const ok = await cloudBuy(q.id); if (!ok) { row.remove(); return; } S.money -= q.price; S.owned.push(q.id); row.remove(); $("msg").textContent = `${q.name} を買った！` + (monopoly(q, "you") ? "　この駅を独占！収益2倍" : ""); save(); draw(); hud(); if (!box.children.length) $("card").style.display = "none"; }; row.appendChild(b); box.appendChild(row); });
+  $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
+function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud(); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
-  if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; pickDest(); $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ ご褒美 +${bonus}万両　次は ${stName(byId[S.dest])}`; }
+  if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); setTimeout(roulette, 900); }
   const owner = prop ? ownerOf(prop.id) : null;
-  if (prop && owner && owner !== "you") { const toll = income(prop, owner); S.money = Math.max(0, S.money - toll); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
+  if (prop && owner && owner !== "you") { const toll = income(prop, owner); S.money = Math.max(-1000, S.money - toll); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
+  if (prop) { const list = stationProps(prop.station).filter(q => !ownerOf(q.id)); if (list.length) { showShop(prop.station, list); return; } }
   if (prop && !owner) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
     $("cBuy").onclick = async () => { $("cBuy").disabled = true; const ok = await cloudBuy(prop.id); if (!ok) { $("card").style.display = "none"; $("msg").textContent = `${prop.name} は一足先に別の旅人が買ってしまった！`; hud(); return; } S.money -= prop.price; S.owned.push(prop.id); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; hud(); }; return; }
@@ -212,11 +247,18 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
     $("cBuy").onclick = () => { S.money -= 200; S.komeInvest = (S.komeInvest || 0) + 1; $("card").style.display = "none"; $("cBuy").textContent = "買う"; $("msg").textContent = `米百俵の学び ${S.komeInvest}口。物件の収益 +${5 * S.komeInvest}%`; save(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; $("cBuy").textContent = "買う"; hud(); }; return; }
   if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome) v = Math.round(v * 1.5); if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
-  else if (n.t === "red") { const v = Math.min(S.money, 10 + Math.floor(Math.random() * 6) * 10); S.money -= v; $("msg").textContent = `赤マス。−${v}万両`; }
-  else if (n.t === "yellow") giveCard();
+  else if (n.t === "red") { const v = 10 + Math.floor(Math.random() * 6) * 10; S.money = Math.max(-1000, S.money - v); $("msg").textContent = `赤マス。−${v}万両` + (S.money < 0 ? "（借金中）" : ""); }
+  else if (n.t === "yellow") { if (n.id % 5 === 0) cardShop(); else giveCard(); }
   else if (n.t === "event") runEvent();
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
-  if (S.turn % TURNS_PER_YEAR === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
+}
+/* 3月の決算（年の最後の手番）: 物件収益 − 借金の利子。年末の順位発表 */
+function settlement() { if (S.turn % TURNS_PER_YEAR !== 0) return; const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); let msg = `📒 ${yearNow() - 1}年目の3月決算: 物件 +${y}万両`; S.money += y;
+  if (S.money < 0) { const i = Math.round(-S.money * 0.1); S.money -= i; msg += `　借金の利子 −${i}万両`; }
+  S.rivals.forEach(r => { r.money += r.owned.reduce((a, id) => a + income(pv(id), r.id), 0); });
+  const rows = [{ name: "あなた", total: total() }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total);
+  msg += `　🏆 年末の順位: ` + rows.map((r, i) => `${i + 1}位 ${r.name}`).join("・"); if (yearNow() > R.years) msg += `　🎉 3年の旅が終了。総資産 ${total()}万両`;
+  $("msg").textContent = msg; }
 $("roll").onclick = roll;
 /* ---- 初回の導線 ---- */
 const INTRO = [
@@ -229,7 +271,7 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
   const step = () => { const [t, b] = INTRO[i]; $("iTitle").textContent = t; $("iBody").textContent = b; const last = i === INTRO.length - 1; $("iName").style.display = last ? "block" : "none"; $("iNext").textContent = last ? "出発！" : "つぎへ"; };
   $("iNext").onclick = () => { if (i < INTRO.length - 1) { i++; step(); return; } const v = $("iName").value.trim(); S.name = v.slice(0, 12) || "旅人"; S.introDone = true; save(); box.style.display = "none"; hud(); $("msg").textContent = `${S.name}、いってらっしゃい。まずはサイコロを。`; };
   step(); }
-if (!S.introDone) setTimeout(showIntro, 400);
+if (!S.introDone) setTimeout(showIntro, 400); else if (!S.dest) roulette();
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
 function drawArrow() { const el = $("arrow"); if (!S.dest) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
@@ -242,7 +284,7 @@ const JINGLE = new Audio("music/event.mp3"); JINGLE.volume = 0.6;
 $("snd").onclick = () => { sndOn = !sndOn; $("snd").textContent = sndOn ? "🔊" : "🔈"; if (sndOn) BGM.play().catch(() => { $("snd").textContent = "🔈"; sndOn = false; }); else BGM.pause(); };
 const _runEvent = runEvent; runEvent = function () { _runEvent(); if (sndOn) { JINGLE.currentTime = 0; JINGLE.play().catch(() => {}); } };
 $("nameBtn").onclick = () => { const v = prompt("旅人の名前（順位や物件に出ます）", S.name || ""); if (v !== null) { S.name = v.trim().slice(0, 12) || "旅人"; save(); $("msg").textContent = `名前を「${S.name}」にした。`; } };
-function renderHand() { const box = $("hand"); box.innerHTML = ""; if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
+function renderHand() { const box = $("hand"); box.innerHTML = ""; S.cards = (S.cards || []).filter(id => CARDS.some(x => x.id === id)); if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; box.style.flexWrap = "wrap"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.style.flex = "1 1 30%"; b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
 $("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
