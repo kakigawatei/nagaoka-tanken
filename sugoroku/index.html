@@ -38,7 +38,7 @@
 <button id="snd" title="音">🔈</button>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><div id="cBody" style="margin:0 0 10px;font-size:14px;color:#5e5245"></div><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
-<div id="panel"><div id="msg">サイコロを振って、長岡を旅しよう。分かれ道では行き先を選べます。</div>
+<div id="panel"><div id="msg">まずは 🎲サイコロ。分かれ道では赤い矢印が目的地に近い道です。</div>
 <div class="row" id="dirs" style="display:none"></div>
 <div class="row" id="hand" style="display:none"></div>
 <div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
@@ -82,7 +82,7 @@ const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((O
 async function cloudStart() { if (!FB) return; try {
     const cred = await firebase.auth().signInAnonymously(); UID = cred.user.uid;
     const ref = FB.collection("sugoroku_players").doc(UID); const snap = await ref.get();
-    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear", "lastSeen", "destCount"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
+    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear", "lastSeen", "destCount"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); compat(); save(); }
     else await cloudPush();
     try { const g = (await FB.collection("sugoroku_games").doc("main").get()).data(); if (g && byId[g.destId]) applyGame(g); else { if (!S.dest || !byId[S.dest]) pickDest(); await cloudSetDest(S.dest); } } catch (e) { console.warn("game doc", e && e.code); }   // 正本が無ければ最初の人が目的地を書く
     FB.collection("sugoroku_players").where("updatedAt", ">", Date.now() - 7 * 86400000).onSnapshot(q => { OTHERS = {}; q.forEach(d => { if (d.id !== UID) OTHERS[d.id] = d.data(); }); draw(); });
@@ -92,10 +92,10 @@ async function cloudStart() { if (!FB) return; try {
     hud(); draw();
   } catch (e) { console.warn("cloud start failed", e); } }
 let pushTimer = null;
-function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus", "settledYear", "lastSeen", "destCount"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
+function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus", "settledYear", "lastSeen", "destCount"].forEach(k => { if (S[k] !== undefined && !(k === "dest" && S[k] === null)) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
 /* 物件を買う: 早い者勝ちをトランザクションで */
 async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; if (e && e.code === "permission-denied") { console.warn("cloudBuy: ルール未設定→端末側で成立"); return true; } $("msg").textContent = "いまはつながらないので買えません（オンラインで再度）"; return false; } }   // ルール未設定・オフラインは端末側で成立させる
-if (S.kome === true) S.kome = 3; if (S.destCount === undefined && S.reached > 0) S.destCount = S.reached;   /* 旧データ互換 */
+function compat() { if (S.kome === true) S.kome = 3; if (S.destCount === undefined && S.reached > 0) S.destCount = S.reached; } compat();   /* 旧データ互換（クラウド読み込み後にも） */
 const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 /* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
 let pendingGame = null;
@@ -174,21 +174,22 @@ function pickDest() { let cands = NODES.filter(n => (n.t === "dest" || n.t === "
   const dd = distFrom(S.pos); const [lo, hi] = !(S.destCount > 0) ? [5, 8] : DEST_RANGE[Math.min(2, yearNow() - 1)]; const near = cands.filter(n => dd[n.id] >= lo && dd[n.id] <= hi); if (near.length) cands = near;   /* 最初の目的地は10分以内に着ける近さ */ S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); S.destCount = (S.destCount || 0) + 1; }
 /* ルーレット演出: 候補の名前を高速で回して止める（0.9秒） */
 let rouletteQueued = false;
-async function roulette() { rouletteQueued = false; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+async function roulette() { rouletteQueued = false; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; FX.destReveal(S.dest); save(); hud(); draw(); }
 let rouletteFrom = null;
 let hud = function () { if (!S.dest || !byId[S.dest]) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const dd = destDist(); const hp = dd[S.pos] === undefined ? hops(S.pos, S.dest) : dd[S.pos]; const racers = [{ name: "あなた", h: hp }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })), Object.values(OTHERS).map(o => ({ name: o.name || "旅人", h: dd[o.pos] === undefined ? 999 : dd[o.pos] }))).sort((a, b) => a.h - b.h); const lead = racers[0];
   $("destTxt").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 6 ? "　🔥一振りで届くかも！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
-async function tween(a, b) { const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
-  const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 24)); } }
+async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
+  const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); FX.moveStep(p); await new Promise(r => setTimeout(r, 24)); } FX.moveEnd(b); }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
 /* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
+let forkPlace = null;
 function chooseDir(opts) { return new Promise(res => { const wrap = document.getElementById("wrap"); const els = []; const h0 = hops(S.pos, S.dest);
     const place = () => opts.forEach((o, i) => { const p = scr(P[o.to]); const from = scr(P[S.pos]); const ang = Math.atan2(p.y - from.y, p.x - from.x); const el = els[i]; el.style.left = (p.x / DPR) + "px"; el.style.top = (p.y / DPR) + "px"; el.style.setProperty("--rot", ang + "rad"); el.firstChild.style.transform = `rotate(${ang}rad)`; });
-    opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); res(o.to); }; wrap.appendChild(el); els.push(el); });
-    place(); $("msg").textContent = "分かれ道。矢印をタップして進む方向を選んでください（赤＝目的地に近づく）"; }); }
+    opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); forkPlace = null; res(o.to); }; wrap.appendChild(el); els.push(el); });
+    place(); forkPlace = place; $("msg").textContent = "分かれ道。赤い矢印＝目的地に近い道。迷ったら赤をタップ。"; }); }
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
@@ -202,7 +203,7 @@ async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; 
 /* ---- ライバル（CPU）: プレイヤーが振るたびに1〜6歩。分岐は目的地に近づく方へ。物件に止まると買う ---- */
 /* ゆきんこ（貧乏神役）: 到着の瞬間、目的地から最も遠い旅人へ。毎手番いたずら。同じマスに止まるとなすりつけ */
 const WHO = () => [{ id: "you", pos: S.pos }].concat(S.rivals.map(r => ({ id: r.id, pos: r.pos })));
-function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; if (far === "you") { if (S.guard) { S.guard = false; S.yukinko = null; $("msg").textContent += "　🛡 守りカードがゆきんこを追い払った！"; } else $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; } }
+function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; FX.character("yukinko", far); if (far === "you") { if (S.guard) { S.guard = false; S.yukinko = null; $("msg").textContent += "　🛡 守りカードがゆきんこを追い払った！"; } else $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; } }
 function yukinkoAct() { if (!S.yukinko) return; const acts = ["spend", "sell", "card"]; const a = acts[Math.floor(Math.random() * acts.length)];
   if (S.yukinko === "you") { if (S.phoenix) { S.phoenix = 0; $("msg").textContent += "　❄ ゆきんこのいたずらをフェニックスカードが防いだ"; }
     else if (a === "spend" || !S.owned.length && !S.cards.length) { const v = pay(Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15)))); $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; }
@@ -280,7 +281,9 @@ function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("
   $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
 function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud();  if (pendingGame) setTimeout(() => applyGame(pendingGame), 0); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
-function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
+/* 絵と音の差し込み口（いまは空。image2.5 の一枚絵・Suno の短尺・H3 の演出をここから） */
+const FX = { scene: (type, node) => {}, moveStart: (a, b) => {}, moveStep: (p) => {}, moveEnd: (b) => {}, destReveal: (dest) => {}, character: (who, target) => {} };
+function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null; FX.scene(S.pos === S.dest ? "dest" : n.t, n);
   if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
   const owner = prop ? ownerOf(prop.id) : null;
   if (prop && owner && owner !== "you") { const toll = pay(income(prop, owner)); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
@@ -293,7 +296,7 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   if (n.station === "kome100" && S.money >= 200 && (S.komeInvest || 0) < 5) { $("cTitle").textContent = "米百俵（学びへの投資）"; $("cBody").textContent = `いま200万両を出すと、以後すべての物件の収益 +5%（いま ${S.komeInvest || 0}口・最大5口）。食えないからこそ、学びに。`; $("cBuy").textContent = "200万両を出す"; $("cBuy").disabled = false; $("card").style.display = "block";
     $("cBuy").onclick = () => { S.money -= 200; S.komeInvest = (S.komeInvest || 0) + 1; $("card").style.display = "none"; $("cBuy").textContent = "買う"; $("msg").textContent = `米百俵の学び ${S.komeInvest}口。物件の収益 +${5 * S.komeInvest}%`; save(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; $("cBuy").textContent = "買う"; hud(); }; return; }
-  if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome > 0) { v = Math.round(v * 1.5); S.kome--; } if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
+  if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome > 0) { v = Math.round(v * 1.5); S.kome--; } if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。お金が増えた！ +${v}万両`; }
   else if (n.t === "red" && S.phoenix) { S.phoenix = 0; $("msg").textContent = "赤マス。フェニックスカードが支払いを0にした！"; }
   else if (n.t === "red") { let v = 10 + Math.floor(Math.random() * 6) * 10; if (S.redShield) { v = Math.round(v / 2); S.redShield = 0; } v = pay(v); $("msg").textContent = `赤マス。−${v}万両` + (S.money < 0 ? "（借金中）" : ""); }
   else if (n.t === "yellow") { if (SHOP_NODES.has(n.id)) cardShop(); else giveCard(); }
@@ -321,11 +324,11 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
   step(); }
 if (!S.introDone) setTimeout(showIntro, 400); else if (!S.dest) roulette();
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
-function drawArrow() { const el = $("arrow"); if (!S.dest) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
+function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
   const cx = w / 2, cy = h / 2; const dx = x - cx, dy = y - cy; const ang = Math.atan2(dy, dx); const rx = cx - 34, ry = cy - 34; const t = Math.min(Math.abs(rx / Math.cos(ang)), Math.abs(ry / Math.sin(ang)));
   el.style.display = "flex"; el.style.left = (cx + Math.cos(ang) * t - 22) + "px"; el.style.top = (cy + Math.sin(ang) * t - 22 + 20) + "px"; el.style.transform = ""; }
-const _draw = draw; draw = function (tp) { _draw(tp); drawArrow(); };
+const _draw = draw; draw = function (tp) { _draw(tp); drawArrow(); if (forkPlace) forkPlace(); };
 /* ---- BGM（あれば） ---- */
 const hourNow = new Date().getHours(); const BGM = new Audio(hourNow >= 18 || hourNow < 6 ? "music/night.mp3" : "music/travel.mp3"); BGM.loop = true; BGM.volume = 0.45; let sndOn = false;   // 夜は夕暮れの曲
 const JINGLE = new Audio("music/event.mp3"); JINGLE.volume = 0.6;
