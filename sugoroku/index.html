@@ -84,20 +84,23 @@ async function cloudStart() { if (!FB) return; try {
     const ref = FB.collection("sugoroku_players").doc(UID); const snap = await ref.get();
     if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
     else await cloudPush();
-    try { const g = (await FB.collection("sugoroku_games").doc("main").get()).data(); if (g && byId[g.destId]) { GAME = g; S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) S.settledYear = g.settlementDoneYear; save(); } } catch (e) { console.warn("game doc", e && e.code); }
+    try { const g = (await FB.collection("sugoroku_games").doc("main").get()).data(); if (g && byId[g.destId]) applyGame(g); else { if (!S.dest || !byId[S.dest]) pickDest(); await cloudSetDest(S.dest); } } catch (e) { console.warn("game doc", e && e.code); }   // 正本が無ければ最初の人が目的地を書く
     FB.collection("sugoroku_players").where("updatedAt", ">", Date.now() - 7 * 86400000).onSnapshot(q => { OTHERS = {}; q.forEach(d => { if (d.id !== UID) OTHERS[d.id] = d.data(); }); draw(); });
     FB.collection("sugoroku_props").onSnapshot(q => { PROPS = {}; q.forEach(d => { PROPS[d.id] = d.data(); }); draw(); hud(); });
     /* 正本（目的地・決算）に追従 */
-    FB.collection("sugoroku_games").doc("main").onSnapshot(d => { if (!d.exists) return; const g = d.data(); GAME = g;
-      if (g.destId !== undefined && byId[g.destId] && g.destId !== S.dest && !busy) { S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); $("msg").textContent = `🎡 誰かが到着。つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
-      if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; S.settledYear = g.settlementDoneYear; $("msg").textContent = `📒 ${g.settlementDoneYear}年目の3月決算（みんな共通）: 物件 +${y}万両`; save(); hud(); } });
+    FB.collection("sugoroku_games").doc("main").onSnapshot(d => { if (!d.exists) return; applyGame(d.data()); });
     hud(); draw();
   } catch (e) { console.warn("cloud start failed", e); } }
 let pushTimer = null;
 function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus", "settledYear"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
 /* 物件を買う: 早い者勝ちをトランザクションで */
-async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; console.warn("cloudBuy fallback local", e && e.code); return true; } }   // ルール未設定・オフラインは端末側で成立させる
+async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; if (e && e.code === "permission-denied") { console.warn("cloudBuy: ルール未設定→端末側で成立"); return true; } $("msg").textContent = "いまはつながらないので買えません（オンラインで再度）"; return false; } }   // ルール未設定・オフラインは端末側で成立させる
 const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
+/* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
+let pendingGame = null;
+function applyGame(g) { if (!g) return; GAME = g; if (busy || $("card").style.display === "block") { pendingGame = g; return; } pendingGame = null;
+  if (g.destId !== undefined && byId[g.destId] && g.destId !== S.dest) { S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); $("msg").textContent = `🎡 誰かが到着。つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+  if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; S.settledYear = g.settlementDoneYear; $("msg").textContent = `📒 ${g.settlementDoneYear}年目の3月決算（みんな共通）: 物件 +${y}万両`; save(); hud(); } }
 async function cloudSetDest(prevDest) { if (!FB || !UID) return; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_games").doc("main"); const d = await tx.get(ref); const g = d.exists ? d.data() : {};
       if (g.destId !== undefined && g.destId !== prevDest && byId[g.destId]) { throw { adopt: g }; }   // 先に誰かが変えていた → それに従う
       tx.set(ref, { destId: S.dest, destBonus: S.destBonus, by: UID, updatedAt: Date.now() }, { merge: true }); }); }
@@ -187,7 +190,7 @@ async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; 
     let to = nexts[0];
     if (nexts.length > 1) { if (S.guide > 0) { const D = P[S.dest]; nexts.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); to = nexts[0]; S.guide--; } else { $("msg").textContent = `分かれ道。残り ${steps} マス。どちらへ？`; to = await chooseDir(nexts.map(x => ({ to: x }))); } }
     await tween(S.pos, to); prev = S.pos; S.pos = to; steps--; if (S.pos === S.dest) break; }
-  S.prev = prev; S.turn++; draw(); arrive(); rivalsMove(); settlement(); save(); busy = false; hud(); }
+  S.prev = prev; S.turn++; draw(); arrive(); rivalsMove(); settlement(); save(); busy = false; if (pendingGame) applyGame(pendingGame); hud(); }
 /* ---- ライバル（CPU）: プレイヤーが振るたびに1〜6歩。分岐は目的地に近づく方へ。物件に止まると買う ---- */
 /* ゆきんこ（貧乏神役）: 到着の瞬間、目的地から最も遠い旅人へ。毎手番いたずら。同じマスに止まるとなすりつけ */
 const WHO = () => [{ id: "you", pos: S.pos }].concat(S.rivals.map(r => ({ id: r.id, pos: r.pos })));
@@ -258,7 +261,7 @@ function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("
   list.forEach(q => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${q.name}<br><small>${q.kind}・実り ${Math.round(q.yield * 100)}%</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; b.textContent = q.price + "万両"; b.disabled = S.money < q.price;
     b.onclick = async () => { b.disabled = true; if (S.owned.includes(q.id) || S.money < q.price) { row.remove(); return; } const ok = await cloudBuy(q.id); if (!ok) { row.remove(); return; } S.money -= q.price; S.owned.push(q.id); row.remove(); $("msg").textContent = `${q.name} を買った！` + (monopoly(q, "you") ? "　この駅を独占！収益2倍" : ""); save(); draw(); hud(); if (!box.children.length) $("card").style.display = "none"; }; row.appendChild(b); box.appendChild(row); });
   $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
-function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud(); }
+function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud();  if (pendingGame) setTimeout(() => applyGame(pendingGame), 0); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
   if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
