@@ -75,24 +75,34 @@ const newRivals = () => RIVALS.map(r => ({ id: r.id, pos: START, prev: null, mon
 let S = load() || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
 if (!S.rivals) { S.rivals = newRivals(); S.cards = S.cards || []; S.skip = 0; }
 /* ---- 共有盤面（Firestore）---- */
-let FB = null, UID = null, OTHERS = {}, PROPS = {};   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
+let FB = null, UID = null, OTHERS = {}, PROPS = {}, GAME = null;   // GAME: 正本 sugoroku_games/main   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
 try { firebase.initializeApp({ apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" }); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); }
 const ownerOf = pid => S.owned.includes(pid) ? "you" : (PROPS[pid] && PROPS[pid].owner && PROPS[pid].owner !== UID) ? "p:" + PROPS[pid].owner : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
 const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((OTHERS[o.slice(2)] || {}).name || "旅人") : ((RIVALS.find(r => r.id === o) || {}).name || "");
 async function cloudStart() { if (!FB) return; try {
     const cred = await firebase.auth().signInAnonymously(); UID = cred.user.uid;
     const ref = FB.collection("sugoroku_players").doc(UID); const snap = await ref.get();
-    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
+    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
     else await cloudPush();
+    try { const g = (await FB.collection("sugoroku_games").doc("main").get()).data(); if (g && byId[g.destId]) { GAME = g; S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) S.settledYear = g.settlementDoneYear; save(); } } catch (e) { console.warn("game doc", e && e.code); }
     FB.collection("sugoroku_players").where("updatedAt", ">", Date.now() - 7 * 86400000).onSnapshot(q => { OTHERS = {}; q.forEach(d => { if (d.id !== UID) OTHERS[d.id] = d.data(); }); draw(); });
     FB.collection("sugoroku_props").onSnapshot(q => { PROPS = {}; q.forEach(d => { PROPS[d.id] = d.data(); }); draw(); hud(); });
+    /* 正本（目的地・決算）に追従 */
+    FB.collection("sugoroku_games").doc("main").onSnapshot(d => { if (!d.exists) return; const g = d.data(); GAME = g;
+      if (g.destId !== undefined && byId[g.destId] && g.destId !== S.dest && !busy) { S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); $("msg").textContent = `🎡 誰かが到着。つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+      if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; S.settledYear = g.settlementDoneYear; $("msg").textContent = `📒 ${g.settlementDoneYear}年目の3月決算（みんな共通）: 物件 +${y}万両`; save(); hud(); } });
     hud(); draw();
   } catch (e) { console.warn("cloud start failed", e); } }
 let pushTimer = null;
-function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
+function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => { const out = { updatedAt: Date.now(), name: S.name || "旅人" }; ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "destBonus", "settledYear"].forEach(k => { if (S[k] !== undefined) out[k] = S[k]; }); FB.collection("sugoroku_players").doc(UID).set(out, { merge: true }).catch(e => console.warn("push", e)); }, 500); }
 /* 物件を買う: 早い者勝ちをトランザクションで */
 async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; console.warn("cloudBuy fallback local", e && e.code); return true; } }   // ルール未設定・オフラインは端末側で成立させる
 const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
+async function cloudSetDest(prevDest) { if (!FB || !UID) return; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_games").doc("main"); const d = await tx.get(ref); const g = d.exists ? d.data() : {};
+      if (g.destId !== undefined && g.destId !== prevDest && byId[g.destId]) { throw { adopt: g }; }   // 先に誰かが変えていた → それに従う
+      tx.set(ref, { destId: S.dest, destBonus: S.destBonus, by: UID, updatedAt: Date.now() }, { merge: true }); }); }
+  catch (e) { if (e && e.adopt) { S.dest = e.adopt.destId; S.destBonus = e.adopt.destBonus || destBonus(hops(S.pos, S.dest)); save(); hud(); draw(); } else console.warn("cloudSetDest fallback local", e && e.code); } }
+async function cloudSettle(year) { if (!FB || !UID) return; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_games").doc("main"); const d = await tx.get(ref); const g = d.exists ? d.data() : {}; if ((g.settlementDoneYear || 0) >= year) return; tx.set(ref, { settlementDoneYear: year, updatedAt: Date.now() }, { merge: true }); }); } catch (e) { console.warn("cloudSettle", e && e.code); } }
 function cloudRelease(propId) { if (!FB || !UID) return; FB.collection("sugoroku_props").doc(propId).delete().catch(() => {}); }
 function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
 /* 座標 → 画面: 緯度経度をメルカトルで平面に。カメラはコマを追う */
@@ -156,7 +166,8 @@ function pickDest() { let cands = NODES.filter(n => (n.t === "dest" || n.t === "
   if (S.reached === 0) { const near = cands.filter(n => { const h = hops(S.pos, n.id); return h >= 5 && h <= 8; }); if (near.length) cands = near; }   /* 最初の目的地は10分以内に着ける近さ */ S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
 /* ルーレット演出: 候補の名前を高速で回して止める（0.9秒） */
 let rouletteQueued = false;
-async function roulette() { rouletteQueued = false; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } pickDest(); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+async function roulette() { rouletteQueued = false; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+let rouletteFrom = null;
 let hud = function () { if (!S.dest || !byId[S.dest]) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const hp = hops(S.pos, S.dest); $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・ご褒美 ${S.destBonus || destBonus(hp)}万両`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
@@ -194,7 +205,7 @@ function rivalsMove() { if (!S.dest) return;   // ルーレット待ちの間は
     let steps = 1 + Math.floor(Math.random() * 6), prev = r.prev;
     while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; const D = P[r.dest]; nx.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; if (r.pos === r.dest) break; }
     r.prev = prev; const n = byId[r.pos];
-    if (r.pos === r.dest) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; S.dest = null; setTimeout(roulette, 900); } }
+    if (r.pos === r.dest) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
     if (n.prop) { const pr = pv(n.prop), o = ownerOf(n.prop); if (!o && r.money >= pr.price && Math.random() < 0.7) { r.money -= pr.price; r.owned.push(n.prop); S.log.push(`${RIVALS[i].name} が ${pr.name} を買った`); }
       else if (o === "you") { const toll = income(pr, "you"); rpay(r, toll); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
     else if (n.t === "blue") r.money += 40; else if (n.t === "red") rpay(r, 30); }); }
@@ -250,7 +261,7 @@ function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("
 function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud(); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
-  if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; S.dest = null; setTimeout(roulette, 900); } }
+  if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
   const owner = prop ? ownerOf(prop.id) : null;
   if (prop && owner && owner !== "you") { const toll = pay(income(prop, owner)); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
   if (prop) { const list = stationProps(prop.station).filter(q => !ownerOf(q.id)); if (list.length) { showShop(prop.station, list); return; } }
@@ -269,7 +280,7 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
 }
 /* 3月の決算（年の最後の手番）: 物件収益 − 借金の利子。年末の順位発表 */
-function settlement() { if (S.turn % TURNS_PER_YEAR !== 0) return; const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); let msg = `📒 ${yearNow() - 1}年目の3月決算: 物件 +${y}万両`; S.money += y;
+function settlement() { if (S.turn % TURNS_PER_YEAR !== 0) return; const yr = yearNow() - 1; const already = (S.settledYear || 0) >= yr; const y = already ? 0 : S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); let msg = `📒 ${yr}年目の3月決算: 物件 +${y}万両` + (already ? "（みんなの決算で受け取り済み）" : ""); S.money += y; S.settledYear = Math.max(S.settledYear || 0, yr); cloudSettle(yr);
   if (S.money < 0) { const i = pay(Math.round(-S.money * 0.1)); msg += `　借金の利子 −${i}万両`; }
   S.rivals.forEach(r => { r.money += r.owned.reduce((a, id) => a + income(pv(id), r.id), 0); });
   const rows = [{ name: "あなた", total: total() }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total);
