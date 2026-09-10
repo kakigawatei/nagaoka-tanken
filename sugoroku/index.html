@@ -37,7 +37,7 @@ let S = load() || { pos: 0, money: R.startMoney, owned: [], dice: R.diceStockMax
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 function refill() { const gained = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (gained > 0) { S.dice = Math.min(R.diceStockMax, S.dice + gained); S.lastDice += gained * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); let W, H, pts = []; const DPR = devicePixelRatio || 1;
-function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; const cx = W / 2, cy = H * 0.40, rx = W * 0.40, ry = H * 0.30;   /* 縦長の楕円で画面を使う */
+function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; const cx = W / 2, cy = H * 0.40, rx = W * 0.31, ry = H * 0.30;   /* 縦長の楕円。左右は駅名ぶん空ける */
   pts = B.stations.map((s, i) => { const a = -Math.PI / 2 + (i / N) * Math.PI * 2; return { x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry, a }; }); }
 function draw(anim) { ctx.clearRect(0, 0, W, H); ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "#d9cdb3"; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
   B.stations.forEach((s, i) => { const p = pts[i]; const prop = B.properties.find(q => q.station === s.id); const mine = prop && S.owned.includes(prop.id);
