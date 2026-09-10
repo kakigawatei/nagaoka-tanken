@@ -100,7 +100,7 @@ function rivalsMove() { if (S.rivalSkip > 0) { S.rivalSkip--; return; }
     r.prev = prev; const n = byId[r.pos];
     if (r.pos === r.dest) { r.money += 300 + 50 * r.reached; r.reached++; r.dest = null; }
     if (n.prop) { const pr = pv(n.prop), o = ownerOf(n.prop); if (!o && r.money >= pr.price && Math.random() < 0.7) { r.money -= pr.price; r.owned.push(n.prop); S.log.push(`${RIVALS[i].name} が ${pr.name} を買った`); }
-      else if (o === "you") { const toll = Math.round(pr.price * pr.yield); r.money = Math.max(0, r.money - toll); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
+      else if (o === "you") { const toll = income(pr, "you"); r.money = Math.max(0, r.money - toll); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
     else if (n.t === "blue") r.money += 40; else if (n.t === "red") r.money = Math.max(0, r.money - 30); }); }
 /* ---- 黄マスのカード ---- */
 const CARDS = [
@@ -123,22 +123,39 @@ const EVENTS = [
 ];
 function runEvent() { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; }
 const pv = id => B.properties.find(q => q.id === id);
+/* 季節増収（デク提案6）: 物件の種類 × 月。花火館は8月×3、酒蔵は冬×2、海の市場は夏×1.5、温泉は冬×2、闘牛は5月・9月×2、アルパカは春×1.5 */
+function monthNow() { const m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); return m > 12 ? m - 12 : m; }
+function seasonMul(pr) { const m = monthNow(); const id = pr.id;
+  if (pr.name === "はなび館") return m === 8 ? 3 : 1;
+  if (pr.kind === "酒蔵" || pr.kind === "醸造") return [12, 1, 2].includes(m) ? 2 : 1;
+  if (pr.kind === "市場") return [7, 8].includes(m) ? 1.5 : 1;
+  if (pr.kind === "宿") return [12, 1, 2].includes(m) ? 2 : 1;
+  if (pr.name === "うし相撲場") return [5, 9].includes(m) ? 2 : 1;
+  if (pr.name === "アルパカぼくじょう") return [4, 5].includes(m) ? 1.5 : 1;
+  return 1; }
+/* エリア独占: 同じ駅エリアの物件を全部持つと収益2倍 */
+const areaOf = pr => (B.stations.find(st => st.id === pr.station) || {}).area || pr.station;
+function monopoly(pr, who) { const same = B.properties.filter(q => areaOf(q) === areaOf(pr)); return same.length > 1 && same.every(q => ownerOf(q.id) === who); }
+function income(pr, who) { let v = Math.round(pr.price * pr.yield * seasonMul(pr)); if (monopoly(pr, who)) v *= 2; if (who === "you" && S.komeInvest) v = Math.round(v * (1 + 0.05 * S.komeInvest)); return v; }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
   if (S.pos === S.dest) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; pickDest(); $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ ご褒美 +${bonus}万両　次は ${stName(byId[S.dest])}`; }
   const owner = prop ? ownerOf(prop.id) : null;
-  if (prop && owner && owner !== "you") { const toll = Math.round(prop.price * prop.yield); S.money = Math.max(0, S.money - toll); S.rivals.find(r => r.id === owner).money += toll; $("msg").textContent = `${RIVALS.find(r => r.id === owner).name} の ${prop.name}。通行料 −${toll}万両`; return; }
+  if (prop && owner && owner !== "you") { const toll = income(prop, owner); S.money = Math.max(0, S.money - toll); S.rivals.find(r => r.id === owner).money += toll; $("msg").textContent = `${RIVALS.find(r => r.id === owner).name} の ${prop.name}。通行料 −${toll}万両`; return; }
   if (prop && !owner) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
     $("cBuy").onclick = () => { S.money -= prop.price; S.owned.push(prop.id); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; hud(); }; return; }
-  if (prop) { const inc = Math.round(prop.price * prop.yield); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両`; return; }
+  if (prop) { const inc = income(prop, "you"); const mul = seasonMul(prop); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両` + (mul > 1 ? `（${monthNow()}月の書き入れ時 ×${mul}）` : "") + (monopoly(prop, "you") ? "（独占 ×2）" : ""); return; }
   if (S.pos === S.dest) return;
+  if (n.station === "kome100" && S.money >= 200 && (S.komeInvest || 0) < 5) { $("cTitle").textContent = "米百俵（学びへの投資）"; $("cBody").textContent = `いま200万両を出すと、以後すべての物件の収益 +5%（いま ${S.komeInvest || 0}口・最大5口）。食えないからこそ、学びに。`; $("cBuy").textContent = "200万両を出す"; $("cBuy").disabled = false; $("card").style.display = "block";
+    $("cBuy").onclick = () => { S.money -= 200; S.komeInvest = (S.komeInvest || 0) + 1; $("card").style.display = "none"; $("cBuy").textContent = "買う"; $("msg").textContent = `米百俵の学び ${S.komeInvest}口。物件の収益 +${5 * S.komeInvest}%`; save(); hud(); };
+    $("cSkip").onclick = () => { $("card").style.display = "none"; $("cBuy").textContent = "買う"; hud(); }; return; }
   if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome) v = Math.round(v * 1.5); if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
   else if (n.t === "red") { const v = Math.min(S.money, 10 + Math.floor(Math.random() * 6) * 10); S.money -= v; $("msg").textContent = `赤マス。−${v}万両`; }
   else if (n.t === "yellow") giveCard();
   else if (n.t === "event") runEvent();
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
-  if (S.turn % TURNS_PER_YEAR === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + Math.round(pv(id).price * pv(id).yield), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
+  if (S.turn % TURNS_PER_YEAR === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
 $("roll").onclick = roll;
 function renderHand() { const box = $("hand"); box.innerHTML = ""; if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
 $("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
