@@ -32,7 +32,7 @@
 <div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
 <div id="stock"></div></div>
 </div>
-<script src="data/board_v2.js"></script>
+<script src="data/board_v3.js"></script>
 <script src="data/areas.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -45,7 +45,7 @@
 const B = BOARD_DATA; const R = B.rules; const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const ADJ = {}; B.edges.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
 const START = NODES.find(n => n.station === "nagaoka_st").id;
-const KEY = "nagaoka_sugoroku_v2";
+const KEY = "nagaoka_sugoroku_v3";   // 盤面 v3（道路網を広げた）で保存を切り替え
 const TURNS_PER_YEAR = 12 * (R.turnsPerMonth || 1) * 3;   // 1か月＝3手番（36手番で1年）。ルール値から一本化（デク指摘10）
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
 const RIVALS = [{ id: "kon", name: "コン", icon: "🦊" }, { id: "kabuto", name: "愛の兜", icon: "⛑️" }, { id: "ryokan", name: "良寛さん", icon: "🧘" }];   // CPUの旅人（探検録の顔ぶれ）
@@ -84,7 +84,9 @@ const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd
 const AREAS = (typeof AREA_DATA !== "undefined") ? AREA_DATA : {};
 const AIMG = {}; Object.keys(AREAS).forEach(k => { const im = new Image(); im.src = `areas/${k}.jpg`; im.onload = () => draw(); AIMG[k] = im; });
 const mercY = lat => -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 180 / Math.PI;
-function drawAreas() { Object.keys(AREAS).forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
+/* 描く順: 全体図 → エリア → 高解像度タイル（キー "aNN_tXY"）。後に描くほど上 */
+const AKEYS = Object.keys(AREAS).sort((a, b) => (a === "overview" ? -1 : b === "overview" ? 1 : a.includes("_t") - b.includes("_t") || a.localeCompare(b)));
+function drawAreas() { AKEYS.forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
     const tl = scr({ x: a.lon_left, y: mercY(a.lat_top) }), br = scr({ x: a.lon_right, y: mercY(a.lat_bottom) });
     if (br.x < 0 || tl.x > W || br.y < 0 || tl.y > H) return; ctx.drawImage(im, tl.x, tl.y, br.x - tl.x, br.y - tl.y); }); }
 function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; drawAreas();
@@ -105,7 +107,7 @@ cv.addEventListener("pointerup", () => drag = null); cv.addEventListener("pointe
 const $ = id => document.getElementById(id); let busy = false;
 const stName = n => (n.name || (n.t === "dest" ? n.station : "")).replace(/（.*?）|／.*$/g, "");
 function hops(from, to) { const q = [from], d = { [from]: 0 }; while (q.length) { const u = q.shift(); if (u === to) return d[u]; for (const v of ADJ[u] || []) if (d[v] === undefined) { d[v] = d[u] + 1; q.push(v); } } return 999; }
-const destBonus = hp => 200 + 20 * Math.min(hp, 60) + 50 * S.reached;   // 遠いほど高い（デク提案4）
+const destBonus = hp => 200 + 30 * Math.min(hp, 40) + 50 * S.reached;   // マス間隔 700m に合わせて距離の重みを上げた   // 遠いほど高い（デク提案4）
 function pickDest() { const cands = NODES.filter(n => n.t === "dest" && n.id !== S.pos && n.id !== S.dest); S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
 let hud = function () { if (!S.dest) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const hp = hops(S.pos, S.dest); $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・ご褒美 ${S.destBonus || destBonus(hp)}万両`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
