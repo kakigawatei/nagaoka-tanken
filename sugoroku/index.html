@@ -94,7 +94,7 @@ const AREAS = (typeof AREA_DATA !== "undefined") ? AREA_DATA : {};
 const AIMG = {}; Object.keys(AREAS).forEach(k => { const im = new Image(); im.src = `areas/${k}.jpg`; im.onload = () => draw(); AIMG[k] = im; });
 const mercY = lat => -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 180 / Math.PI;
 /* 描く順: 全体図 → エリア → 高解像度タイル（キー "aNN_tXY"）。後に描くほど上 */
-const AKEYS = Object.keys(AREAS).sort((a, b) => (a === "overview" ? -1 : b === "overview" ? 1 : a.includes("_t") - b.includes("_t") || a.localeCompare(b)));
+const AKEYS = Object.keys(AREAS).sort((a, b) => { if (a === "overview") return -1; if (b === "overview") return 1; const wa = AREAS[a].lon_right - AREAS[a].lon_left, wb = AREAS[b].lon_right - AREAS[b].lon_left; return wb - wa; });   // 広い（粗い）絵ほど下・狭い（細かい）絵ほど上
 function drawAreas() { AKEYS.forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
     const tl = scr({ x: a.lon_left, y: mercY(a.lat_top) }), br = scr({ x: a.lon_right, y: mercY(a.lat_bottom) });
     if (br.x < 0 || tl.x > W || br.y < 0 || tl.y > H) return; ctx.drawImage(im, tl.x, tl.y, br.x - tl.x, br.y - tl.y); }); }
