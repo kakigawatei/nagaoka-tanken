@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>ながおかスゴ録</title>
+<style>
+  :root{--ink:#2a2118;--paper:#f6f1e6;--accent:#d9552f;--gold:#e0b84a}
+  *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:"Yu Gothic","Hiragino Sans",sans-serif;-webkit-user-select:none}
+  #wrap{position:relative;width:100%;height:100%;overflow:hidden}
+  canvas{display:block;width:100%;height:100%}
+  #hud{position:absolute;left:0;right:0;top:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;background:linear-gradient(rgba(246,241,230,.95),rgba(246,241,230,0))}
+  #hud b{font-size:18px}
+  #panel{position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:#fffdf7;border-top:2px solid #e6dcc6;border-radius:18px 18px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+  #msg{min-height:44px;font-size:15px;line-height:1.5;margin-bottom:10px}
+  .row{display:flex;gap:10px}
+  button{flex:1;padding:14px 10px;border:none;border-radius:12px;font-size:16px;font-weight:700;background:var(--accent);color:#fff;box-shadow:0 3px 0 #a8391c}
+  button:disabled{background:#cfc6b3;box-shadow:none;color:#fff}
+  button.ghost{background:#fff;color:var(--ink);border:2px solid #e6dcc6;box-shadow:none}
+  #stock{font-size:13px;color:#7a6b58;margin-top:8px}
+  .card{position:absolute;left:16px;right:16px;bottom:170px;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:none}
+  .card h3{margin:0 0 6px;font-size:18px} .card p{margin:0 0 10px;font-size:14px;color:#5e5245}
+</style></head>
+<body><div id="wrap">
+<canvas id="cv"></canvas>
+<div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
+<div class="card" id="card"><h3 id="cTitle"></h3><p id="cBody"></p><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
+<div id="panel"><div id="msg">サイコロを振って、長岡をぐるりと旅しよう。</div>
+<div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button></div>
+<div id="stock"></div></div>
+</div>
+<script src="data/board.js"></script>
+<script>
+/* 長岡すごろく（仮）— 1週目の動く版（2026-09-10 ポム）。絵なし・端末保存。あとで Firestore（共有盤面）と image2.5 の絵に差し替える。
+   ルール: サイコロは60分に1回・3回まで貯まる／環状42駅（探検録の実在スポット）／物件は早い者勝ち・止まると買える／1周＝1年（3年で決算） */
+const B = BOARD_DATA; const R = B.rules; const N = B.stations.length;
+const KEY = "nagaoka_sugoroku_v0";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
+let S = load() || { pos: 0, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), month: 4, year: 1, laps: 0, log: [] };
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+function refill() { const gained = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (gained > 0) { S.dice = Math.min(R.diceStockMax, S.dice + gained); S.lastDice += gained * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); let W, H, pts = []; const DPR = devicePixelRatio || 1;
+function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; const cx = W / 2, cy = H * 0.40, rx = W * 0.40, ry = H * 0.30;   /* 縦長の楕円で画面を使う */
+  pts = B.stations.map((s, i) => { const a = -Math.PI / 2 + (i / N) * Math.PI * 2; return { x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry, a }; }); }
+function draw(anim) { ctx.clearRect(0, 0, W, H); ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "#d9cdb3"; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
+  B.stations.forEach((s, i) => { const p = pts[i]; const prop = B.properties.find(q => q.station === s.id); const mine = prop && S.owned.includes(prop.id);
+    ctx.beginPath(); ctx.arc(p.x, p.y, (prop ? 13 : 9) * DPR, 0, 7); ctx.fillStyle = mine ? "#e0b84a" : prop ? "#d9552f" : "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = "#7a6b58"; ctx.stroke();
+    if (prop || i === 0) { const out = 22 * DPR; const lx = p.x + Math.cos(p.a) * out, ly = p.y + Math.sin(p.a) * out;   /* 物件の駅だけ、楕円の外側に短い名前 */
+      ctx.fillStyle = "#2a2118"; ctx.font = `${10.5 * DPR}px sans-serif`; ctx.textAlign = Math.cos(p.a) > 0.3 ? "left" : Math.cos(p.a) < -0.3 ? "right" : "center"; ctx.textBaseline = "middle";
+      ctx.fillText((prop ? prop.name : s.name).replace(/（.*?）|／.*$/g, "").slice(0, 9), lx, ly); } });
+  const p = anim || pts[S.pos]; ctx.font = `${34 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🦙", p.x, p.y - 10 * DPR); }
+addEventListener("resize", () => { layout(); draw(); });
+const $ = id => document.getElementById(id); let busy = false;
+function hud() { $("money").textContent = S.money; $("date").textContent = `${S.year}年目 ${S.month}月`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice)); $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy; }
+async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
+  const d = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲 ${d} が出た！`; hud();
+  for (let k = 0; k < d; k++) { const a = pts[S.pos], b = pts[(S.pos + 1) % N]; for (let t = 0; t <= 1; t += 0.2) { draw({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); await new Promise(r => setTimeout(r, 30)); } S.pos = (S.pos + 1) % N; if (S.pos === 0) { S.laps++; S.year++; S.month = 4; } else { S.month = 4 + Math.floor(S.pos / (N / 12)) % 12; if (S.month > 12) S.month -= 12; } }
+  draw(); arrive(); save(); busy = false; hud(); }
+const pv = id => B.properties.find(q => q.id === id);
+function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
+function arrive() { const st = B.stations[S.pos]; const prop = B.properties.find(q => q.station === st.id);
+  if (prop && !S.owned.includes(prop.id)) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `${st.name} に到着。価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
+    $("cBuy").onclick = () => { S.money -= prop.price; S.owned.push(prop.id); S.log.push(`${prop.name} を買った`); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
+    $("cSkip").onclick = () => { $("card").style.display = "none"; $("msg").textContent = `${st.name} を見て回った。`; }; }
+  else if (prop) { const inc = Math.round(prop.price * prop.yield); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両`; }
+  else { $("msg").textContent = `${st.name}（${st.area}）に到着。`; }
+  if (S.pos === 0 && S.laps > 0) { const y = S.owned.reduce((a, id) => a + Math.round(pv(id).price * pv(id).yield), 0); S.money += y; $("msg").textContent = `1周して長岡駅。年の実り +${y}万両！` + (S.year > R.years ? ` 3年の旅が終わり。総資産 ${total()}万両` : ""); } }
+$("roll").onclick = roll;
+$("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
+refill(); layout(); draw(); hud(); setInterval(() => { refill(); hud(); }, 30000);
+</script>
+</body></html>
