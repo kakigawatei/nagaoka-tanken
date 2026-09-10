@@ -35,6 +35,7 @@
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"><span id="destTxt"></span><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div></div>
 <div id="arrow">🎯</div>
+<video id="diceVid" playsinline muted preload="auto" style="position:absolute;left:50%;top:42%;width:62vw;max-width:330px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:4"><source src="assets/dice/dice_hevc.mov" type='video/mp4; codecs="hvc1"'><source src="assets/dice/dice.webm" type="video/webm"></video>
 <button id="snd" title="音">🔈</button>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><div id="cBody" style="margin:0 0 10px;font-size:14px;color:#5e5245"></div><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
@@ -193,7 +194,7 @@ function chooseDir(opts) { return new Promise(res => { const wrap = document.get
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
-  let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw();
+  let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw(); await playDice();
   let steps = d, prev = S.prev;
   while (steps > 0) { let nexts = (ADJ[S.pos] || []).filter(x => x !== prev); if (!nexts.length) nexts = ADJ[S.pos];
     let to = nexts[0];
@@ -281,6 +282,9 @@ function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("
   $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
 function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud();  if (pendingGame) setTimeout(() => applyGame(pendingGame), 0); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
+/* サイコロの転がり（H3 生成・背景抜き）。再生できない端末は素通り */
+function playDice() { return new Promise(res => { const v = $("diceVid"); if (!v || !v.canPlayType) return res(); let done = false; const fin = () => { if (done) return; done = true; v.style.display = "none"; v.pause(); res(); };
+  try { v.style.display = "block"; v.currentTime = 0; v.playbackRate = 2; const pr = v.play(); if (pr && pr.catch) pr.catch(fin); v.onended = fin; setTimeout(fin, 2900); } catch (e) { fin(); } }); }
 /* 絵と音の差し込み口（いまは空。image2.5 の一枚絵・Suno の短尺・H3 の演出をここから） */
 const FX = { scene: (type, node) => {}, moveStart: (a, b) => {}, moveStep: (p) => {}, moveEnd: (b) => {}, destReveal: (dest) => {}, character: (who, target) => {} };
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null; FX.scene(S.pos === S.dest ? "dest" : n.t, n);
