@@ -76,7 +76,7 @@ function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCool
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR = devicePixelRatio || 1; let W, H;
 const merc = n => ({ x: n.lng, y: -Math.log(Math.tan(Math.PI / 4 + n.lat * Math.PI / 360)) * 180 / Math.PI });
 const P = Object.fromEntries(NODES.map(n => [n.id, merc(n)]));
-let cam = { ...P[S.pos] }, zoom = 26000;   // 1度 ≒ 26000px（1マス≒200m が約 45px）
+let cam = { ...P[S.pos] }, zoom = 15000;   // 1度 ≒ 15000px（1マス≒200m が約 26px・絵の解像度に合わせて引き気味）
 function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; }
 const scr = p => ({ x: W / 2 + (p.x - cam.x) * zoom * DPR, y: H * 0.42 + (p.y - cam.y) * zoom * DPR });
 const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd0", dest: "#3aa66a", prop: "#f08a1e", fork: "#fff" };
@@ -87,12 +87,12 @@ const mercY = lat => -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 18
 function drawAreas() { Object.keys(AREAS).forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
     const tl = scr({ x: a.lon_left, y: mercY(a.lat_top) }), br = scr({ x: a.lon_right, y: mercY(a.lat_bottom) });
     if (br.x < 0 || tl.x > W || br.y < 0 || tl.y > H) return; ctx.drawImage(im, tl.x, tl.y, br.x - tl.x, br.y - tl.y); }); }
-function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); drawAreas();
-  ctx.lineWidth = 14 * DPR; ctx.strokeStyle = "rgba(255,250,235,0.85)"; ctx.lineCap = "round";
+function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; drawAreas();
+  ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "rgba(255,250,235,0.85)"; ctx.lineCap = "round";
   B.edges.forEach(([a, b]) => { const pa = scr(P[a]), pb = scr(P[b]); if (Math.max(pa.x, pb.x) < -50 || Math.min(pa.x, pb.x) > W + 50 || Math.max(pa.y, pb.y) < -50 || Math.min(pa.y, pb.y) > H + 50) return; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); });
   NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
     const owner = n.prop ? ownerOf(n.prop) : null;
-    ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 14 : 9) * DPR, 0, 7); ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 11 : 7) * DPR, 0, 7); ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
   Object.values(OTHERS).forEach(o => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${22 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🐑", q.x + 12 * DPR, q.y - 24 * DPR); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${26 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(RIVALS[i].icon, q.x + (i - 1) * 14 * DPR, q.y - 30 * DPR); });
