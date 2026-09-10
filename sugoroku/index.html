@@ -35,7 +35,7 @@
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"><span id="destTxt"></span><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div></div>
 <div id="arrow">🎯</div>
-<video id="diceVid" playsinline muted preload="auto" style="position:absolute;left:50%;top:42%;width:62vw;max-width:330px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:4"><source src="assets/dice/dice_hevc.mov" type='video/mp4; codecs="hvc1"'><source src="assets/dice/dice.webm" type="video/webm"></video>
+<video id="diceVid" playsinline muted preload="auto" style="position:absolute;left:50%;top:42%;width:62vw;max-width:330px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:4"></video>
 <button id="snd" title="音">🔈</button>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><div id="cBody" style="margin:0 0 10px;font-size:14px;color:#5e5245"></div><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
@@ -194,7 +194,7 @@ function chooseDir(opts) { return new Promise(res => { const wrap = document.get
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
-  let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = "🎲 ころころ…"; hud(); cam = { ...P[S.pos] }; draw(); await playDice(); if (!S.triple && !S.double) $("msg").textContent = `🎲 ${d} が出た！`;
+  let d = 1 + Math.floor(Math.random() * 6); const d0 = d; if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = "🎲 ころころ…"; hud(); cam = { ...P[S.pos] }; draw(); await playDice(d0); if (!S.triple && !S.double) $("msg").textContent = `🎲 ${d} が出た！`;
   let steps = d, prev = S.prev;
   while (steps > 0) { let nexts = (ADJ[S.pos] || []).filter(x => x !== prev); if (!nexts.length) nexts = ADJ[S.pos];
     let to = nexts[0];
@@ -283,8 +283,12 @@ function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("
 function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud();  if (pendingGame) setTimeout(() => applyGame(pendingGame), 0); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
 /* サイコロの転がり（H3 生成・背景抜き）。再生できない端末は素通り */
-function playDice() { return new Promise(res => { const v = $("diceVid"); if (!v || !v.canPlayType) return res(); let done = false; const fin = () => { if (done) return; done = true; v.style.display = "none"; v.pause(); res(); };
-  try { v.style.display = "block"; v.currentTime = 0; v.playbackRate = 2; const pr = v.play(); if (pr && pr.catch) pr.catch(fin); v.onended = fin; setTimeout(fin, 2900); } catch (e) { fin(); } }); }
+const DICE_EXT = (() => { const v = document.createElement("video"); return v.canPlayType && v.canPlayType('video/mp4; codecs="hvc1"') ? "mov" : "webm"; })();   // iPhone/Safari は透過HEVC、それ以外は透過webm
+function diceSrc(n) { return `assets/dice/dice_${n}.${DICE_EXT}`; }
+function playDice(n) { return new Promise(res => { const v = $("diceVid"); if (!v || !v.canPlayType) return res(); let done = false; const fin = () => { if (done) return; done = true; v.style.display = "none"; v.pause(); res(); };
+  try { v.src = diceSrc(n); v.style.display = "block"; v.playbackRate = 2; const pr = v.play(); if (pr && pr.catch) pr.catch(fin); v.onended = fin; setTimeout(fin, 3200); } catch (e) { fin(); } }); }
+/* 次の出目を先読み（サイコロが貯まっている間に） */
+function preloadDice() { try { [1, 2, 3, 4, 5, 6].forEach(n => { const l = document.createElement("link"); l.rel = "preload"; l.as = "video"; l.href = diceSrc(n); document.head.appendChild(l); }); } catch (e) {} }
 /* 絵と音の差し込み口（いまは空。image2.5 の一枚絵・Suno の短尺・H3 の演出をここから） */
 const FX = { scene: (type, node) => {}, moveStart: (a, b) => {}, moveStep: (p) => {}, moveEnd: (b) => {}, destReveal: (dest) => {}, character: (who, target) => {} };
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null; FX.scene(S.pos === S.dest ? "dest" : n.t, n);
@@ -347,6 +351,6 @@ refill(); const today = new Date().toDateString(); if (S.dice >= R.diceStockMax 
 function showReturnDigest() { const away = Date.now() - (S.lastSeen || 0); if (S.lastSeen && away > 30 * 60000 && S.dest && byId[S.dest]) { const dd = distFrom(S.dest); const lead = S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })).sort((a, b) => a.h - b.h)[0]; const recent = (S.log || []).slice(-2).join("／"); const hrs = Math.floor(away / 3600000);
     $("msg").textContent = `🏠 ${hrs >= 1 ? hrs + "時間ぶり" : "おかえり"}。目的地は ${stName(byId[S.dest])}（あなた あと${hops(S.pos, S.dest)}マス／${lead.name} あと${lead.h}マス）` + (recent ? "　" + recent : "") + `　サイコロ ${S.dice}個`; }
   S.lastSeen = Date.now(); save(); }
-layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); cloudStart(); if (S.introDone) showReturnDigest();
+layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); cloudStart(); if (S.introDone) showReturnDigest();   /* 動画の先読みはしない（通信量） */
 </script>
 </body></html>
