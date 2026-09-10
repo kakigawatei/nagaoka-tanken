@@ -25,6 +25,9 @@
   #intro h2{margin:0 0 8px;font-size:20px} #intro p{font-size:14.5px;line-height:1.7;color:#4b4034;margin:0 0 14px}
   #intro input{width:100%;font-size:16px;padding:10px 12px;border:2px solid #e6dcc6;border-radius:10px;margin-bottom:12px}
   #arrow{position:absolute;width:44px;height:44px;border-radius:50%;background:#d9552f;color:#fff;display:none;align-items:center;justify-content:center;font-size:22px;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none}
+  .fork{position:absolute;width:56px;height:56px;border-radius:50%;background:#3b6fb6;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);border:3px solid #fff;padding:0;z-index:4;animation:pulse 1s infinite alternate}
+  .fork.dest{background:#d9552f}
+  @keyframes pulse{from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-50%) scale(1.12)}}
   #snd{position:absolute;right:12px;top:72px;width:40px;height:40px;border-radius:50%;background:#fffdf7;border:2px solid #e6dcc6;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;color:#2a2118}
 </style></head>
 <body><div id="wrap">
@@ -123,7 +126,11 @@ let hud = function () { if (!S.dest) pickDest(); $("money").textContent = S.mone
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
 async function tween(a, b) { for (let t = 0; t <= 1.001; t += 0.125) { const p = { x: P[a].x + (P[b].x - P[a].x) * t, y: P[a].y + (P[b].y - P[a].y) * t }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 22)); } }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
-function chooseDir(opts) { return new Promise(res => { const box = $("dirs"); box.innerHTML = ""; box.style.display = "flex"; opts.forEach(o => { const b = document.createElement("button"); b.className = "dir"; const h = hops(o.to, S.dest), h0 = hops(S.pos, S.dest); b.textContent = "→ " + (stName(byId[o.to]) || dirName(S.pos, o.to)) + (o.to === S.dest ? " 🎯" : h < h0 ? " 🎯近づく" : " 遠回り"); b.onclick = () => { box.style.display = "none"; res(o.to); }; box.appendChild(b); }); }); }
+/* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
+function chooseDir(opts) { return new Promise(res => { const wrap = document.getElementById("wrap"); const els = []; const h0 = hops(S.pos, S.dest);
+    const place = () => opts.forEach((o, i) => { const p = scr(P[o.to]); const from = scr(P[S.pos]); const ang = Math.atan2(p.y - from.y, p.x - from.x); const el = els[i]; el.style.left = (p.x / DPR) + "px"; el.style.top = (p.y / DPR) + "px"; el.style.setProperty("--rot", ang + "rad"); el.firstChild.style.transform = `rotate(${ang}rad)`; });
+    opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); res(o.to); }; wrap.appendChild(el); els.push(el); });
+    place(); $("msg").textContent = "分かれ道。矢印をタップして進む方向を選んでください（赤＝目的地に近づく）"; }); }
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
   let d = 1 + Math.floor(Math.random() * 6); if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw();
