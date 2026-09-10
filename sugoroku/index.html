@@ -33,7 +33,7 @@
 <body><div id="wrap">
 <canvas id="cv"></canvas>
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
-<div id="dest"></div>
+<div id="dest"></div><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div>
 <div id="arrow">🎯</div>
 <button id="snd" title="音">🔈</button>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
@@ -82,7 +82,7 @@ const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((O
 async function cloudStart() { if (!FB) return; try {
     const cred = await firebase.auth().signInAnonymously(); UID = cred.user.uid;
     const ref = FB.collection("sugoroku_players").doc(UID); const snap = await ref.get();
-    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
+    if (snap.exists) { const c = snap.data(); ["pos", "prev", "money", "owned", "dice", "lastDice", "turn", "dest", "reached", "cards", "skip", "komeInvest", "name", "destBonus", "settledYear", "lastSeen"].forEach(k => { if (c[k] !== undefined) S[k] = c[k]; }); save(); }
     else await cloudPush();
     try { const g = (await FB.collection("sugoroku_games").doc("main").get()).data(); if (g && byId[g.destId]) applyGame(g); else { if (!S.dest || !byId[S.dest]) pickDest(); await cloudSetDest(S.dest); } } catch (e) { console.warn("game doc", e && e.code); }   // 正本が無ければ最初の人が目的地を書く
     FB.collection("sugoroku_players").where("updatedAt", ">", Date.now() - 7 * 86400000).onSnapshot(q => { OTHERS = {}; q.forEach(d => { if (d.id !== UID) OTHERS[d.id] = d.data(); }); draw(); });
@@ -146,6 +146,7 @@ let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawT
     else { ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 11 : 7) * DPR, 0, 7); ctx.fill(); ctx.stroke(); }
     if (big && zoom > 5000) { const im = icon(n.t === "prop" ? n.prop : n.station); if (im) { const sz = Math.min(64, 26 + zoom / 400) * DPR; ctx.drawImage(im, p.x + 6 * DPR, p.y - sz - 2 * DPR, sz, sz); } }   // アイコンは右上（コマと旗に重ねない）
     if (S.dest === n.id) { ctx.fillStyle = "#d9552f"; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.lineTo(p.x + 34 * DPR, p.y - 33 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 26 * DPR); ctx.fill(); ctx.strokeStyle = "#3a2f26"; ctx.lineWidth = 2 * DPR; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.stroke(); }   // 目的地＝旗
+    if (SHOP_NODES.has(n.id) && zoom > 5000) { ctx.fillStyle = "#2a2118"; ctx.font = `${10 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🃏カード売り場", p.x, p.y + 22 * DPR); }
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
   Object.values(OTHERS).forEach(o => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${22 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🐑", q.x + 12 * DPR, q.y - 24 * DPR); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${26 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(RIVALS[i].icon, q.x + (i - 1) * 14 * DPR, q.y - 30 * DPR); });
@@ -160,19 +161,23 @@ const $ = id => document.getElementById(id); let busy = false;
 const ICON_KEYS = new Set(["aore","honmaru","kome100","nagaoka_st","oguni_washi","ryokan","teradomari_ichiba","togyu","yukyuzan","p01","p02","p03","p04","p05","p06","p07","p08","p09","p10","p11","p12","p13","p15","p16","p17","p18"]);
 const ICON_ALIAS = { p14: "togyu" };
 const ICONS = {}; function icon(key) { key = ICON_ALIAS[key] || key; if (!ICON_KEYS.has(key)) return null; if (!ICONS[key]) { const im = new Image(); im.onload = () => draw(); im.src = "icons/" + key + ".png"; ICONS[key] = im; } return ICONS[key].complete && ICONS[key].naturalWidth ? ICONS[key] : null; }
+const SHOP_NODES = (() => { const out = new Set(); ["nagaoka_st", "aore", "teradomari_ichiba", "yukyuzan"].forEach(st => { const src = NODES.find(n => n.station === st); if (!src) return; const d = distFrom(src.id); let best = null; NODES.forEach(n => { if (n.t === "yellow" && d[n.id] !== undefined && (best === null || d[n.id] < d[best])) best = n.id; }); if (best !== null) out.add(best); }); return out; })();
 const stName = n => (n.name || (n.t === "dest" ? n.station : "")).replace(/（.*?）|／.*$/g, "");
 function distFrom(src) { const q = [src], d = { [src]: 0 }; while (q.length) { const u = q.shift(); for (const v of ADJ[u] || []) if (d[v] === undefined) { d[v] = d[u] + 1; q.push(v); } } return d; }
 function hops(from, to) { const q = [from], d = { [from]: 0 }; while (q.length) { const u = q.shift(); if (u === to) return d[u]; for (const v of ADJ[u] || []) if (d[v] === undefined) { d[v] = d[u] + 1; q.push(v); } } return 999; }
 const yearNow = () => 1 + Math.floor(S.turn / TURNS_PER_YEAR);
-const destBonus = hp => 300 + 200 * (yearNow() - 1) + 20 * Math.min(hp, 40);   // 桃鉄風: 年が進むほど援助金が増える（1年目300万両〜）   // 遠いほど高い（デク提案4）
+const DEST_RANGE = [[8, 16], [12, 24], [16, 32]];   /* 年ごとの目的地の距離（マス） */
+const destBonus = hp => [400, 700, 1000][Math.min(2, yearNow() - 1)] + [25, 30, 35][Math.min(2, yearNow() - 1)] * Math.min(hp, 40);   /* 到着1回で物件1〜2件買える額（デク6回目） */   // 桃鉄風: 年が進むほど援助金が増える（1年目300万両〜）   // 遠いほど高い（デク提案4）
 function pickDest() { let cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos && n.id !== S.dest);
-  if (S.reached === 0) { const near = cands.filter(n => { const h = hops(S.pos, n.id); return h >= 5 && h <= 8; }); if (near.length) cands = near; }   /* 最初の目的地は10分以内に着ける近さ */ S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
+  const dd = distFrom(S.pos); const [lo, hi] = S.reached === 0 ? [5, 8] : DEST_RANGE[Math.min(2, yearNow() - 1)]; const near = cands.filter(n => dd[n.id] >= lo && dd[n.id] <= hi); if (near.length) cands = near;   /* 最初の目的地は10分以内に着ける近さ */ S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); }
 /* ルーレット演出: 候補の名前を高速で回して止める（0.9秒） */
 let rouletteQueued = false;
 async function roulette() { rouletteQueued = false; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
 let rouletteFrom = null;
 let hud = function () { if (!S.dest || !byId[S.dest]) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
-  const hp = hops(S.pos, S.dest); $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・ご褒美 ${S.destBonus || destBonus(hp)}万両`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
+  const hp = hops(S.pos, S.dest); const dd = distFrom(S.dest); const racers = [{ name: "あなた", h: hp }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })), Object.values(OTHERS).map(o => ({ name: o.name || "旅人", h: dd[o.pos] === undefined ? 999 : dd[o.pos] }))).sort((a, b) => a.h - b.h); const lead = racers[0];
+  $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 3 ? "　🔥あと一振り圏内！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
+  const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
 async function tween(a, b) { const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
   const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 24)); } }
@@ -183,6 +188,7 @@ function chooseDir(opts) { return new Promise(res => { const wrap = document.get
     opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); res(o.to); }; wrap.appendChild(el); els.push(el); });
     place(); $("msg").textContent = "分かれ道。矢印をタップして進む方向を選んでください（赤＝目的地に近づく）"; }); }
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
+  if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
   let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw();
   let steps = d, prev = S.prev;
@@ -196,7 +202,8 @@ async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; 
 const WHO = () => [{ id: "you", pos: S.pos }].concat(S.rivals.map(r => ({ id: r.id, pos: r.pos })));
 function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; if (far === "you") { if (S.guard) { S.guard = false; S.yukinko = null; $("msg").textContent += "　🛡 守りカードがゆきんこを追い払った！"; } else $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; } }
 function yukinkoAct() { if (!S.yukinko) return; const acts = ["spend", "sell", "card"]; const a = acts[Math.floor(Math.random() * acts.length)];
-  if (S.yukinko === "you") { if (a === "spend" || !S.owned.length && !S.cards.length) { const v = pay(Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15)))); $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; }
+  if (S.yukinko === "you") { if (S.phoenix) { S.phoenix = 0; $("msg").textContent += "　❄ ゆきんこのいたずらをフェニックスカードが防いだ"; }
+    else if (a === "spend" || !S.owned.length && !S.cards.length) { const v = pay(Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15)))); $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; }
     else if (a === "sell" && S.owned.length) { S.owned.sort((x, y) => pv(y).price - pv(x).price); const id = S.owned.splice(0, 1)[0]; S.money += Math.round(pv(id).price * 0.5); cloudRelease(id); $("msg").textContent += `　❄ ゆきんこが ${pv(id).name} を半値で売り払った`; }
     else if (S.cards.length) { const id = S.cards.splice(Math.floor(Math.random() * S.cards.length), 1)[0]; const c = CARDS.find(x => x.id === id); $("msg").textContent += `　❄ ゆきんこが ${c ? c.name : "カード"} を捨てた`; } }
   else { const r = S.rivals.find(x => x.id === S.yukinko); if (!r) return; if (a === "sell" && r.owned.length) { const id = r.owned.splice(Math.floor(Math.random() * r.owned.length), 1)[0]; r.money += Math.round(pv(id).price * 0.5); } else r.money = Math.max(0, r.money - 60); }
@@ -216,7 +223,10 @@ function rivalsMove() { if (!S.dest) return;   // ルーレット待ちの間は
 const CARDS = [
   { id: "hegisoba", name: "へぎそばカード", desc: "次のサイコロを2個振れる", use: () => { S.double = true; } },
   { id: "koi", name: "錦鯉カード", desc: "次の分かれ道2回は目的地に近い方へ自動で進む", use: () => { S.guide = 2; } },
-  { id: "kome", name: "米百俵カード", desc: "持っている間、青マスの実入り1.5倍（学びは財産）", use: () => { S.kome = true; } },
+  { id: "kome", name: "米百俵カード", desc: "次の青マス3回の実入り1.5倍（学びは財産）", use: () => { S.kome = 3; } },
+  { id: "phoenix", price: 200, name: "フェニックスカード", desc: "次の赤マスかゆきんこの支払いを0にする", use: () => { S.phoenix = 1; } },
+  { id: "shosetsu", price: 100, name: "消雪パイプカード", desc: "次の1回休みを無効にする", use: () => { S.snowGuard = 1; } },
+  { id: "chosei", price: 150, name: "長生橋カード", desc: "次の分かれ道4回は目的地に近い方へ自動で進む", use: () => { S.guide = (S.guide || 0) + 4; } },
   { id: "abura", name: "あぶらげカード", desc: "所持金 +200万両", use: () => { S.money += 200; } },
   { id: "yuki", name: "雪おろしカード", desc: "ライバル全員を1回休みに", use: () => { S.rivalSkip = 1; } },
   { id: "tokkyu", price: 300, name: "特急カード", desc: "次のサイコロを3個振れる", use: () => { S.triple = true; } },
@@ -234,6 +244,11 @@ function useCard(idx) { const c = CARDS.find(x => x.id === S.cards[idx]); if (!c
 const EVENTS = [
   { name: "長岡花火", text: "夜空に正三尺玉。観光の物件を持っていれば売上×2（+{v}万両）", f: () => { const v = S.owned.filter(id => pv(id).kind === "観光").reduce((a, id) => a + Math.round(pv(id).price * pv(id).yield), 0); S.money += v; return v; } },
   { name: "豪雪", text: "山側は大雪。次は1回休み", f: () => { S.skip = 1; return 0; } },
+  { name: "摂田屋の蔵開き", text: "酒蔵・醸造の物件を持っていれば収益1回分（+{v}万両）", f: () => { const v = Math.min(400, S.owned.filter(id => ["酒蔵", "醸造"].includes(pv(id).kind)).reduce((a, id) => a + income(pv(id), "you"), 0)); S.money += v; return v; } },
+  { name: "山古志の棚田仕事", text: "田植えを手伝って+120万両。次の赤マスは半額", f: () => { S.money += 120; S.redShield = 1; return 120; } },
+  { name: "寺泊の浜焼き行列", text: "市場の物件があれば収益×1.5、無ければ+80万両（+{v}万両）", f: () => { const m = S.owned.filter(id => pv(id).kind === "市場"); const v = m.length ? Math.round(m.reduce((a, id) => a + income(pv(id), "you"), 0) * 1.5) : 80; S.money += v; return v; } },
+  { name: "アオーレの催事", text: "次に買う物件は2割引", f: () => { S.sale = 0.8; return 0; } },
+  { name: "柿川ライトアップ", text: "灯りに惹かれて人が集まる。目的地の援助金+150万両", f: () => { S.destBonus = (S.destBonus || 0) + 150; return 0; } },
   { name: "雲海", text: "山古志の雲海に感動。+150万両", f: () => { S.money += 150; return 150; } },
   { name: "灯籠流し", text: "柿川に灯籠を流した。徳が上がり、目的地のご褒美が増える", f: () => { S.reached += 2; return 0; } },
   { name: "闘牛", text: "牛の角突きに賭けた。{v}万両", f: () => { const w = Math.random() < 0.5; if (w) { S.money += 200; return 200; } return -pay(100); } },
@@ -258,8 +273,8 @@ const areaOf = pr => (B.stations.find(st => st.id === pr.station) || {}).area ||
 function monopoly(pr, who) { const same = B.properties.filter(q => q.station === pr.station); return same.length > 1 && same.every(q => ownerOf(q.id) === who); }
 function income(pr, who) { let v = Math.round(pr.price * pr.yield * seasonMul(pr)); if (monopoly(pr, who)) v *= 2; if (who === "you" && S.komeInvest) v = Math.round(v * (1 + 0.05 * S.komeInvest)); return v; }
 function showShop(st, list) { const stn = B.stations.find(x => x.id === st); $("cTitle").textContent = `${(stn && stn.name || "").replace(/（.*?）|／.*$/g, "")} の物件`; $("cBody").innerHTML = ""; const box = $("cBody");
-  list.forEach(q => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${q.name}<br><small>${q.kind}・実り ${Math.round(q.yield * 100)}%</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; b.textContent = q.price + "万両"; b.disabled = S.money < q.price;
-    b.onclick = async () => { b.disabled = true; if (S.owned.includes(q.id) || S.money < q.price) { row.remove(); return; } const ok = await cloudBuy(q.id); if (!ok) { row.remove(); return; } S.money -= q.price; S.owned.push(q.id); row.remove(); $("msg").textContent = `${q.name} を買った！` + (monopoly(q, "you") ? "　この駅を独占！収益2倍" : ""); save(); draw(); hud(); if (!box.children.length) $("card").style.display = "none"; }; row.appendChild(b); box.appendChild(row); });
+  list.forEach(q => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${q.name}<br><small>${q.kind}・実り ${Math.round(q.yield * 100)}%</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; const prc = Math.round(q.price * (S.sale || 1)); b.textContent = prc + "万両" + (S.sale ? "（2割引）" : ""); b.disabled = S.money < prc;
+    b.onclick = async () => { b.disabled = true; if (S.owned.includes(q.id) || S.money < prc) { row.remove(); return; } const ok = await cloudBuy(q.id); if (!ok) { row.remove(); return; } S.money -= prc; S.sale = 0; S.owned.push(q.id); row.remove(); $("msg").textContent = `${q.name} を買った！` + (monopoly(q, "you") ? "　この駅を独占！収益2倍" : ""); save(); draw(); hud(); if (!box.children.length) $("card").style.display = "none"; }; row.appendChild(b); box.appendChild(row); });
   $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
 function closeCard() { $("card").style.display = "none"; $("cBuy").style.display = ""; $("cBuy").textContent = "買う"; $("cSkip").textContent = "やめる"; $("cBody").innerHTML = ""; hud();  if (pendingGame) setTimeout(() => applyGame(pendingGame), 0); }
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
@@ -276,9 +291,10 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   if (n.station === "kome100" && S.money >= 200 && (S.komeInvest || 0) < 5) { $("cTitle").textContent = "米百俵（学びへの投資）"; $("cBody").textContent = `いま200万両を出すと、以後すべての物件の収益 +5%（いま ${S.komeInvest || 0}口・最大5口）。食えないからこそ、学びに。`; $("cBuy").textContent = "200万両を出す"; $("cBuy").disabled = false; $("card").style.display = "block";
     $("cBuy").onclick = () => { S.money -= 200; S.komeInvest = (S.komeInvest || 0) + 1; $("card").style.display = "none"; $("cBuy").textContent = "買う"; $("msg").textContent = `米百俵の学び ${S.komeInvest}口。物件の収益 +${5 * S.komeInvest}%`; save(); hud(); };
     $("cSkip").onclick = () => { $("card").style.display = "none"; $("cBuy").textContent = "買う"; hud(); }; return; }
-  if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome) v = Math.round(v * 1.5); if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
-  else if (n.t === "red") { const v = pay(10 + Math.floor(Math.random() * 6) * 10); $("msg").textContent = `赤マス。−${v}万両` + (S.money < 0 ? "（借金中）" : ""); }
-  else if (n.t === "yellow") { if (n.id % 5 === 0) cardShop(); else giveCard(); }
+  if (n.t === "blue") { let v = 20 + Math.floor(Math.random() * 8) * 10; if (S.kome > 0) { v = Math.round(v * 1.5); S.kome--; } if (S.ryokan) { v += S.ryokan; S.ryokan = 0; } S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
+  else if (n.t === "red" && S.phoenix) { S.phoenix = 0; $("msg").textContent = "赤マス。フェニックスカードが支払いを0にした！"; }
+  else if (n.t === "red") { let v = 10 + Math.floor(Math.random() * 6) * 10; if (S.redShield) { v = Math.round(v / 2); S.redShield = 0; } v = pay(v); $("msg").textContent = `赤マス。−${v}万両` + (S.money < 0 ? "（借金中）" : ""); }
+  else if (n.t === "yellow") { if (SHOP_NODES.has(n.id)) cardShop(); else giveCard(); }
   else if (n.t === "event") runEvent();
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
 }
@@ -319,6 +335,9 @@ $("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }]
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
 refill(); const today = new Date().toDateString(); if (S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
-layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); cloudStart();
+function showReturnDigest() { const away = Date.now() - (S.lastSeen || 0); if (S.lastSeen && away > 30 * 60000 && S.dest && byId[S.dest]) { const dd = distFrom(S.dest); const lead = S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })).sort((a, b) => a.h - b.h)[0]; const recent = (S.log || []).slice(-2).join("／"); const hrs = Math.floor(away / 3600000);
+    $("msg").textContent = `🏠 ${hrs >= 1 ? hrs + "時間ぶり" : "おかえり"}。目的地は ${stName(byId[S.dest])}（あなた あと${hops(S.pos, S.dest)}マス／${lead.name} あと${lead.h}マス）` + (recent ? "　" + recent : "") + `　サイコロ ${S.dice}個`; }
+  S.lastSeen = Date.now(); save(); }
+layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); cloudStart(); if (S.introDone) showReturnDigest();
 </script>
 </body></html>
