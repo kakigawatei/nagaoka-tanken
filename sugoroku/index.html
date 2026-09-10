@@ -20,11 +20,20 @@
   #stock{font-size:13px;color:#7a6b58;margin-top:8px}
   .card{position:absolute;left:16px;right:16px;bottom:190px;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:none}
   .card h3{margin:0 0 6px;font-size:18px} .card p{margin:0 0 10px;font-size:14px;color:#5e5245}
+  #intro{position:absolute;inset:0;background:rgba(42,33,24,.72);display:none;align-items:center;justify-content:center;padding:24px;z-index:5}
+  #intro .box{background:#fffdf7;border-radius:18px;padding:22px 20px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+  #intro h2{margin:0 0 8px;font-size:20px} #intro p{font-size:14.5px;line-height:1.7;color:#4b4034;margin:0 0 14px}
+  #intro input{width:100%;font-size:16px;padding:10px 12px;border:2px solid #e6dcc6;border-radius:10px;margin-bottom:12px}
+  #arrow{position:absolute;width:44px;height:44px;border-radius:50%;background:#d9552f;color:#fff;display:none;align-items:center;justify-content:center;font-size:22px;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none}
+  #snd{position:absolute;right:12px;top:72px;width:40px;height:40px;border-radius:50%;background:#fffdf7;border:2px solid #e6dcc6;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;color:#2a2118}
 </style></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"></div>
+<div id="arrow">➤</div>
+<button id="snd" title="音">🔈</button>
+<div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><p id="cBody"></p><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
 <div id="panel"><div id="msg">サイコロを振って、長岡を旅しよう。分かれ道では行き先を選べます。</div>
 <div class="row" id="dirs" style="display:none"></div>
@@ -89,7 +98,7 @@ const AKEYS = Object.keys(AREAS).sort((a, b) => (a === "overview" ? -1 : b === "
 function drawAreas() { AKEYS.forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
     const tl = scr({ x: a.lon_left, y: mercY(a.lat_top) }), br = scr({ x: a.lon_right, y: mercY(a.lat_bottom) });
     if (br.x < 0 || tl.x > W || br.y < 0 || tl.y > H) return; ctx.drawImage(im, tl.x, tl.y, br.x - tl.x, br.y - tl.y); }); }
-function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; drawAreas();
+let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; drawAreas();
   ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "rgba(255,250,235,0.85)"; ctx.lineCap = "round";
   B.edges.forEach(([a, b]) => { const pa = scr(P[a]), pb = scr(P[b]); if (Math.max(pa.x, pb.x) < -50 || Math.min(pa.x, pb.x) > W + 50 || Math.max(pa.y, pb.y) < -50 || Math.min(pa.y, pb.y) > H + 50) return; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); });
   NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
@@ -153,7 +162,7 @@ const EVENTS = [
   { name: "闘牛", text: "牛の角突きに賭けた。{v}万両", f: () => { const w = Math.random() < 0.5; const v = w ? 200 : -100; S.money = Math.max(0, S.money + v); return v; } },
   { name: "良寛さんに会う", text: "所持金の1割を分けた（{v}万両）。次の青マスで倍になって返ってくる", f: () => { const v = Math.round(S.money * 0.1); S.money -= v; S.ryokan = v * 2; return -v; } },
 ];
-function runEvent() { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; }
+let runEvent = function () { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; }
 const pv = id => B.properties.find(q => q.id === id);
 /* 季節増収（デク提案6）: 物件の種類 × 月。花火館は8月×3、酒蔵は冬×2、海の市場は夏×1.5、温泉は冬×2、闘牛は5月・9月×2、アルパカは春×1.5 */
 function monthNow() { const m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); return m > 12 ? m - 12 : m; }
@@ -189,6 +198,29 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
   if (S.turn % TURNS_PER_YEAR === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
 $("roll").onclick = roll;
+/* ---- 初回の導線 ---- */
+const INTRO = [
+  ["ながおかスゴ録へようこそ", "アルパカの旅人になって、本物の長岡の道を旅します。道も川も駅も、全部実際の場所です。"],
+  ["サイコロは1時間に1回", "サイコロは1時間に1つ貯まり、3つまで持てます。毎日ちょっと開いて、少しずつ進むゲームです。分かれ道では行き先を自分で選べます。"],
+  ["目的地と物件", "上に出ている目的地（探検録のスポット）に着くとご褒美。橙のマスでは店や蔵などの物件が買えて、他の旅人が止まると通行料が入ります。3年後の総資産で勝負。"],
+  ["名前を決めて出発", "順位や物件に出る名前です。"],
+];
+function showIntro() { let i = 0; const box = $("intro"); box.style.display = "flex";
+  const step = () => { const [t, b] = INTRO[i]; $("iTitle").textContent = t; $("iBody").textContent = b; const last = i === INTRO.length - 1; $("iName").style.display = last ? "block" : "none"; $("iNext").textContent = last ? "出発！" : "つぎへ"; };
+  $("iNext").onclick = () => { if (i < INTRO.length - 1) { i++; step(); return; } const v = $("iName").value.trim(); S.name = v.slice(0, 12) || "旅人"; S.introDone = true; save(); box.style.display = "none"; hud(); $("msg").textContent = `${S.name}、いってらっしゃい。まずはサイコロを。`; };
+  step(); }
+if (!S.introDone) setTimeout(showIntro, 400);
+/* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
+function drawArrow() { const el = $("arrow"); if (!S.dest) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
+  if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
+  const cx = w / 2, cy = h / 2; const dx = x - cx, dy = y - cy; const ang = Math.atan2(dy, dx); const rx = cx - 34, ry = cy - 34; const t = Math.min(Math.abs(rx / Math.cos(ang)), Math.abs(ry / Math.sin(ang)));
+  el.style.display = "flex"; el.style.left = (cx + Math.cos(ang) * t - 22) + "px"; el.style.top = (cy + Math.sin(ang) * t - 22 + 20) + "px"; el.style.transform = `rotate(${ang}rad)`; }
+const _draw = draw; draw = function (tp) { _draw(tp); drawArrow(); };
+/* ---- BGM（あれば） ---- */
+const hourNow = new Date().getHours(); const BGM = new Audio(hourNow >= 18 || hourNow < 6 ? "music/night.mp3" : "music/travel.mp3"); BGM.loop = true; BGM.volume = 0.45; let sndOn = false;   // 夜は夕暮れの曲
+const JINGLE = new Audio("music/event.mp3"); JINGLE.volume = 0.6;
+$("snd").onclick = () => { sndOn = !sndOn; $("snd").textContent = sndOn ? "🔊" : "🔈"; if (sndOn) BGM.play().catch(() => { $("snd").textContent = "🔈"; sndOn = false; }); else BGM.pause(); };
+const _runEvent = runEvent; runEvent = function () { _runEvent(); if (sndOn) { JINGLE.currentTime = 0; JINGLE.play().catch(() => {}); } };
 $("nameBtn").onclick = () => { const v = prompt("旅人の名前（順位や物件に出ます）", S.name || ""); if (v !== null) { S.name = v.trim().slice(0, 12) || "旅人"; save(); $("msg").textContent = `名前を「${S.name}」にした。`; } };
 function renderHand() { const box = $("hand"); box.innerHTML = ""; if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
 $("rank").onclick = () => { const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
