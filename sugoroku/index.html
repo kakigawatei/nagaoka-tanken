@@ -3,67 +3,101 @@
 <title>ながおかスゴ録</title>
 <style>
   :root{--ink:#2a2118;--paper:#f6f1e6;--accent:#d9552f;--gold:#e0b84a}
-  *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:"Yu Gothic","Hiragino Sans",sans-serif;-webkit-user-select:none}
+  *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:"Yu Gothic","Hiragino Sans",sans-serif;-webkit-user-select:none;overflow:hidden}
   #wrap{position:relative;width:100%;height:100%;overflow:hidden}
-  canvas{display:block;width:100%;height:100%}
-  #hud{position:absolute;left:0;right:0;top:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;background:linear-gradient(rgba(246,241,230,.95),rgba(246,241,230,0))}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  #hud{position:absolute;left:0;right:0;top:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;background:linear-gradient(rgba(246,241,230,.96),rgba(246,241,230,0));pointer-events:none}
   #hud b{font-size:18px}
-  #panel{position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:#fffdf7;border-top:2px solid #e6dcc6;border-radius:18px 18px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
-  #msg{min-height:44px;font-size:15px;line-height:1.5;margin-bottom:10px}
-  .row{display:flex;gap:10px}
-  button{flex:1;padding:14px 10px;border:none;border-radius:12px;font-size:16px;font-weight:700;background:var(--accent);color:#fff;box-shadow:0 3px 0 #a8391c}
+  #dest{position:absolute;left:14px;right:14px;top:44px;font-size:13px;color:#5e5245;pointer-events:none}
+  #panel{position:absolute;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fffdf7;border-top:2px solid #e6dcc6;border-radius:18px 18px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+  #msg{min-height:40px;font-size:15px;line-height:1.5;margin-bottom:10px}
+  .row{display:flex;gap:10px} .row + .row{margin-top:8px}
+  button{flex:1;padding:13px 10px;border:none;border-radius:12px;font-size:16px;font-weight:700;background:var(--accent);color:#fff;box-shadow:0 3px 0 #a8391c}
   button:disabled{background:#cfc6b3;box-shadow:none;color:#fff}
   button.ghost{background:#fff;color:var(--ink);border:2px solid #e6dcc6;box-shadow:none}
+  button.dir{background:#3b6fb6;box-shadow:0 3px 0 #24487a}
   #stock{font-size:13px;color:#7a6b58;margin-top:8px}
-  .card{position:absolute;left:16px;right:16px;bottom:170px;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:none}
+  .card{position:absolute;left:16px;right:16px;bottom:190px;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:none}
   .card h3{margin:0 0 6px;font-size:18px} .card p{margin:0 0 10px;font-size:14px;color:#5e5245}
 </style></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
+<div id="dest"></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><p id="cBody"></p><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
-<div id="panel"><div id="msg">サイコロを振って、長岡をぐるりと旅しよう。</div>
+<div id="panel"><div id="msg">サイコロを振って、長岡を旅しよう。分かれ道では行き先を選べます。</div>
+<div class="row" id="dirs" style="display:none"></div>
 <div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button></div>
 <div id="stock"></div></div>
 </div>
-<script src="data/board.js"></script>
+<script src="data/board_v2.js"></script>
 <script>
-/* 長岡すごろく（仮）— 1週目の動く版（2026-09-10 ポム）。絵なし・端末保存。あとで Firestore（共有盤面）と image2.5 の絵に差し替える。
-   ルール: サイコロは60分に1回・3回まで貯まる／環状42駅（探検録の実在スポット）／物件は早い者勝ち・止まると買える／1周＝1年（3年で決算） */
-const B = BOARD_DATA; const R = B.rules; const N = B.stations.length;
-const KEY = "nagaoka_sugoroku_v0";
+/* ながおかスゴ録 v2（2026-09-10 ポム）— 桃鉄型の路線網。OSM の道路・鉄道に沿った 963 マス（data/board_v2.json→board_v2.js）
+   ・サイコロ 60分に1回・3回まで貯まる／分かれ道で行き先を選ぶ／目的地（探検録のスポット）に着くとご褒美→次の目的地
+   ・青=もらう 赤=払う 黄=カード（仮） 紫=イベント（仮） 緑=目的地 橙=物件（買える・自分のに止まると売上）
+   ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
+const B = BOARD_DATA; const R = B.rules; const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+const ADJ = {}; B.edges.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+const START = NODES.find(n => n.station === "nagaoka_st").id;
+const KEY = "nagaoka_sugoroku_v2";
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
-let S = load() || { pos: 0, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), month: 4, year: 1, laps: 0, log: [] };
+let S = load() || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [] };
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
-function refill() { const gained = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (gained > 0) { S.dice = Math.min(R.diceStockMax, S.dice + gained); S.lastDice += gained * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
-const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); let W, H, pts = []; const DPR = devicePixelRatio || 1;
-function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; const cx = W / 2, cy = H * 0.40, rx = W * 0.31, ry = H * 0.30;   /* 縦長の楕円。左右は駅名ぶん空ける */
-  pts = B.stations.map((s, i) => { const a = -Math.PI / 2 + (i / N) * Math.PI * 2; return { x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry, a }; }); }
-function draw(anim) { ctx.clearRect(0, 0, W, H); ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "#d9cdb3"; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
-  B.stations.forEach((s, i) => { const p = pts[i]; const prop = B.properties.find(q => q.station === s.id); const mine = prop && S.owned.includes(prop.id);
-    ctx.beginPath(); ctx.arc(p.x, p.y, (prop ? 13 : 9) * DPR, 0, 7); ctx.fillStyle = mine ? "#e0b84a" : prop ? "#d9552f" : "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = "#7a6b58"; ctx.stroke();
-    if (prop || i === 0) { const out = 22 * DPR; const lx = p.x + Math.cos(p.a) * out, ly = p.y + Math.sin(p.a) * out;   /* 物件の駅だけ、楕円の外側に短い名前 */
-      ctx.fillStyle = "#2a2118"; ctx.font = `${10.5 * DPR}px sans-serif`; ctx.textAlign = Math.cos(p.a) > 0.3 ? "left" : Math.cos(p.a) < -0.3 ? "right" : "center"; ctx.textBaseline = "middle";
-      ctx.fillText((prop ? prop.name : s.name).replace(/（.*?）|／.*$/g, "").slice(0, 9), lx, ly); } });
-  const p = anim || pts[S.pos]; ctx.font = `${34 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🦙", p.x, p.y - 10 * DPR); }
+function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
+/* 座標 → 画面: 緯度経度をメルカトルで平面に。カメラはコマを追う */
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR = devicePixelRatio || 1; let W, H;
+const merc = n => ({ x: n.lng, y: -Math.log(Math.tan(Math.PI / 4 + n.lat * Math.PI / 360)) * 180 / Math.PI });
+const P = Object.fromEntries(NODES.map(n => [n.id, merc(n)]));
+let cam = { ...P[S.pos] }, zoom = 26000;   // 1度 ≒ 26000px（1マス≒200m が約 45px）
+function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; }
+const scr = p => ({ x: W / 2 + (p.x - cam.x) * zoom * DPR, y: H * 0.42 + (p.y - cam.y) * zoom * DPR });
+const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd0", dest: "#3aa66a", prop: "#f08a1e", fork: "#fff" };
+function draw(tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H);
+  ctx.lineWidth = 14 * DPR; ctx.strokeStyle = "#d9cdb3"; ctx.lineCap = "round";
+  B.edges.forEach(([a, b]) => { const pa = scr(P[a]), pb = scr(P[b]); if (Math.max(pa.x, pb.x) < -50 || Math.min(pa.x, pb.x) > W + 50 || Math.max(pa.y, pb.y) < -50 || Math.min(pa.y, pb.y) > H + 50) return; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); });
+  NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
+    ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 14 : 9) * DPR, 0, 7); ctx.fillStyle = mine ? "#e0b84a" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
+    if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
+  const p = scr(tokenPos || P[S.pos]); ctx.font = `${36 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🦙", p.x, p.y - 8 * DPR); }
 addEventListener("resize", () => { layout(); draw(); });
+/* 指でドラッグして地図を見回す（サイコロを振るとコマに戻る） */
+let drag = null; cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; });
+cv.addEventListener("pointermove", e => { if (!drag) return; cam.x = drag.cx - (e.clientX - drag.x) / zoom; cam.y = drag.cy - (e.clientY - drag.y) / zoom; draw(); });
+cv.addEventListener("pointerup", () => drag = null); cv.addEventListener("pointercancel", () => drag = null);
 const $ = id => document.getElementById(id); let busy = false;
-function hud() { $("money").textContent = S.money; $("date").textContent = `${S.year}年目 ${S.month}月`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice)); $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy; }
+const stName = n => (n.name || (n.t === "dest" ? n.station : "")).replace(/（.*?）|／.*$/g, "");
+function pickDest() { const cands = NODES.filter(n => n.t === "dest" && n.id !== S.pos && n.id !== S.dest); S.dest = cands[Math.floor(Math.random() * cands.length)].id; }
+function hud() { if (!S.dest) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / 36), m = 4 + Math.floor((S.turn % 36) / 3); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
+  $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
+  $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy; }
+async function tween(a, b) { for (let t = 0; t <= 1.001; t += 0.125) { const p = { x: P[a].x + (P[b].x - P[a].x) * t, y: P[a].y + (P[b].y - P[a].y) * t }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 22)); } }
+function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
+function chooseDir(opts) { return new Promise(res => { const box = $("dirs"); box.innerHTML = ""; box.style.display = "flex"; opts.forEach(o => { const b = document.createElement("button"); b.className = "dir"; b.textContent = "→ " + (stName(byId[o.to]) || dirName(S.pos, o.to)) + (o.to === S.dest ? " 🎯" : ""); b.onclick = () => { box.style.display = "none"; res(o.to); }; box.appendChild(b); }); }); }
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
-  const d = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲 ${d} が出た！`; hud();
-  for (let k = 0; k < d; k++) { const a = pts[S.pos], b = pts[(S.pos + 1) % N]; for (let t = 0; t <= 1; t += 0.2) { draw({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); await new Promise(r => setTimeout(r, 30)); } S.pos = (S.pos + 1) % N; if (S.pos === 0) { S.laps++; S.year++; S.month = 4; } else { S.month = 4 + Math.floor(S.pos / (N / 12)) % 12; if (S.month > 12) S.month -= 12; } }
-  draw(); arrive(); save(); busy = false; hud(); }
+  const d = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw();
+  let steps = d, prev = S.prev;
+  while (steps > 0) { let nexts = (ADJ[S.pos] || []).filter(x => x !== prev); if (!nexts.length) nexts = ADJ[S.pos];
+    let to = nexts[0];
+    if (nexts.length > 1) { $("msg").textContent = `分かれ道。残り ${steps} マス。どちらへ？`; to = await chooseDir(nexts.map(x => ({ to: x }))); }
+    await tween(S.pos, to); prev = S.pos; S.pos = to; steps--; if (S.pos === S.dest) break; }
+  S.prev = prev; S.turn++; draw(); arrive(); save(); busy = false; hud(); }
 const pv = id => B.properties.find(q => q.id === id);
 function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 0); }
-function arrive() { const st = B.stations[S.pos]; const prop = B.properties.find(q => q.station === st.id);
-  if (prop && !S.owned.includes(prop.id)) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `${st.name} に到着。価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
-    $("cBuy").onclick = () => { S.money -= prop.price; S.owned.push(prop.id); S.log.push(`${prop.name} を買った`); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
-    $("cSkip").onclick = () => { $("card").style.display = "none"; $("msg").textContent = `${st.name} を見て回った。`; }; }
-  else if (prop) { const inc = Math.round(prop.price * prop.yield); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両`; }
-  else { $("msg").textContent = `${st.name}（${st.area}）に到着。`; }
-  if (S.pos === 0 && S.laps > 0) { const y = S.owned.reduce((a, id) => a + Math.round(pv(id).price * pv(id).yield), 0); S.money += y; $("msg").textContent = `1周して長岡駅。年の実り +${y}万両！` + (S.year > R.years ? ` 3年の旅が終わり。総資産 ${total()}万両` : ""); } }
+function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null;
+  if (S.pos === S.dest) { const bonus = 300 + 50 * S.reached; S.money += bonus; S.reached++; pickDest(); $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ ご褒美 +${bonus}万両　次は ${stName(byId[S.dest])}`; }
+  if (prop && !S.owned.includes(prop.id)) { $("cTitle").textContent = `${prop.name}（${prop.kind}）`; $("cBody").textContent = `価格 ${prop.price}万両・年の実り ${Math.round(prop.yield * 100)}%${prop.note ? "・" + prop.note : ""}`; $("cBuy").disabled = S.money < prop.price; $("card").style.display = "block";
+    $("cBuy").onclick = () => { S.money -= prop.price; S.owned.push(prop.id); $("card").style.display = "none"; $("msg").textContent = `${prop.name} はあなたのもの！`; save(); draw(); hud(); };
+    $("cSkip").onclick = () => { $("card").style.display = "none"; }; return; }
+  if (prop) { const inc = Math.round(prop.price * prop.yield); S.money += inc; $("msg").textContent = `自分の ${prop.name} に到着。売上 +${inc}万両`; return; }
+  if (S.pos === S.dest) return;
+  if (n.t === "blue") { const v = 20 + Math.floor(Math.random() * 8) * 10; S.money += v; $("msg").textContent = `青マス。+${v}万両`; }
+  else if (n.t === "red") { const v = Math.min(S.money, 10 + Math.floor(Math.random() * 6) * 10); S.money -= v; $("msg").textContent = `赤マス。−${v}万両`; }
+  else if (n.t === "yellow") { $("msg").textContent = `黄マス。カードを1枚（仮）`; }
+  else if (n.t === "event") { $("msg").textContent = `イベントマス（仮）。長岡の出来事がここで起きます`; }
+  else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
+  if (S.turn % 36 === 0 && S.owned.length) { const y = S.owned.reduce((a, id) => a + Math.round(pv(id).price * pv(id).yield), 0); S.money += y; $("msg").textContent += `　年の決算 +${y}万両`; } }
 $("roll").onclick = roll;
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
-refill(); layout(); draw(); hud(); setInterval(() => { refill(); hud(); }, 30000);
+refill(); layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000);
 </script>
 </body></html>
