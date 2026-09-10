@@ -194,7 +194,7 @@ function chooseDir(opts) { return new Promise(res => { const wrap = document.get
 async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
   if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
-  let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = `🎲 ${d} が出た！`; hud(); cam = { ...P[S.pos] }; draw(); await playDice();
+  let d = 1 + Math.floor(Math.random() * 6); if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = "🎲 ころころ…"; hud(); cam = { ...P[S.pos] }; draw(); await playDice(); if (!S.triple && !S.double) $("msg").textContent = `🎲 ${d} が出た！`;
   let steps = d, prev = S.prev;
   while (steps > 0) { let nexts = (ADJ[S.pos] || []).filter(x => x !== prev); if (!nexts.length) nexts = ADJ[S.pos];
     let to = nexts[0];
