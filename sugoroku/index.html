@@ -44,8 +44,8 @@
 <div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
 <div id="stock"></div></div>
 </div>
-<script src="data/board_v3.js"></script>
-<script src="data/areas.js"></script>
+<script src="data/board_v4.js"></script>
+<script src="data/terrain.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -55,7 +55,9 @@
    ・青=もらう 赤=払う 黄=カード（仮） 紫=イベント（仮） 緑=目的地 橙=物件（買える・自分のに止まると売上）
    ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
 const B = BOARD_DATA; const R = B.rules; const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
-const ADJ = {}; B.edges.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
+B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
+const edgePts = (a, b) => EPTS[a + "-" + b] || [[byId[a].lat, byId[a].lng], [byId[b].lat, byId[b].lng]];
 const START = NODES.find(n => n.station === "nagaoka_st").id;
 const KEY = "nagaoka_sugoroku_v3";   // 盤面 v3（道路網を広げた）で保存を切り替え
 const TURNS_PER_YEAR = 12 * (R.turnsPerMonth || 1) * 3;   // 1か月＝3手番（36手番で1年）。ルール値から一本化（デク指摘10）
@@ -92,18 +94,28 @@ let cam = { ...P[S.pos] }, zoom = 15000;   // 1度 ≒ 15000px（1マス≒200m 
 function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; }
 const scr = p => ({ x: W / 2 + (p.x - cam.x) * zoom * DPR, y: H * 0.42 + (p.y - cam.y) * zoom * DPR });
 const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd0", dest: "#3aa66a", prop: "#f08a1e", fork: "#fff" };
-/* 絵の地図（実地形を塗り直したもの）: エリアごとに緯度経度の枠 → メルカトル矩形に貼る */
-const AREAS = (typeof AREA_DATA !== "undefined") ? AREA_DATA : {};
-const AIMG = {}; Object.keys(AREAS).forEach(k => { const im = new Image(); im.src = `areas/${k}.jpg`; im.onload = () => draw(); AIMG[k] = im; });
+/* ---------- 地図をデータから描く（桃鉄の地図の質感: 平らな色面と線） ---------- */
+const T = (typeof TERRAIN !== "undefined") ? TERRAIN : { water: [], land: [] };
 const mercY = lat => -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 180 / Math.PI;
-/* 描く順: 全体図 → エリア → 高解像度タイル（キー "aNN_tXY"）。後に描くほど上 */
-const AKEYS = Object.keys(AREAS).sort((a, b) => { if (a === "overview") return -1; if (b === "overview") return 1; const wa = AREAS[a].lon_right - AREAS[a].lon_left, wb = AREAS[b].lon_right - AREAS[b].lon_left; return wb - wa; });   // 広い（粗い）絵ほど下・狭い（細かい）絵ほど上
-function drawAreas() { AKEYS.forEach(k => { const a = AREAS[k], im = AIMG[k]; if (!im || !im.complete || !im.naturalWidth) return;
-    const tl = scr({ x: a.lon_left, y: mercY(a.lat_top) }), br = scr({ x: a.lon_right, y: mercY(a.lat_bottom) });
-    if (br.x < 0 || tl.x > W || br.y < 0 || tl.y > H) return; ctx.drawImage(im, tl.x, tl.y, br.x - tl.x, br.y - tl.y); }); }
-let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#efe8d8"; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; drawAreas();
-  ctx.lineWidth = 10 * DPR; ctx.strokeStyle = "rgba(255,250,235,0.85)"; ctx.lineCap = "round";
-  B.edges.forEach(([a, b]) => { const pa = scr(P[a]), pb = scr(P[b]); if (Math.max(pa.x, pb.x) < -50 || Math.min(pa.x, pb.x) > W + 50 || Math.max(pa.y, pb.y) < -50 || Math.min(pa.y, pb.y) > H + 50) return; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); });
+const TP = (() => { const conv = list => list.map(o => ({ k: o.k, pts: o.pts.map(p => [p[1], mercY(p[0])]) })); return { water: conv(T.water), land: conv(T.land) }; })();   // [x=lng, y=mercY]
+function inView(pts, pad) { let minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9; for (const p of pts) { if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0]; if (p[1] < miny) miny = p[1]; if (p[1] > maxy) maxy = p[1]; } const a = scr({ x: minx, y: miny }), b = scr({ x: maxx, y: maxy }); return !(b.x < -pad || a.x > W + pad || b.y < -pad || a.y > H + pad); }
+function poly(pts, fill, stroke, lw) { ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[0], y: p[1] }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); if (fill) { ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw * DPR; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke(); } }
+const FILL = { farmland: "#e9e2a3", forest: "#9dbd7a", wood: "#9dbd7a", scrub: "#b9c98e", grassland: "#cfd99a", residential: "#e6dccb", industrial: "#d9d4cc", commercial: "#e2d6c4", retail: "#e2d6c4", water: "#8fc3e6" };
+function drawTerrain() {
+  ctx.fillStyle = "#dfe6bf"; ctx.fillRect(0, 0, W, H);                       // 陸の地色
+  const z = zoom; const skipSmall = z < 9000;
+  for (const o of TP.land) { if (skipSmall && o.pts.length < 8) continue; if (!inView(o.pts, 40)) continue; poly(o.pts, FILL[o.k] || "#dfe6bf"); }
+  for (const o of TP.water) { if (o.k === "water") { if (!inView(o.pts, 40)) continue; poly(o.pts, FILL.water); } }
+  for (const o of TP.water) { if (o.k === "river" || o.k === "canal") { if (!inView(o.pts, 40)) continue; poly(o.pts, null, "#8fc3e6", o.k === "river" ? 9 : 4); } }
+  /* 海: 海岸線（陸が右手）の西側を塗る → 海岸線の点列を西の画面外まで閉じて塗る */
+  for (const o of TP.water) { if (o.k !== "coastline") continue; if (!inView(o.pts, 4000)) continue; const pts = o.pts; const far = pts.map(p => p[0]).reduce((a, b) => Math.min(a, b)) - 0.5; const closed = [[far, pts[0][1]]].concat(pts, [[far, pts[pts.length - 1][1]]]); poly(closed, "#7fb5dc"); poly(pts, null, "#5f9ac7", 3); }
+}
+function drawTracks() {
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  const pass = (color, w) => { ctx.strokeStyle = color; ctx.lineWidth = w * DPR; for (const e of B.edges) { const pts = e.pts; if (!pts) continue; const a = scr(P[e.a]), b = scr(P[e.b]); if (Math.max(a.x, b.x) < -200 || Math.min(a.x, b.x) > W + 200 || Math.max(a.y, b.y) < -200 || Math.min(a.y, b.y) > H + 200) continue; ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[1], y: mercY(p[0]) }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); } };
+  pass("#8a7a66", 13); pass("#fff8e8", 9);   // 道路帯（縁取り＋薄い帯）＝線路
+}
+let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawTracks();
   NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
     const owner = n.prop ? ownerOf(n.prop) : null;
     ctx.beginPath(); ctx.arc(p.x, p.y, (big ? 11 : 7) * DPR, 0, 7); ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.fill(); ctx.lineWidth = 3 * DPR; ctx.strokeStyle = S.dest === n.id ? "#d9552f" : "#6b5b48"; ctx.stroke();
@@ -124,7 +136,8 @@ function pickDest() { const cands = NODES.filter(n => n.t === "dest" && n.id !==
 let hud = function () { if (!S.dest) pickDest(); $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const hp = hops(S.pos, S.dest); $("dest").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・ご褒美 ${S.destBonus || destBonus(hp)}万両`; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
-async function tween(a, b) { for (let t = 0; t <= 1.001; t += 0.125) { const p = { x: P[a].x + (P[b].x - P[a].x) * t, y: P[a].y + (P[b].y - P[a].y) * t }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 22)); } }
+async function tween(a, b) { const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
+  const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); await new Promise(r => setTimeout(r, 24)); } }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
 /* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
 function chooseDir(opts) { return new Promise(res => { const wrap = document.getElementById("wrap"); const els = []; const h0 = hops(S.pos, S.dest);
