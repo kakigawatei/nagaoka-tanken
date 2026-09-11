@@ -37,11 +37,20 @@
   #hand > button{position:relative;padding-left:34px}
   #hand > button .himg{position:absolute;left:4px;top:50%;transform:translateY(-50%);width:24px;height:34px;object-fit:cover;border-radius:4px}
   #snd{position:absolute;right:12px;top:72px;width:40px;height:40px;border-radius:50%;background:#fffdf7;border:2px solid #e6dcc6;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;color:#2a2118}
-</style><link rel="stylesheet" href="kintsugi-repair.css"></head>
+</style><link rel="stylesheet" href="kintsugi-repair.css?v=d28">
+<style id="title-layout-critical">
+/* Keep the entrance usable even when a previous stylesheet is cached. */
+#modeMenu{width:100%;height:100%;min-width:0;min-height:0;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;align-content:stretch;gap:0;padding:env(safe-area-inset-top) 0 0;overflow:hidden;background:#1b2a5a;}
+#modeMenu .mode-art-frame{position:relative;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;}
+#modeMenu .mode-title-art{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;max-height:100%;min-width:0;min-height:0;object-fit:contain;object-position:center top;}
+#modeMenu nav{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;max-width:none;justify-items:center;gap:8px;padding:8px 16px calc(10px + env(safe-area-inset-bottom));background:var(--paper);}
+#modeMenu nav a{box-sizing:border-box;width:100%;max-width:340px;min-height:48px;padding:11px 8px;font-size:16px;line-height:22px;}
+@media(orientation:landscape){#modeMenu nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-top:6px;}}
+</style></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
 <section id="modeMenu" aria-label="遊び方を選ぶ" style="display:none">
-<img class="mode-title-art" src="assets/art/title-v1.png" width="943" height="1678" alt="ながおかスゴ録" fetchpriority="high">
+<div class="mode-art-frame"><img class="mode-title-art" src="assets/art/title-v1.png" width="941" height="1672" alt="ながおかスゴ録" fetchpriority="high"></div>
 <nav aria-label="ゲームモード"><a href="?mode=solo">ひとりで遊ぶ</a><a href="?mode=d04">みんなで対戦（β）</a></nav>
 </section>
 <div id="hud"><div><b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
