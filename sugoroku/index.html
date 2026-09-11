@@ -274,7 +274,6 @@ async function continueTurn() {
           else to = await chooseDir(nexts.map(x => ({to: x})));
         }
         await tween(S.pos, to); flow.prev = S.pos; S.pos = to; flow.remaining--; $("msg").textContent = `あと${flow.remaining}歩`;
-        if (S.pos === S.dest) flow.remaining = 0;
         save();
       }
       S.prev = flow.prev; S.turn++; flow.stage = "arrival";
@@ -315,7 +314,7 @@ async function roll() {
     for (let i = 0; i < count; i++) { const die = 1 + Math.floor(Math.random() * 6); if (i === 0) firstDie = die; faces.push(die); d += die; }
     S.triple = false; S.double = false; $("msg").textContent = `${faces.join(' + ')}が出ました。${d}歩進めます`;
   }
-  S.turnFlow = {stage: "moving", remaining: d, prev: S.prev, skipped, notes: []}; save(); hud();
+  S.turnFlow = {stage: "moving", remaining: d, prev: null, skipped, notes: []}; save(); hud();
   if (!skipped) await playDice(firstDie, faces);
   await continueTurn();
 }
@@ -340,8 +339,8 @@ function rivalsMove() { if (!S.dest) return;   // ルーレット待ちの間は
   yukinkoAct(); if (S.rivalSkip > 0) { S.rivalSkip--; return; }
   const raceDest = S.dest; const distances = distFrom(raceDest);
   S.rivals.forEach((r, i) => { r.dest = raceDest;   // 桃鉄: 目的地は全員共通
-    let steps = 1 + Math.floor(Math.random() * 6), prev = r.prev;
-    while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; nx.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; if (r.pos === r.dest) break; }
+    let steps = 1 + Math.floor(Math.random() * 6), prev = null;
+    while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; nx.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; }
     r.prev = prev; const n = byId[r.pos];
     if (r.pos === r.dest && S.dest === raceDest && !rouletteQueued) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); queueDestination(); }
     if (n.prop) { const pr = pv(n.prop), o = ownerOf(n.prop); if (!o && r.money >= pr.price && Math.random() < 0.7) { r.money -= pr.price; r.owned.push(n.prop); S.log.push(`${RIVALS[i].name} が ${pr.name} を買った`); }
