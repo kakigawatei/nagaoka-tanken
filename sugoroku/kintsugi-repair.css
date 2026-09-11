@@ -108,8 +108,6 @@ button, input{ font-family:inherit; }
 #modeHome{position:absolute;right:12px;top:34px;z-index:7;background:#fff;color:var(--ink);padding:7px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;text-decoration:none;}
 #modeMenu{position:absolute;inset:0;z-index:10;align-content:center;justify-items:center;gap:20px;padding:24px 16px;overflow:auto;background:rgba(255,255,255,.94);}
 #modeMenu h1{margin:0;font-size:28px;text-align:center;overflow-wrap:anywhere;}
-.mode-cast{display:flex;align-items:end;justify-content:center;gap:12px;height:84px;max-width:100%;}
-.mode-cast img{height:80px;width:48px;object-fit:contain;}
 #modeMenu nav{display:grid;gap:12px;width:100%;max-width:340px;}
 #modeMenu nav a{display:block;padding:16px 12px;min-height:56px;border:2px solid var(--accent);border-radius:8px;font-size:18px;font-weight:700;text-align:center;text-decoration:none;overflow-wrap:anywhere;background:#fff;color:var(--ink);}
 #modeMenu nav a:last-child{background:var(--accent);color:#fff;}
@@ -180,7 +178,13 @@ html,body,button,a,input,label{touch-action:manipulation;}
 .travel-dest-label{font-size:12px;}
 .travel-dest-bonus{font-size:11px;}
 #dest #tip{display:none;}
-#modeMenu{background:#fff;}
+#modeMenu{background:#17191c;grid-template-rows:minmax(0,1fr) auto;align-content:stretch;gap:0;padding:env(safe-area-inset-top) 0 0;overflow:hidden;}
+#modeMenu .mode-title-art{display:block;width:100%;height:100%;min-height:0;object-fit:contain;object-position:center top;}
+#modeMenu nav{width:100%;max-width:none;justify-items:center;gap:8px;padding:8px 16px calc(10px + env(safe-area-inset-bottom));background:var(--paper);}
+#modeMenu nav a{width:100%;max-width:340px;min-height:48px;padding:11px 8px;font-size:16px;line-height:22px;background:var(--paper);}
+#modeMenu nav a:last-child{background:var(--accent);}
+#modeMenu nav a:focus-visible{outline:3px solid #278fc2;outline-offset:2px;}
+@media(orientation:landscape){#modeMenu nav{grid-template-columns:repeat(2,minmax(0,1fr));padding-top:6px;gap:12px;}#modeMenu nav a:first-child{justify-self:end;}#modeMenu nav a:last-child{justify-self:start;}}
 .mode-menu-open #mapTools,.mode-menu-open #travelStatus,.mode-menu-open #dirs{display:none!important;}
 .travel-spin-face{animation-duration:.48s;}
 @media(max-height:450px) and (orientation:landscape){
