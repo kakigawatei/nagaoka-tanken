@@ -1,0 +1,9605 @@
+{
+  "boardVersion": "1e48703b19599772",
+  "renderer": "grid-v1",
+  "rules": {
+    "years": 3,
+    "turnsPerYear": 36,
+    "startMoney": 1000,
+    "debtMin": -1000,
+    "handMax": 8
+  },
+  "stations": [
+    {
+      "id": "nagaoka_st",
+      "name": "長岡駅",
+      "area": "駅前"
+    },
+    {
+      "id": "aore",
+      "name": "アオーレ長岡",
+      "area": "まちなか"
+    },
+    {
+      "id": "kakigawa",
+      "name": "柿川",
+      "area": "まちなか"
+    },
+    {
+      "id": "honmaru",
+      "name": "長岡城本丸跡",
+      "area": "まちなか"
+    },
+    {
+      "id": "isoroku",
+      "name": "山本五十六記念館",
+      "area": "まちなか"
+    },
+    {
+      "id": "tsuginosuke",
+      "name": "河井継之助記念館",
+      "area": "まちなか"
+    },
+    {
+      "id": "yukyuzan",
+      "name": "悠久山公園（郷土史料館）",
+      "area": "悠久山"
+    },
+    {
+      "id": "aoshiba",
+      "name": "蒼柴神社",
+      "area": "悠久山"
+    },
+    {
+      "id": "saffron",
+      "name": "機那サフラン酒本舗（鏝絵の蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": "yoshinogawa",
+      "name": "吉乃川 醸蔵",
+      "area": "摂田屋"
+    },
+    {
+      "id": "murasaki",
+      "name": "越のむらさき（醤油蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": "hasegawa_sake",
+      "name": "長谷川酒造（酒蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": "kome100",
+      "name": "米百俵の群像",
+      "area": "千秋"
+    },
+    {
+      "id": "lyric",
+      "name": "長岡リリックホール",
+      "area": "千秋"
+    },
+    {
+      "id": "kyuryo",
+      "name": "国営越後丘陵公園",
+      "area": "川西"
+    },
+    {
+      "id": "umataka",
+      "name": "馬高縄文館",
+      "area": "川西"
+    },
+    {
+      "id": "rekihaku",
+      "name": "新潟県立歴史博物館",
+      "area": "川西"
+    },
+    {
+      "id": "kinpu",
+      "name": "金峯神社",
+      "area": "蔵王"
+    },
+    {
+      "id": "keyaki",
+      "name": "蔵王の大けやき",
+      "area": "蔵王"
+    },
+    {
+      "id": "takeakari",
+      "name": "竹あかり街道（三島の散歩道）",
+      "area": "三島"
+    },
+    {
+      "id": "wakinomachi",
+      "name": "脇野町（鋸鍛冶のまち）",
+      "area": "三島"
+    },
+    {
+      "id": "hotoku",
+      "name": "宝徳山稲荷大社",
+      "area": "越路"
+    },
+    {
+      "id": "momiji",
+      "name": "もみじ園（巴ヶ丘山荘）",
+      "area": "越路"
+    },
+    {
+      "id": "asahi",
+      "name": "朝日酒造／酒楽の里あさひ山",
+      "area": "越路"
+    },
+    {
+      "id": "koryu",
+      "name": "高龍神社",
+      "area": "よもぎ平"
+    },
+    {
+      "id": "yomogi_onsen",
+      "name": "蓬平温泉",
+      "area": "よもぎ平"
+    },
+    {
+      "id": "togyu",
+      "name": "山古志闘牛場",
+      "area": "山古志"
+    },
+    {
+      "id": "alpaca",
+      "name": "種苧原アルパカ牧場",
+      "area": "山古志"
+    },
+    {
+      "id": "tanada",
+      "name": "山古志 竹沢の棚池",
+      "area": "山古志"
+    },
+    {
+      "id": "oratar",
+      "name": "やまこし復興交流館おらたる",
+      "area": "山古志"
+    },
+    {
+      "id": "akiha",
+      "name": "栃尾 秋葉神社",
+      "area": "栃尾"
+    },
+    {
+      "id": "gangi",
+      "name": "栃尾 雁木のまち並み",
+      "area": "栃尾"
+    },
+    {
+      "id": "tsuno",
+      "name": "与板 都野神社",
+      "area": "与板"
+    },
+    {
+      "id": "kanetsugu",
+      "name": "兼続お船ミュージアム",
+      "area": "与板"
+    },
+    {
+      "id": "teradomari_ichiba",
+      "name": "寺泊 魚の市場通り",
+      "area": "寺泊"
+    },
+    {
+      "id": "suizoku",
+      "name": "寺泊水族博物館",
+      "area": "寺泊"
+    },
+    {
+      "id": "ryokan",
+      "name": "良寛記念館",
+      "area": "出雲崎"
+    },
+    {
+      "id": "tsumairi",
+      "name": "妻入りの街並み",
+      "area": "出雲崎"
+    },
+    {
+      "id": "tenryo",
+      "name": "天領の里",
+      "area": "出雲崎"
+    },
+    {
+      "id": "ishii",
+      "name": "石井神社",
+      "area": "出雲崎"
+    },
+    {
+      "id": "oguni_washi",
+      "name": "小国和紙",
+      "area": "小国"
+    },
+    {
+      "id": "hachikoku",
+      "name": "八石山",
+      "area": "小国"
+    }
+  ],
+  "properties": [
+    {
+      "id": "g100",
+      "station": "kakigawa",
+      "name": "まちなかのらーめん処",
+      "kind": "飲食",
+      "price": 660,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g101",
+      "station": "kakigawa",
+      "name": "まちなかのそば処",
+      "kind": "飲食",
+      "price": 160,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g102",
+      "station": "aore",
+      "name": "まちなかのらーめん処",
+      "kind": "飲食",
+      "price": 440,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g103",
+      "station": "aore",
+      "name": "まちなかのそば処",
+      "kind": "飲食",
+      "price": 700,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g104",
+      "station": "yoshinogawa",
+      "name": "摂田屋の直売所",
+      "kind": "酒蔵",
+      "price": 580,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g105",
+      "station": "yoshinogawa",
+      "name": "摂田屋の酒房",
+      "kind": "酒蔵",
+      "price": 210,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g106",
+      "station": "yoshinogawa",
+      "name": "摂田屋の直売所3",
+      "kind": "酒蔵",
+      "price": 250,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g107",
+      "station": "yoshinogawa",
+      "name": "摂田屋の酒房4",
+      "kind": "酒蔵",
+      "price": 150,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g108",
+      "station": "asahi",
+      "name": "越路の直売所",
+      "kind": "酒蔵",
+      "price": 250,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g109",
+      "station": "asahi",
+      "name": "越路の酒房",
+      "kind": "酒蔵",
+      "price": 190,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g110",
+      "station": "asahi",
+      "name": "越路の直売所3",
+      "kind": "酒蔵",
+      "price": 580,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g111",
+      "station": "asahi",
+      "name": "越路の酒房4",
+      "kind": "酒蔵",
+      "price": 490,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g112",
+      "station": "murasaki",
+      "name": "摂田屋の直売所",
+      "kind": "醸造",
+      "price": 400,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g113",
+      "station": "murasaki",
+      "name": "摂田屋の直売所2",
+      "kind": "醸造",
+      "price": 280,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g114",
+      "station": "hasegawa_sake",
+      "name": "摂田屋の直売所",
+      "kind": "酒蔵",
+      "price": 350,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g115",
+      "station": "hasegawa_sake",
+      "name": "摂田屋の酒房",
+      "kind": "酒蔵",
+      "price": 320,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g116",
+      "station": "saffron",
+      "name": "摂田屋のみやげ処",
+      "kind": "観光",
+      "price": 350,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g117",
+      "station": "saffron",
+      "name": "摂田屋の資料館",
+      "kind": "観光",
+      "price": 650,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g118",
+      "station": "oguni_washi",
+      "name": "小国の工房",
+      "kind": "工芸",
+      "price": 290,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g119",
+      "station": "oguni_washi",
+      "name": "小国の問屋",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g120",
+      "station": "akiha",
+      "name": "栃尾の茶屋",
+      "kind": "食",
+      "price": 420,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g121",
+      "station": "akiha",
+      "name": "栃尾の総菜屋",
+      "kind": "食",
+      "price": 400,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g122",
+      "station": "tsuno",
+      "name": "与板の工房",
+      "kind": "工芸",
+      "price": 510,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g123",
+      "station": "tsuno",
+      "name": "与板の問屋",
+      "kind": "工芸",
+      "price": 410,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g124",
+      "station": "wakinomachi",
+      "name": "三島の工房",
+      "kind": "工芸",
+      "price": 540,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g125",
+      "station": "wakinomachi",
+      "name": "三島の問屋",
+      "kind": "工芸",
+      "price": 480,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g126",
+      "station": "teradomari_ichiba",
+      "name": "寺泊の浜焼き屋",
+      "kind": "市場",
+      "price": 480,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g127",
+      "station": "teradomari_ichiba",
+      "name": "寺泊の干物屋",
+      "kind": "市場",
+      "price": 510,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g128",
+      "station": "teradomari_ichiba",
+      "name": "寺泊の浜焼き屋3",
+      "kind": "市場",
+      "price": 390,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g129",
+      "station": "teradomari_ichiba",
+      "name": "寺泊の干物屋4",
+      "kind": "市場",
+      "price": 440,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g130",
+      "station": "alpaca",
+      "name": "山古志のみやげ処",
+      "kind": "観光",
+      "price": 250,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g131",
+      "station": "alpaca",
+      "name": "山古志の資料館",
+      "kind": "観光",
+      "price": 540,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g132",
+      "station": "togyu",
+      "name": "山古志のみやげ処",
+      "kind": "観光",
+      "price": 590,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g133",
+      "station": "togyu",
+      "name": "山古志の資料館",
+      "kind": "観光",
+      "price": 320,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g134",
+      "station": "yomogi_onsen",
+      "name": "よもぎ平の民宿",
+      "kind": "宿",
+      "price": 170,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g135",
+      "station": "yomogi_onsen",
+      "name": "よもぎ平の湯宿",
+      "kind": "宿",
+      "price": 190,
+      "yield": 0.15,
+      "note": ""
+    },
+    {
+      "id": "g136",
+      "station": "yomogi_onsen",
+      "name": "よもぎ平の民宿3",
+      "kind": "宿",
+      "price": 220,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g137",
+      "station": "yomogi_onsen",
+      "name": "よもぎ平の湯宿4",
+      "kind": "宿",
+      "price": 270,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g138",
+      "station": "tanada",
+      "name": "山古志の直売所",
+      "kind": "生産",
+      "price": 640,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g139",
+      "station": "tanada",
+      "name": "山古志の加工場",
+      "kind": "生産",
+      "price": 330,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "g140",
+      "station": "gangi",
+      "name": "栃尾のらーめん処",
+      "kind": "飲食",
+      "price": 420,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g141",
+      "station": "gangi",
+      "name": "栃尾のそば処",
+      "kind": "飲食",
+      "price": 500,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "g142",
+      "station": "honmaru",
+      "name": "まちなかのみやげ処",
+      "kind": "観光",
+      "price": 410,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g143",
+      "station": "honmaru",
+      "name": "まちなかの資料館",
+      "kind": "観光",
+      "price": 660,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "g144",
+      "station": "honmaru",
+      "name": "まちなかの遊覧船",
+      "kind": "観光",
+      "price": 170,
+      "yield": 0.1,
+      "note": ""
+    },
+    {
+      "id": "g145",
+      "station": "honmaru",
+      "name": "まちなかの展望台",
+      "kind": "観光",
+      "price": 670,
+      "yield": 0.12,
+      "note": ""
+    },
+    {
+      "id": "grid_aoshiba_1",
+      "station": "aoshiba",
+      "name": "悠久山のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_aoshiba_2",
+      "station": "aoshiba",
+      "name": "悠久山の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_aoshiba_3",
+      "station": "aoshiba",
+      "name": "悠久山の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hachikoku_1",
+      "station": "hachikoku",
+      "name": "小国のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hachikoku_2",
+      "station": "hachikoku",
+      "name": "小国の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hachikoku_3",
+      "station": "hachikoku",
+      "name": "小国の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hotoku_1",
+      "station": "hotoku",
+      "name": "越路のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hotoku_2",
+      "station": "hotoku",
+      "name": "越路の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_hotoku_3",
+      "station": "hotoku",
+      "name": "越路の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ishii_1",
+      "station": "ishii",
+      "name": "出雲崎のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ishii_2",
+      "station": "ishii",
+      "name": "出雲崎の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ishii_3",
+      "station": "ishii",
+      "name": "出雲崎の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_isoroku_1",
+      "station": "isoroku",
+      "name": "まちなかのみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_isoroku_2",
+      "station": "isoroku",
+      "name": "まちなかの食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_isoroku_3",
+      "station": "isoroku",
+      "name": "まちなかの工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kanetsugu_1",
+      "station": "kanetsugu",
+      "name": "与板のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kanetsugu_2",
+      "station": "kanetsugu",
+      "name": "与板の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kanetsugu_3",
+      "station": "kanetsugu",
+      "name": "与板の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_keyaki_1",
+      "station": "keyaki",
+      "name": "蔵王のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_keyaki_2",
+      "station": "keyaki",
+      "name": "蔵王の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_keyaki_3",
+      "station": "keyaki",
+      "name": "蔵王の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kinpu_1",
+      "station": "kinpu",
+      "name": "蔵王のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kinpu_2",
+      "station": "kinpu",
+      "name": "蔵王の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kinpu_3",
+      "station": "kinpu",
+      "name": "蔵王の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kome100_1",
+      "station": "kome100",
+      "name": "千秋のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kome100_2",
+      "station": "kome100",
+      "name": "千秋の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kome100_3",
+      "station": "kome100",
+      "name": "千秋の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_koryu_1",
+      "station": "koryu",
+      "name": "よもぎ平のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_koryu_2",
+      "station": "koryu",
+      "name": "よもぎ平の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_koryu_3",
+      "station": "koryu",
+      "name": "よもぎ平の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kyuryo_1",
+      "station": "kyuryo",
+      "name": "千秋のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kyuryo_2",
+      "station": "kyuryo",
+      "name": "千秋の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_kyuryo_3",
+      "station": "kyuryo",
+      "name": "千秋の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_lyric_1",
+      "station": "lyric",
+      "name": "千秋のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_lyric_2",
+      "station": "lyric",
+      "name": "千秋の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_lyric_3",
+      "station": "lyric",
+      "name": "千秋の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_momiji_1",
+      "station": "momiji",
+      "name": "越路のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_momiji_2",
+      "station": "momiji",
+      "name": "越路の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_momiji_3",
+      "station": "momiji",
+      "name": "越路の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_nagaoka_st_1",
+      "station": "nagaoka_st",
+      "name": "駅前のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_nagaoka_st_2",
+      "station": "nagaoka_st",
+      "name": "駅前の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_nagaoka_st_3",
+      "station": "nagaoka_st",
+      "name": "駅前の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_oratar_1",
+      "station": "oratar",
+      "name": "山古志のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_oratar_2",
+      "station": "oratar",
+      "name": "山古志の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_oratar_3",
+      "station": "oratar",
+      "name": "山古志の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_rekihaku_1",
+      "station": "rekihaku",
+      "name": "川西のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_rekihaku_2",
+      "station": "rekihaku",
+      "name": "川西の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_rekihaku_3",
+      "station": "rekihaku",
+      "name": "川西の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ryokan_1",
+      "station": "ryokan",
+      "name": "出雲崎のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ryokan_2",
+      "station": "ryokan",
+      "name": "出雲崎の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_ryokan_3",
+      "station": "ryokan",
+      "name": "出雲崎の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_suizoku_1",
+      "station": "suizoku",
+      "name": "寺泊のみやげ処",
+      "kind": "市場",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_suizoku_2",
+      "station": "suizoku",
+      "name": "寺泊の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_suizoku_3",
+      "station": "suizoku",
+      "name": "寺泊の工房",
+      "kind": "観光",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_takeakari_1",
+      "station": "takeakari",
+      "name": "三島のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_takeakari_2",
+      "station": "takeakari",
+      "name": "三島の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_takeakari_3",
+      "station": "takeakari",
+      "name": "三島の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tenryo_1",
+      "station": "tenryo",
+      "name": "出雲崎のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tenryo_2",
+      "station": "tenryo",
+      "name": "出雲崎の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tenryo_3",
+      "station": "tenryo",
+      "name": "出雲崎の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsuginosuke_1",
+      "station": "tsuginosuke",
+      "name": "まちなかのみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsuginosuke_2",
+      "station": "tsuginosuke",
+      "name": "まちなかの食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsuginosuke_3",
+      "station": "tsuginosuke",
+      "name": "まちなかの工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsumairi_1",
+      "station": "tsumairi",
+      "name": "出雲崎のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsumairi_2",
+      "station": "tsumairi",
+      "name": "出雲崎の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_tsumairi_3",
+      "station": "tsumairi",
+      "name": "出雲崎の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_umataka_1",
+      "station": "umataka",
+      "name": "川西のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_umataka_2",
+      "station": "umataka",
+      "name": "川西の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_umataka_3",
+      "station": "umataka",
+      "name": "川西の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_yukyuzan_1",
+      "station": "yukyuzan",
+      "name": "悠久山のみやげ処",
+      "kind": "観光",
+      "price": 150,
+      "yield": 0.12,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_yukyuzan_2",
+      "station": "yukyuzan",
+      "name": "悠久山の食堂",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.1,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "grid_yukyuzan_3",
+      "station": "yukyuzan",
+      "name": "悠久山の工房",
+      "kind": "工芸",
+      "price": 500,
+      "yield": 0.08,
+      "note": "D33候補・未承認"
+    },
+    {
+      "id": "p01",
+      "station": "kakigawa",
+      "name": "あぶらそば かき川",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.08,
+      "note": "昼のピーク"
+    },
+    {
+      "id": "p02",
+      "station": "aore",
+      "name": "油ラボ きたやま",
+      "kind": "飲食",
+      "price": 250,
+      "yield": 0.07,
+      "note": "デリバリー"
+    },
+    {
+      "id": "p03",
+      "station": "yoshinogawa",
+      "name": "よし乃川 さかぐら",
+      "kind": "酒蔵",
+      "price": 900,
+      "yield": 0.06,
+      "note": "冬に増収"
+    },
+    {
+      "id": "p04",
+      "station": "asahi",
+      "name": "あさひ山 さけの里",
+      "kind": "酒蔵",
+      "price": 1200,
+      "yield": 0.06,
+      "note": "冬に増収"
+    },
+    {
+      "id": "p05",
+      "station": "murasaki",
+      "name": "こしの むらさき醤油",
+      "kind": "醸造",
+      "price": 500,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "p06",
+      "station": "hasegawa_sake",
+      "name": "はせ川 くら",
+      "kind": "酒蔵",
+      "price": 600,
+      "yield": 0.06,
+      "note": ""
+    },
+    {
+      "id": "p07",
+      "station": "saffron",
+      "name": "サフランの鏝絵蔵",
+      "kind": "観光",
+      "price": 700,
+      "yield": 0.05,
+      "note": ""
+    },
+    {
+      "id": "p08",
+      "station": "oguni_washi",
+      "name": "おぐに かみ工房",
+      "kind": "工芸",
+      "price": 400,
+      "yield": 0.07,
+      "note": ""
+    },
+    {
+      "id": "p09",
+      "station": "akiha",
+      "name": "とちお あげ屋",
+      "kind": "食",
+      "price": 200,
+      "yield": 0.1,
+      "note": "秋葉の祭りで増収"
+    },
+    {
+      "id": "p10",
+      "station": "tsuno",
+      "name": "よいた はもの鍛冶",
+      "kind": "工芸",
+      "price": 450,
+      "yield": 0.07,
+      "note": ""
+    },
+    {
+      "id": "p11",
+      "station": "wakinomachi",
+      "name": "わきの のこぎり工房",
+      "kind": "工芸",
+      "price": 350,
+      "yield": 0.07,
+      "note": ""
+    },
+    {
+      "id": "p12",
+      "station": "teradomari_ichiba",
+      "name": "てらどまり さかな市",
+      "kind": "市場",
+      "price": 800,
+      "yield": 0.09,
+      "note": "夏に増収"
+    },
+    {
+      "id": "p13",
+      "station": "alpaca",
+      "name": "アルパカぼくじょう",
+      "kind": "観光",
+      "price": 500,
+      "yield": 0.08,
+      "note": "キャラの故郷"
+    },
+    {
+      "id": "p14",
+      "station": "togyu",
+      "name": "うし相撲場",
+      "kind": "観光",
+      "price": 600,
+      "yield": 0.08,
+      "note": "春秋の場所で増収"
+    },
+    {
+      "id": "p15",
+      "station": "yomogi_onsen",
+      "name": "よもぎだいら 湯の宿",
+      "kind": "宿",
+      "price": 1000,
+      "yield": 0.07,
+      "note": "冬に増収"
+    },
+    {
+      "id": "p16",
+      "station": "tanada",
+      "name": "にしきごい いけ",
+      "kind": "生産",
+      "price": 700,
+      "yield": 0.09,
+      "note": "品評会"
+    },
+    {
+      "id": "p17",
+      "station": "gangi",
+      "name": "へぎそば処",
+      "kind": "飲食",
+      "price": 300,
+      "yield": 0.08,
+      "note": ""
+    },
+    {
+      "id": "p18",
+      "station": "honmaru",
+      "name": "はなび館",
+      "kind": "観光",
+      "price": 1500,
+      "yield": 0.05,
+      "note": "8月に大増収"
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      30
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      35
+    ],
+    [
+      3,
+      36
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      118
+    ],
+    [
+      4,
+      119
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      41
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      46
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      8,
+      32
+    ],
+    [
+      8,
+      33
+    ],
+    [
+      8,
+      469
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      11,
+      38
+    ],
+    [
+      11,
+      39
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      12,
+      116
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      13,
+      43
+    ],
+    [
+      13,
+      44
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      48
+    ],
+    [
+      15,
+      49
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      16,
+      33
+    ],
+    [
+      16,
+      34
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      19,
+      39
+    ],
+    [
+      19,
+      40
+    ],
+    [
+      20,
+      21
+    ],
+    [
+      21,
+      22
+    ],
+    [
+      21,
+      44
+    ],
+    [
+      21,
+      45
+    ],
+    [
+      22,
+      23
+    ],
+    [
+      23,
+      49
+    ],
+    [
+      23,
+      50
+    ],
+    [
+      23,
+      67
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      24,
+      34
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      27,
+      28
+    ],
+    [
+      27,
+      40
+    ],
+    [
+      28,
+      29
+    ],
+    [
+      29,
+      45
+    ],
+    [
+      29,
+      132
+    ],
+    [
+      30,
+      31
+    ],
+    [
+      31,
+      32
+    ],
+    [
+      36,
+      37
+    ],
+    [
+      37,
+      38
+    ],
+    [
+      41,
+      42
+    ],
+    [
+      42,
+      43
+    ],
+    [
+      46,
+      47
+    ],
+    [
+      47,
+      48
+    ],
+    [
+      50,
+      51
+    ],
+    [
+      51,
+      52
+    ],
+    [
+      52,
+      53
+    ],
+    [
+      53,
+      54
+    ],
+    [
+      53,
+      68
+    ],
+    [
+      54,
+      55
+    ],
+    [
+      55,
+      56
+    ],
+    [
+      56,
+      57
+    ],
+    [
+      57,
+      77
+    ],
+    [
+      58,
+      59
+    ],
+    [
+      58,
+      67
+    ],
+    [
+      59,
+      60
+    ],
+    [
+      60,
+      61
+    ],
+    [
+      61,
+      62
+    ],
+    [
+      62,
+      63
+    ],
+    [
+      62,
+      68
+    ],
+    [
+      62,
+      69
+    ],
+    [
+      63,
+      64
+    ],
+    [
+      64,
+      65
+    ],
+    [
+      65,
+      66
+    ],
+    [
+      66,
+      77
+    ],
+    [
+      66,
+      78
+    ],
+    [
+      69,
+      70
+    ],
+    [
+      70,
+      71
+    ],
+    [
+      71,
+      72
+    ],
+    [
+      72,
+      73
+    ],
+    [
+      73,
+      74
+    ],
+    [
+      74,
+      75
+    ],
+    [
+      75,
+      76
+    ],
+    [
+      76,
+      80
+    ],
+    [
+      76,
+      129
+    ],
+    [
+      78,
+      79
+    ],
+    [
+      79,
+      80
+    ],
+    [
+      81,
+      131
+    ],
+    [
+      81,
+      406
+    ],
+    [
+      82,
+      143
+    ],
+    [
+      82,
+      144
+    ],
+    [
+      82,
+      486
+    ],
+    [
+      83,
+      141
+    ],
+    [
+      83,
+      142
+    ],
+    [
+      84,
+      139
+    ],
+    [
+      84,
+      140
+    ],
+    [
+      85,
+      148
+    ],
+    [
+      86,
+      149
+    ],
+    [
+      86,
+      468
+    ],
+    [
+      87,
+      150
+    ],
+    [
+      87,
+      151
+    ],
+    [
+      88,
+      270
+    ],
+    [
+      88,
+      271
+    ],
+    [
+      88,
+      354
+    ],
+    [
+      89,
+      257
+    ],
+    [
+      89,
+      258
+    ],
+    [
+      90,
+      261
+    ],
+    [
+      90,
+      262
+    ],
+    [
+      91,
+      126
+    ],
+    [
+      91,
+      127
+    ],
+    [
+      92,
+      128
+    ],
+    [
+      93,
+      159
+    ],
+    [
+      93,
+      160
+    ],
+    [
+      94,
+      156
+    ],
+    [
+      94,
+      157
+    ],
+    [
+      95,
+      278
+    ],
+    [
+      95,
+      279
+    ],
+    [
+      96,
+      285
+    ],
+    [
+      96,
+      286
+    ],
+    [
+      97,
+      288
+    ],
+    [
+      97,
+      289
+    ],
+    [
+      98,
+      367
+    ],
+    [
+      98,
+      368
+    ],
+    [
+      99,
+      364
+    ],
+    [
+      99,
+      365
+    ],
+    [
+      99,
+      405
+    ],
+    [
+      100,
+      388
+    ],
+    [
+      100,
+      389
+    ],
+    [
+      101,
+      397
+    ],
+    [
+      101,
+      398
+    ],
+    [
+      102,
+      375
+    ],
+    [
+      102,
+      376
+    ],
+    [
+      103,
+      381
+    ],
+    [
+      103,
+      382
+    ],
+    [
+      104,
+      430
+    ],
+    [
+      104,
+      431
+    ],
+    [
+      105,
+      434
+    ],
+    [
+      105,
+      435
+    ],
+    [
+      106,
+      170
+    ],
+    [
+      106,
+      171
+    ],
+    [
+      107,
+      173
+    ],
+    [
+      107,
+      174
+    ],
+    [
+      108,
+      192
+    ],
+    [
+      108,
+      193
+    ],
+    [
+      109,
+      197
+    ],
+    [
+      109,
+      241
+    ],
+    [
+      110,
+      210
+    ],
+    [
+      110,
+      213
+    ],
+    [
+      111,
+      215
+    ],
+    [
+      111,
+      216
+    ],
+    [
+      112,
+      218
+    ],
+    [
+      112,
+      219
+    ],
+    [
+      113,
+      211
+    ],
+    [
+      113,
+      212
+    ],
+    [
+      114,
+      316
+    ],
+    [
+      114,
+      317
+    ],
+    [
+      115,
+      326
+    ],
+    [
+      115,
+      327
+    ],
+    [
+      116,
+      117
+    ],
+    [
+      117,
+      118
+    ],
+    [
+      119,
+      120
+    ],
+    [
+      120,
+      121
+    ],
+    [
+      121,
+      122
+    ],
+    [
+      122,
+      123
+    ],
+    [
+      123,
+      124
+    ],
+    [
+      124,
+      125
+    ],
+    [
+      124,
+      457
+    ],
+    [
+      124,
+      458
+    ],
+    [
+      125,
+      126
+    ],
+    [
+      127,
+      128
+    ],
+    [
+      129,
+      130
+    ],
+    [
+      130,
+      131
+    ],
+    [
+      130,
+      355
+    ],
+    [
+      132,
+      133
+    ],
+    [
+      133,
+      134
+    ],
+    [
+      134,
+      135
+    ],
+    [
+      135,
+      136
+    ],
+    [
+      136,
+      137
+    ],
+    [
+      137,
+      138
+    ],
+    [
+      138,
+      139
+    ],
+    [
+      140,
+      141
+    ],
+    [
+      142,
+      143
+    ],
+    [
+      144,
+      145
+    ],
+    [
+      145,
+      146
+    ],
+    [
+      146,
+      147
+    ],
+    [
+      147,
+      148
+    ],
+    [
+      149,
+      150
+    ],
+    [
+      151,
+      152
+    ],
+    [
+      152,
+      153
+    ],
+    [
+      153,
+      154
+    ],
+    [
+      153,
+      242
+    ],
+    [
+      154,
+      155
+    ],
+    [
+      155,
+      156
+    ],
+    [
+      157,
+      158
+    ],
+    [
+      158,
+      159
+    ],
+    [
+      160,
+      161
+    ],
+    [
+      161,
+      162
+    ],
+    [
+      162,
+      163
+    ],
+    [
+      163,
+      164
+    ],
+    [
+      164,
+      165
+    ],
+    [
+      165,
+      166
+    ],
+    [
+      166,
+      167
+    ],
+    [
+      167,
+      168
+    ],
+    [
+      168,
+      169
+    ],
+    [
+      169,
+      170
+    ],
+    [
+      171,
+      172
+    ],
+    [
+      172,
+      173
+    ],
+    [
+      174,
+      175
+    ],
+    [
+      175,
+      176
+    ],
+    [
+      176,
+      177
+    ],
+    [
+      177,
+      178
+    ],
+    [
+      178,
+      179
+    ],
+    [
+      179,
+      180
+    ],
+    [
+      180,
+      181
+    ],
+    [
+      180,
+      198
+    ],
+    [
+      181,
+      182
+    ],
+    [
+      182,
+      183
+    ],
+    [
+      183,
+      184
+    ],
+    [
+      184,
+      185
+    ],
+    [
+      185,
+      186
+    ],
+    [
+      186,
+      187
+    ],
+    [
+      187,
+      188
+    ],
+    [
+      188,
+      189
+    ],
+    [
+      189,
+      190
+    ],
+    [
+      190,
+      191
+    ],
+    [
+      191,
+      192
+    ],
+    [
+      193,
+      194
+    ],
+    [
+      194,
+      195
+    ],
+    [
+      195,
+      196
+    ],
+    [
+      196,
+      197
+    ],
+    [
+      198,
+      199
+    ],
+    [
+      199,
+      200
+    ],
+    [
+      199,
+      233
+    ],
+    [
+      199,
+      234
+    ],
+    [
+      200,
+      201
+    ],
+    [
+      201,
+      202
+    ],
+    [
+      202,
+      203
+    ],
+    [
+      203,
+      204
+    ],
+    [
+      204,
+      205
+    ],
+    [
+      205,
+      206
+    ],
+    [
+      206,
+      207
+    ],
+    [
+      207,
+      208
+    ],
+    [
+      208,
+      209
+    ],
+    [
+      209,
+      210
+    ],
+    [
+      210,
+      211
+    ],
+    [
+      210,
+      214
+    ],
+    [
+      212,
+      213
+    ],
+    [
+      214,
+      215
+    ],
+    [
+      216,
+      217
+    ],
+    [
+      217,
+      218
+    ],
+    [
+      219,
+      220
+    ],
+    [
+      220,
+      221
+    ],
+    [
+      221,
+      222
+    ],
+    [
+      222,
+      223
+    ],
+    [
+      223,
+      224
+    ],
+    [
+      224,
+      225
+    ],
+    [
+      225,
+      226
+    ],
+    [
+      226,
+      227
+    ],
+    [
+      227,
+      228
+    ],
+    [
+      228,
+      229
+    ],
+    [
+      229,
+      230
+    ],
+    [
+      230,
+      231
+    ],
+    [
+      231,
+      232
+    ],
+    [
+      232,
+      233
+    ],
+    [
+      234,
+      235
+    ],
+    [
+      235,
+      236
+    ],
+    [
+      236,
+      237
+    ],
+    [
+      237,
+      238
+    ],
+    [
+      238,
+      239
+    ],
+    [
+      239,
+      240
+    ],
+    [
+      240,
+      241
+    ],
+    [
+      242,
+      243
+    ],
+    [
+      243,
+      244
+    ],
+    [
+      244,
+      245
+    ],
+    [
+      245,
+      246
+    ],
+    [
+      246,
+      247
+    ],
+    [
+      247,
+      248
+    ],
+    [
+      248,
+      249
+    ],
+    [
+      249,
+      250
+    ],
+    [
+      250,
+      251
+    ],
+    [
+      251,
+      252
+    ],
+    [
+      252,
+      253
+    ],
+    [
+      253,
+      254
+    ],
+    [
+      254,
+      255
+    ],
+    [
+      255,
+      256
+    ],
+    [
+      256,
+      257
+    ],
+    [
+      257,
+      485
+    ],
+    [
+      258,
+      259
+    ],
+    [
+      259,
+      260
+    ],
+    [
+      260,
+      261
+    ],
+    [
+      262,
+      263
+    ],
+    [
+      263,
+      264
+    ],
+    [
+      264,
+      265
+    ],
+    [
+      265,
+      266
+    ],
+    [
+      266,
+      267
+    ],
+    [
+      267,
+      268
+    ],
+    [
+      268,
+      269
+    ],
+    [
+      269,
+      270
+    ],
+    [
+      271,
+      272
+    ],
+    [
+      272,
+      273
+    ],
+    [
+      273,
+      274
+    ],
+    [
+      274,
+      275
+    ],
+    [
+      275,
+      276
+    ],
+    [
+      276,
+      277
+    ],
+    [
+      276,
+      502
+    ],
+    [
+      277,
+      278
+    ],
+    [
+      279,
+      280
+    ],
+    [
+      280,
+      281
+    ],
+    [
+      281,
+      282
+    ],
+    [
+      282,
+      283
+    ],
+    [
+      283,
+      284
+    ],
+    [
+      284,
+      285
+    ],
+    [
+      286,
+      287
+    ],
+    [
+      287,
+      288
+    ],
+    [
+      289,
+      290
+    ],
+    [
+      290,
+      291
+    ],
+    [
+      291,
+      292
+    ],
+    [
+      292,
+      293
+    ],
+    [
+      293,
+      294
+    ],
+    [
+      294,
+      295
+    ],
+    [
+      295,
+      296
+    ],
+    [
+      296,
+      297
+    ],
+    [
+      297,
+      298
+    ],
+    [
+      297,
+      343
+    ],
+    [
+      297,
+      344
+    ],
+    [
+      298,
+      299
+    ],
+    [
+      299,
+      300
+    ],
+    [
+      300,
+      301
+    ],
+    [
+      301,
+      302
+    ],
+    [
+      302,
+      303
+    ],
+    [
+      303,
+      304
+    ],
+    [
+      304,
+      305
+    ],
+    [
+      305,
+      306
+    ],
+    [
+      306,
+      307
+    ],
+    [
+      307,
+      308
+    ],
+    [
+      308,
+      309
+    ],
+    [
+      309,
+      310
+    ],
+    [
+      310,
+      311
+    ],
+    [
+      311,
+      312
+    ],
+    [
+      311,
+      330
+    ],
+    [
+      311,
+      331
+    ],
+    [
+      312,
+      313
+    ],
+    [
+      313,
+      314
+    ],
+    [
+      314,
+      315
+    ],
+    [
+      315,
+      316
+    ],
+    [
+      317,
+      318
+    ],
+    [
+      318,
+      319
+    ],
+    [
+      319,
+      320
+    ],
+    [
+      320,
+      321
+    ],
+    [
+      321,
+      322
+    ],
+    [
+      322,
+      323
+    ],
+    [
+      323,
+      324
+    ],
+    [
+      324,
+      325
+    ],
+    [
+      325,
+      326
+    ],
+    [
+      327,
+      328
+    ],
+    [
+      328,
+      329
+    ],
+    [
+      329,
+      330
+    ],
+    [
+      331,
+      332
+    ],
+    [
+      332,
+      333
+    ],
+    [
+      333,
+      334
+    ],
+    [
+      334,
+      335
+    ],
+    [
+      335,
+      336
+    ],
+    [
+      336,
+      337
+    ],
+    [
+      337,
+      338
+    ],
+    [
+      338,
+      339
+    ],
+    [
+      339,
+      340
+    ],
+    [
+      340,
+      341
+    ],
+    [
+      341,
+      342
+    ],
+    [
+      342,
+      343
+    ],
+    [
+      344,
+      345
+    ],
+    [
+      345,
+      346
+    ],
+    [
+      346,
+      347
+    ],
+    [
+      347,
+      348
+    ],
+    [
+      348,
+      349
+    ],
+    [
+      349,
+      350
+    ],
+    [
+      350,
+      351
+    ],
+    [
+      351,
+      352
+    ],
+    [
+      352,
+      353
+    ],
+    [
+      353,
+      354
+    ],
+    [
+      355,
+      356
+    ],
+    [
+      356,
+      357
+    ],
+    [
+      357,
+      358
+    ],
+    [
+      358,
+      359
+    ],
+    [
+      359,
+      360
+    ],
+    [
+      360,
+      361
+    ],
+    [
+      361,
+      362
+    ],
+    [
+      362,
+      363
+    ],
+    [
+      363,
+      364
+    ],
+    [
+      365,
+      366
+    ],
+    [
+      366,
+      367
+    ],
+    [
+      368,
+      369
+    ],
+    [
+      369,
+      370
+    ],
+    [
+      369,
+      405
+    ],
+    [
+      370,
+      371
+    ],
+    [
+      371,
+      372
+    ],
+    [
+      372,
+      373
+    ],
+    [
+      373,
+      374
+    ],
+    [
+      373,
+      404
+    ],
+    [
+      374,
+      375
+    ],
+    [
+      376,
+      377
+    ],
+    [
+      377,
+      378
+    ],
+    [
+      378,
+      379
+    ],
+    [
+      379,
+      380
+    ],
+    [
+      380,
+      381
+    ],
+    [
+      382,
+      383
+    ],
+    [
+      383,
+      384
+    ],
+    [
+      384,
+      385
+    ],
+    [
+      385,
+      386
+    ],
+    [
+      386,
+      387
+    ],
+    [
+      387,
+      388
+    ],
+    [
+      389,
+      390
+    ],
+    [
+      390,
+      391
+    ],
+    [
+      391,
+      392
+    ],
+    [
+      392,
+      393
+    ],
+    [
+      393,
+      394
+    ],
+    [
+      394,
+      395
+    ],
+    [
+      395,
+      396
+    ],
+    [
+      396,
+      397
+    ],
+    [
+      398,
+      399
+    ],
+    [
+      399,
+      400
+    ],
+    [
+      400,
+      401
+    ],
+    [
+      401,
+      402
+    ],
+    [
+      402,
+      403
+    ],
+    [
+      403,
+      404
+    ],
+    [
+      406,
+      407
+    ],
+    [
+      407,
+      408
+    ],
+    [
+      408,
+      409
+    ],
+    [
+      409,
+      410
+    ],
+    [
+      410,
+      411
+    ],
+    [
+      411,
+      412
+    ],
+    [
+      412,
+      413
+    ],
+    [
+      413,
+      414
+    ],
+    [
+      414,
+      415
+    ],
+    [
+      415,
+      416
+    ],
+    [
+      416,
+      417
+    ],
+    [
+      417,
+      418
+    ],
+    [
+      418,
+      419
+    ],
+    [
+      419,
+      420
+    ],
+    [
+      420,
+      421
+    ],
+    [
+      421,
+      422
+    ],
+    [
+      422,
+      423
+    ],
+    [
+      423,
+      424
+    ],
+    [
+      424,
+      425
+    ],
+    [
+      425,
+      426
+    ],
+    [
+      426,
+      427
+    ],
+    [
+      427,
+      428
+    ],
+    [
+      428,
+      429
+    ],
+    [
+      429,
+      430
+    ],
+    [
+      431,
+      432
+    ],
+    [
+      432,
+      433
+    ],
+    [
+      433,
+      434
+    ],
+    [
+      435,
+      436
+    ],
+    [
+      436,
+      437
+    ],
+    [
+      437,
+      438
+    ],
+    [
+      438,
+      439
+    ],
+    [
+      439,
+      440
+    ],
+    [
+      440,
+      441
+    ],
+    [
+      441,
+      442
+    ],
+    [
+      442,
+      443
+    ],
+    [
+      443,
+      444
+    ],
+    [
+      444,
+      445
+    ],
+    [
+      445,
+      446
+    ],
+    [
+      446,
+      447
+    ],
+    [
+      447,
+      448
+    ],
+    [
+      448,
+      449
+    ],
+    [
+      449,
+      450
+    ],
+    [
+      450,
+      451
+    ],
+    [
+      451,
+      452
+    ],
+    [
+      452,
+      453
+    ],
+    [
+      453,
+      454
+    ],
+    [
+      454,
+      455
+    ],
+    [
+      455,
+      456
+    ],
+    [
+      456,
+      457
+    ],
+    [
+      458,
+      459
+    ],
+    [
+      459,
+      460
+    ],
+    [
+      460,
+      461
+    ],
+    [
+      461,
+      462
+    ],
+    [
+      462,
+      463
+    ],
+    [
+      463,
+      464
+    ],
+    [
+      464,
+      465
+    ],
+    [
+      465,
+      466
+    ],
+    [
+      466,
+      467
+    ],
+    [
+      467,
+      468
+    ],
+    [
+      469,
+      470
+    ],
+    [
+      470,
+      471
+    ],
+    [
+      471,
+      472
+    ],
+    [
+      472,
+      473
+    ],
+    [
+      473,
+      474
+    ],
+    [
+      474,
+      475
+    ],
+    [
+      475,
+      476
+    ],
+    [
+      476,
+      477
+    ],
+    [
+      477,
+      478
+    ],
+    [
+      478,
+      479
+    ],
+    [
+      479,
+      480
+    ],
+    [
+      480,
+      481
+    ],
+    [
+      481,
+      482
+    ],
+    [
+      482,
+      483
+    ],
+    [
+      483,
+      484
+    ],
+    [
+      484,
+      485
+    ],
+    [
+      486,
+      487
+    ],
+    [
+      487,
+      488
+    ],
+    [
+      488,
+      489
+    ],
+    [
+      489,
+      490
+    ],
+    [
+      490,
+      491
+    ],
+    [
+      491,
+      492
+    ],
+    [
+      492,
+      493
+    ],
+    [
+      493,
+      494
+    ],
+    [
+      494,
+      495
+    ],
+    [
+      495,
+      496
+    ],
+    [
+      496,
+      497
+    ],
+    [
+      497,
+      498
+    ],
+    [
+      498,
+      499
+    ],
+    [
+      499,
+      500
+    ],
+    [
+      500,
+      501
+    ],
+    [
+      501,
+      502
+    ]
+  ],
+  "nodes": [
+    {
+      "id": 0,
+      "t": "blue",
+      "x": 2,
+      "y": 3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 1,
+      "t": "blue",
+      "x": 3,
+      "y": 3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 2,
+      "t": "red",
+      "x": 4,
+      "y": 3,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 3,
+      "t": "plain",
+      "prop": "grid_isoroku_1",
+      "x": 5,
+      "y": 3,
+      "region": "town",
+      "name": "まちなかのみやげ処",
+      "area": "まちなか"
+    },
+    {
+      "id": 4,
+      "t": "blue",
+      "x": 6,
+      "y": 3,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 5,
+      "t": "blue",
+      "x": 7,
+      "y": 3,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 6,
+      "t": "plain",
+      "x": 8,
+      "y": 3,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 7,
+      "t": "prop",
+      "station": "tsuginosuke",
+      "prop": "grid_tsuginosuke_1",
+      "x": 9,
+      "y": 3,
+      "region": "town",
+      "name": "河井継之助記念館",
+      "area": "まちなか"
+    },
+    {
+      "id": 8,
+      "t": "blue",
+      "x": 2,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 9,
+      "t": "plain",
+      "x": 3,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 10,
+      "t": "plain",
+      "prop": "g102",
+      "x": 4,
+      "y": 7,
+      "region": "town",
+      "name": "まちなかの食堂",
+      "area": "まちなか"
+    },
+    {
+      "id": 11,
+      "t": "yellow",
+      "x": 5,
+      "y": 7,
+      "region": "town",
+      "name": "まちなかの工房",
+      "area": "まちなか"
+    },
+    {
+      "id": 12,
+      "t": "yellow",
+      "x": 6,
+      "y": 7,
+      "region": "town",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 13,
+      "t": "prop",
+      "station": "nagaoka_st",
+      "prop": "grid_nagaoka_st_1",
+      "x": 7,
+      "y": 7,
+      "region": "town",
+      "name": "長岡駅",
+      "area": "駅前"
+    },
+    {
+      "id": 14,
+      "t": "red",
+      "x": 8,
+      "y": 7,
+      "region": "town",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 15,
+      "t": "plain",
+      "prop": "grid_nagaoka_st_1",
+      "x": 9,
+      "y": 7,
+      "region": "town",
+      "name": "駅前のみやげ処",
+      "area": "駅前"
+    },
+    {
+      "id": 16,
+      "t": "blue",
+      "x": 2,
+      "y": 9,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 17,
+      "t": "plain",
+      "x": 3,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 18,
+      "t": "plain",
+      "x": 4,
+      "y": 9,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 19,
+      "t": "plain",
+      "prop": "p02",
+      "x": 5,
+      "y": 9,
+      "region": "town",
+      "name": "まちなかの食堂",
+      "area": "まちなか"
+    },
+    {
+      "id": 20,
+      "t": "prop",
+      "station": "honmaru",
+      "prop": "g142",
+      "x": 6,
+      "y": 9,
+      "region": "town",
+      "name": "長岡城本丸跡",
+      "area": "まちなか"
+    },
+    {
+      "id": 21,
+      "t": "plain",
+      "prop": "g142",
+      "x": 7,
+      "y": 9,
+      "region": "town",
+      "name": "まちなかのみやげ処",
+      "area": "まちなか"
+    },
+    {
+      "id": 22,
+      "t": "yellow",
+      "x": 8,
+      "y": 9,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 23,
+      "t": "blue",
+      "x": 9,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 24,
+      "t": "prop",
+      "station": "kakigawa",
+      "prop": "g100",
+      "x": 2,
+      "y": 11,
+      "region": "town",
+      "name": "柿川",
+      "area": "まちなか"
+    },
+    {
+      "id": 25,
+      "t": "plain",
+      "prop": "g100",
+      "x": 3,
+      "y": 11,
+      "region": "town",
+      "name": "まちなかの食堂",
+      "area": "まちなか"
+    },
+    {
+      "id": 26,
+      "t": "blue",
+      "x": 4,
+      "y": 11,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 27,
+      "t": "plain",
+      "x": 5,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 28,
+      "t": "plain",
+      "x": 6,
+      "y": 11,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 29,
+      "t": "plain",
+      "x": 7,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 30,
+      "t": "red",
+      "x": 2,
+      "y": 4,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 31,
+      "t": "blue",
+      "x": 2,
+      "y": 5,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 32,
+      "t": "plain",
+      "x": 2,
+      "y": 6,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 33,
+      "t": "plain",
+      "x": 2,
+      "y": 8,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 34,
+      "t": "plain",
+      "prop": "g101",
+      "x": 2,
+      "y": 10,
+      "region": "town",
+      "name": "まちなかの食堂",
+      "area": "まちなか"
+    },
+    {
+      "id": 35,
+      "t": "prop",
+      "station": "isoroku",
+      "prop": "grid_isoroku_1",
+      "x": 5,
+      "y": 2,
+      "region": "town",
+      "name": "山本五十六記念館",
+      "area": "まちなか"
+    },
+    {
+      "id": 36,
+      "t": "red",
+      "x": 5,
+      "y": 4,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 37,
+      "t": "blue",
+      "x": 5,
+      "y": 5,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 38,
+      "t": "yellow",
+      "x": 5,
+      "y": 6,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 39,
+      "t": "prop",
+      "station": "aore",
+      "prop": "g102",
+      "x": 5,
+      "y": 8,
+      "region": "town",
+      "name": "アオーレ長岡",
+      "area": "まちなか"
+    },
+    {
+      "id": 40,
+      "t": "plain",
+      "x": 5,
+      "y": 10,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 41,
+      "t": "blue",
+      "x": 7,
+      "y": 4,
+      "region": "rural",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 42,
+      "t": "plain",
+      "prop": "grid_nagaoka_st_2",
+      "x": 7,
+      "y": 5,
+      "region": "town",
+      "name": "駅前のみやげ処",
+      "area": "駅前"
+    },
+    {
+      "id": 43,
+      "t": "red",
+      "x": 7,
+      "y": 6,
+      "region": "town",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 44,
+      "t": "yellow",
+      "x": 7,
+      "y": 8,
+      "region": "town",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 45,
+      "t": "plain",
+      "prop": "g143",
+      "x": 7,
+      "y": 10,
+      "region": "town",
+      "name": "まちなかのみやげ処",
+      "area": "まちなか"
+    },
+    {
+      "id": 46,
+      "t": "plain",
+      "x": 9,
+      "y": 4,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 47,
+      "t": "blue",
+      "x": 9,
+      "y": 5,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 48,
+      "t": "blue",
+      "x": 9,
+      "y": 6,
+      "region": "rural",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 49,
+      "t": "blue",
+      "x": 9,
+      "y": 8,
+      "region": "rural",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 50,
+      "t": "blue",
+      "x": 10,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 51,
+      "t": "yellow",
+      "x": 11,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 52,
+      "t": "blue",
+      "x": 12,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 53,
+      "t": "plain",
+      "x": 13,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 54,
+      "t": "blue",
+      "x": 14,
+      "y": 9,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 55,
+      "t": "plain",
+      "x": 15,
+      "y": 9,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 56,
+      "t": "blue",
+      "x": 16,
+      "y": 9,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 57,
+      "t": "red",
+      "x": 17,
+      "y": 9,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 58,
+      "t": "red",
+      "x": 9,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 59,
+      "t": "blue",
+      "x": 10,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 60,
+      "t": "blue",
+      "x": 11,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 61,
+      "t": "blue",
+      "x": 12,
+      "y": 11,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 62,
+      "t": "red",
+      "x": 13,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 63,
+      "t": "red",
+      "x": 14,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 64,
+      "t": "red",
+      "x": 15,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 65,
+      "t": "yellow",
+      "x": 16,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 66,
+      "t": "plain",
+      "x": 17,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 67,
+      "t": "blue",
+      "x": 9,
+      "y": 10,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 68,
+      "t": "blue",
+      "x": 13,
+      "y": 10,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 69,
+      "t": "plain",
+      "x": 13,
+      "y": 12,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 70,
+      "t": "red",
+      "x": 13,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 71,
+      "t": "blue",
+      "x": 13,
+      "y": 14,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 72,
+      "t": "red",
+      "x": 13,
+      "y": 15,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 73,
+      "t": "blue",
+      "x": 14,
+      "y": 15,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 74,
+      "t": "plain",
+      "prop": "grid_yukyuzan_1",
+      "x": 15,
+      "y": 15,
+      "region": "town",
+      "name": "悠久山の工房",
+      "area": "悠久山"
+    },
+    {
+      "id": 75,
+      "t": "yellow",
+      "x": 16,
+      "y": 15,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 76,
+      "t": "prop",
+      "station": "yukyuzan",
+      "prop": "grid_yukyuzan_1",
+      "x": 17,
+      "y": 15,
+      "region": "town",
+      "name": "悠久山公園",
+      "area": "悠久山"
+    },
+    {
+      "id": 77,
+      "t": "blue",
+      "x": 17,
+      "y": 10,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 78,
+      "t": "yellow",
+      "x": 17,
+      "y": 12,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 79,
+      "t": "blue",
+      "x": 17,
+      "y": 13,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 80,
+      "t": "blue",
+      "x": 17,
+      "y": 14,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 81,
+      "t": "prop",
+      "station": "aoshiba",
+      "prop": "grid_aoshiba_1",
+      "x": 19,
+      "y": 13,
+      "region": "town",
+      "name": "蒼柴神社",
+      "area": "悠久山"
+    },
+    {
+      "id": 82,
+      "t": "prop",
+      "station": "saffron",
+      "prop": "g116",
+      "x": 3,
+      "y": 22,
+      "region": "town",
+      "name": "機那サフラン酒本舗（鏝絵の蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": 83,
+      "t": "prop",
+      "station": "yoshinogawa",
+      "prop": "g104",
+      "x": 5,
+      "y": 21,
+      "region": "town",
+      "name": "吉乃川 醸蔵",
+      "area": "摂田屋"
+    },
+    {
+      "id": 84,
+      "t": "prop",
+      "station": "murasaki",
+      "prop": "g112",
+      "x": 7,
+      "y": 20,
+      "region": "town",
+      "name": "越のむらさき（醤油蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": 85,
+      "t": "prop",
+      "station": "hasegawa_sake",
+      "prop": "g114",
+      "x": 7,
+      "y": 24,
+      "region": "town",
+      "name": "長谷川酒造（酒蔵）",
+      "area": "摂田屋"
+    },
+    {
+      "id": 86,
+      "t": "dest",
+      "station": "kome100",
+      "x": -6,
+      "y": -3,
+      "region": "town",
+      "name": "米百俵の群像",
+      "area": "千秋"
+    },
+    {
+      "id": 87,
+      "t": "prop",
+      "station": "lyric",
+      "prop": "grid_lyric_1",
+      "x": -8,
+      "y": -4,
+      "region": "town",
+      "name": "長岡リリックホール",
+      "area": "千秋"
+    },
+    {
+      "id": 88,
+      "t": "prop",
+      "station": "kyuryo",
+      "prop": "grid_kyuryo_1",
+      "x": -19,
+      "y": 20,
+      "region": "town",
+      "name": "国営越後丘陵公園",
+      "area": "川西"
+    },
+    {
+      "id": 89,
+      "t": "prop",
+      "station": "umataka",
+      "prop": "grid_umataka_1",
+      "x": -16,
+      "y": 8,
+      "region": "town",
+      "name": "馬高縄文館",
+      "area": "川西"
+    },
+    {
+      "id": 90,
+      "t": "prop",
+      "station": "rekihaku",
+      "prop": "grid_rekihaku_1",
+      "x": -17,
+      "y": 12,
+      "region": "town",
+      "name": "新潟県立歴史博物館",
+      "area": "川西"
+    },
+    {
+      "id": 91,
+      "t": "prop",
+      "station": "kinpu",
+      "prop": "grid_kinpu_1",
+      "x": 6,
+      "y": -6,
+      "region": "town",
+      "name": "金峯神社",
+      "area": "蔵王"
+    },
+    {
+      "id": 92,
+      "t": "prop",
+      "station": "keyaki",
+      "prop": "grid_keyaki_1",
+      "x": 4,
+      "y": -5,
+      "region": "town",
+      "name": "蔵王の大けやき",
+      "area": "蔵王"
+    },
+    {
+      "id": 93,
+      "t": "prop",
+      "station": "takeakari",
+      "prop": "grid_takeakari_1",
+      "x": -13,
+      "y": -10,
+      "region": "town",
+      "name": "竹あかり街道（三島の散歩道）",
+      "area": "三島"
+    },
+    {
+      "id": 94,
+      "t": "prop",
+      "station": "wakinomachi",
+      "prop": "g124",
+      "x": -11,
+      "y": -8,
+      "region": "town",
+      "name": "脇野町（鋸鍛冶のまち）",
+      "area": "三島"
+    },
+    {
+      "id": 95,
+      "t": "prop",
+      "station": "hotoku",
+      "prop": "grid_hotoku_1",
+      "x": -15,
+      "y": 25,
+      "region": "town",
+      "name": "宝徳山稲荷大社",
+      "area": "越路"
+    },
+    {
+      "id": 96,
+      "t": "prop",
+      "station": "momiji",
+      "prop": "grid_momiji_1",
+      "x": -12,
+      "y": 30,
+      "region": "town",
+      "name": "もみじ園（巴ヶ丘山荘）",
+      "area": "越路"
+    },
+    {
+      "id": 97,
+      "t": "prop",
+      "station": "asahi",
+      "prop": "g108",
+      "x": -10,
+      "y": 32,
+      "region": "town",
+      "name": "朝日酒造／酒楽の里あさひ山",
+      "area": "越路"
+    },
+    {
+      "id": 98,
+      "t": "prop",
+      "station": "koryu",
+      "prop": "grid_koryu_1",
+      "x": 17,
+      "y": 28,
+      "region": "town",
+      "name": "高龍神社",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 99,
+      "t": "prop",
+      "station": "yomogi_onsen",
+      "prop": "g134",
+      "x": 19,
+      "y": 26,
+      "region": "town",
+      "name": "蓬平温泉",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 100,
+      "t": "prop",
+      "station": "togyu",
+      "prop": "g132",
+      "x": 23,
+      "y": 38,
+      "region": "town",
+      "name": "山古志闘牛場",
+      "area": "山古志"
+    },
+    {
+      "id": 101,
+      "t": "prop",
+      "station": "alpaca",
+      "prop": "g130",
+      "x": 27,
+      "y": 32,
+      "region": "town",
+      "name": "種苧原アルパカ牧場",
+      "area": "山古志"
+    },
+    {
+      "id": 102,
+      "t": "prop",
+      "station": "tanada",
+      "prop": "g138",
+      "x": 19,
+      "y": 35,
+      "region": "town",
+      "name": "山古志 竹沢の棚池",
+      "area": "山古志"
+    },
+    {
+      "id": 103,
+      "t": "prop",
+      "station": "oratar",
+      "prop": "grid_oratar_1",
+      "x": 17,
+      "y": 40,
+      "region": "town",
+      "name": "やまこし復興交流館おらたる",
+      "area": "山古志"
+    },
+    {
+      "id": 104,
+      "t": "prop",
+      "station": "akiha",
+      "prop": "g120",
+      "x": 32,
+      "y": 0,
+      "region": "town",
+      "name": "栃尾 秋葉神社",
+      "area": "栃尾"
+    },
+    {
+      "id": 105,
+      "t": "prop",
+      "station": "gangi",
+      "prop": "g140",
+      "x": 30,
+      "y": -3,
+      "region": "town",
+      "name": "栃尾 雁木のまち並み",
+      "area": "栃尾"
+    },
+    {
+      "id": 106,
+      "t": "prop",
+      "station": "tsuno",
+      "prop": "g122",
+      "x": -8,
+      "y": -17,
+      "region": "town",
+      "name": "与板 都野神社",
+      "area": "与板"
+    },
+    {
+      "id": 107,
+      "t": "prop",
+      "station": "kanetsugu",
+      "prop": "grid_kanetsugu_1",
+      "x": -10,
+      "y": -19,
+      "region": "town",
+      "name": "兼続お船ミュージアム",
+      "area": "与板"
+    },
+    {
+      "id": 108,
+      "t": "prop",
+      "station": "teradomari_ichiba",
+      "prop": "g126",
+      "x": -17,
+      "y": -32,
+      "region": "town",
+      "name": "寺泊 魚の市場通り",
+      "area": "寺泊"
+    },
+    {
+      "id": 109,
+      "t": "prop",
+      "station": "suizoku",
+      "prop": "grid_suizoku_1",
+      "x": -19,
+      "y": -28,
+      "region": "town",
+      "name": "寺泊水族博物館",
+      "area": "寺泊"
+    },
+    {
+      "id": 110,
+      "t": "prop",
+      "station": "ryokan",
+      "prop": "grid_ryokan_1",
+      "x": -28,
+      "y": -20,
+      "region": "town",
+      "name": "良寛記念館",
+      "area": "出雲崎"
+    },
+    {
+      "id": 111,
+      "t": "prop",
+      "station": "tsumairi",
+      "prop": "grid_tsumairi_1",
+      "x": -30,
+      "y": -18,
+      "region": "town",
+      "name": "妻入りの街並み",
+      "area": "出雲崎"
+    },
+    {
+      "id": 112,
+      "t": "prop",
+      "station": "tenryo",
+      "prop": "grid_tenryo_1",
+      "x": -32,
+      "y": -16,
+      "region": "town",
+      "name": "天領の里",
+      "area": "出雲崎"
+    },
+    {
+      "id": 113,
+      "t": "prop",
+      "station": "ishii",
+      "prop": "grid_ishii_1",
+      "x": -29,
+      "y": -22,
+      "region": "town",
+      "name": "石井神社",
+      "area": "出雲崎"
+    },
+    {
+      "id": 114,
+      "t": "prop",
+      "station": "oguni_washi",
+      "prop": "g118",
+      "x": -28,
+      "y": 43,
+      "region": "town",
+      "name": "小国和紙",
+      "area": "小国"
+    },
+    {
+      "id": 115,
+      "t": "prop",
+      "station": "hachikoku",
+      "prop": "grid_hachikoku_1",
+      "x": -33,
+      "y": 37,
+      "region": "town",
+      "name": "八石山",
+      "area": "小国"
+    },
+    {
+      "id": 116,
+      "t": "plain",
+      "prop": "grid_nagaoka_st_3",
+      "x": 6,
+      "y": 6,
+      "region": "town",
+      "name": "駅前の工房",
+      "area": "駅前"
+    },
+    {
+      "id": 117,
+      "t": "blue",
+      "x": 6,
+      "y": 5,
+      "region": "rural",
+      "name": "",
+      "area": "駅前"
+    },
+    {
+      "id": 118,
+      "t": "yellow",
+      "x": 6,
+      "y": 4,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 119,
+      "t": "blue",
+      "x": 6,
+      "y": 2,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 120,
+      "t": "plain",
+      "x": 6,
+      "y": 1,
+      "region": "town",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 121,
+      "t": "plain",
+      "x": 6,
+      "y": 0,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 122,
+      "t": "blue",
+      "x": 6,
+      "y": -1,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 123,
+      "t": "red",
+      "x": 6,
+      "y": -2,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 124,
+      "t": "blue",
+      "x": 6,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 125,
+      "t": "plain",
+      "prop": "grid_kinpu_1",
+      "x": 6,
+      "y": -4,
+      "region": "town",
+      "name": "蔵王の工房",
+      "area": "蔵王"
+    },
+    {
+      "id": 126,
+      "t": "red",
+      "x": 6,
+      "y": -5,
+      "region": "town",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 127,
+      "t": "red",
+      "x": 5,
+      "y": -6,
+      "region": "town",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 128,
+      "t": "plain",
+      "prop": "grid_keyaki_1",
+      "x": 4,
+      "y": -6,
+      "region": "town",
+      "name": "蔵王の工房",
+      "area": "蔵王"
+    },
+    {
+      "id": 129,
+      "t": "blue",
+      "x": 18,
+      "y": 15,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 130,
+      "t": "blue",
+      "x": 19,
+      "y": 15,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 131,
+      "t": "plain",
+      "x": 19,
+      "y": 14,
+      "region": "town",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 132,
+      "t": "blue",
+      "x": 7,
+      "y": 12,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 133,
+      "t": "plain",
+      "x": 7,
+      "y": 13,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 134,
+      "t": "blue",
+      "x": 7,
+      "y": 14,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 135,
+      "t": "yellow",
+      "x": 7,
+      "y": 15,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 136,
+      "t": "blue",
+      "x": 7,
+      "y": 16,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 137,
+      "t": "blue",
+      "x": 7,
+      "y": 17,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 138,
+      "t": "yellow",
+      "x": 7,
+      "y": 18,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 139,
+      "t": "plain",
+      "prop": "g112",
+      "x": 7,
+      "y": 19,
+      "region": "town",
+      "name": "摂田屋の食堂",
+      "area": "摂田屋"
+    },
+    {
+      "id": 140,
+      "t": "plain",
+      "prop": "g113",
+      "x": 6,
+      "y": 20,
+      "region": "town",
+      "name": "摂田屋の工房",
+      "area": "摂田屋"
+    },
+    {
+      "id": 141,
+      "t": "plain",
+      "x": 5,
+      "y": 20,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 142,
+      "t": "blue",
+      "x": 4,
+      "y": 21,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 143,
+      "t": "plain",
+      "prop": "g116",
+      "x": 3,
+      "y": 21,
+      "region": "town",
+      "name": "摂田屋の工房",
+      "area": "摂田屋"
+    },
+    {
+      "id": 144,
+      "t": "plain",
+      "prop": "g117",
+      "x": 4,
+      "y": 22,
+      "region": "town",
+      "name": "摂田屋のみやげ処",
+      "area": "摂田屋"
+    },
+    {
+      "id": 145,
+      "t": "blue",
+      "x": 5,
+      "y": 22,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 146,
+      "t": "blue",
+      "x": 6,
+      "y": 22,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 147,
+      "t": "plain",
+      "x": 7,
+      "y": 22,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 148,
+      "t": "blue",
+      "x": 7,
+      "y": 23,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 149,
+      "t": "plain",
+      "prop": "grid_kome100_1",
+      "x": -7,
+      "y": -3,
+      "region": "town",
+      "name": "千秋の工房",
+      "area": "千秋"
+    },
+    {
+      "id": 150,
+      "t": "plain",
+      "prop": "grid_kome100_1",
+      "x": -8,
+      "y": -3,
+      "region": "town",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 151,
+      "t": "plain",
+      "x": -9,
+      "y": -4,
+      "region": "town",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 152,
+      "t": "blue",
+      "x": -10,
+      "y": -4,
+      "region": "town",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 153,
+      "t": "blue",
+      "x": -11,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 154,
+      "t": "plain",
+      "x": -11,
+      "y": -5,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 155,
+      "t": "plain",
+      "x": -11,
+      "y": -6,
+      "region": "town",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 156,
+      "t": "plain",
+      "prop": "g124",
+      "x": -11,
+      "y": -7,
+      "region": "town",
+      "name": "三島のみやげ処",
+      "area": "三島"
+    },
+    {
+      "id": 157,
+      "t": "plain",
+      "prop": "g125",
+      "x": -12,
+      "y": -8,
+      "region": "town",
+      "name": "三島の食堂",
+      "area": "三島"
+    },
+    {
+      "id": 158,
+      "t": "plain",
+      "x": -13,
+      "y": -8,
+      "region": "town",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 159,
+      "t": "plain",
+      "prop": "grid_takeakari_1",
+      "x": -13,
+      "y": -9,
+      "region": "town",
+      "name": "三島のみやげ処",
+      "area": "三島"
+    },
+    {
+      "id": 160,
+      "t": "plain",
+      "prop": "grid_takeakari_2",
+      "x": -12,
+      "y": -10,
+      "region": "town",
+      "name": "三島の食堂",
+      "area": "三島"
+    },
+    {
+      "id": 161,
+      "t": "yellow",
+      "x": -11,
+      "y": -10,
+      "region": "town",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 162,
+      "t": "blue",
+      "x": -10,
+      "y": -10,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 163,
+      "t": "blue",
+      "x": -9,
+      "y": -10,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 164,
+      "t": "yellow",
+      "x": -8,
+      "y": -10,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 165,
+      "t": "blue",
+      "x": -8,
+      "y": -11,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 166,
+      "t": "plain",
+      "x": -8,
+      "y": -12,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 167,
+      "t": "blue",
+      "x": -8,
+      "y": -13,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 168,
+      "t": "plain",
+      "x": -8,
+      "y": -14,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 169,
+      "t": "plain",
+      "prop": "g122",
+      "x": -8,
+      "y": -15,
+      "region": "town",
+      "name": "与板の食堂",
+      "area": "与板"
+    },
+    {
+      "id": 170,
+      "t": "plain",
+      "prop": "g123",
+      "x": -8,
+      "y": -16,
+      "region": "town",
+      "name": "与板の工房",
+      "area": "与板"
+    },
+    {
+      "id": 171,
+      "t": "plain",
+      "prop": "p10",
+      "x": -9,
+      "y": -17,
+      "region": "town",
+      "name": "与板のみやげ処",
+      "area": "与板"
+    },
+    {
+      "id": 172,
+      "t": "plain",
+      "prop": "g122",
+      "x": -10,
+      "y": -17,
+      "region": "town",
+      "name": "与板の食堂",
+      "area": "与板"
+    },
+    {
+      "id": 173,
+      "t": "plain",
+      "prop": "grid_kanetsugu_1",
+      "x": -10,
+      "y": -18,
+      "region": "town",
+      "name": "与板の工房",
+      "area": "与板"
+    },
+    {
+      "id": 174,
+      "t": "plain",
+      "prop": "grid_kanetsugu_2",
+      "x": -11,
+      "y": -19,
+      "region": "town",
+      "name": "与板のみやげ処",
+      "area": "与板"
+    },
+    {
+      "id": 175,
+      "t": "plain",
+      "prop": "grid_kanetsugu_3",
+      "x": -12,
+      "y": -19,
+      "region": "town",
+      "name": "与板の食堂",
+      "area": "与板"
+    },
+    {
+      "id": 176,
+      "t": "plain",
+      "x": -13,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 177,
+      "t": "blue",
+      "x": -14,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 178,
+      "t": "plain",
+      "x": -15,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 179,
+      "t": "blue",
+      "x": -16,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 180,
+      "t": "yellow",
+      "x": -17,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 181,
+      "t": "blue",
+      "x": -17,
+      "y": -20,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 182,
+      "t": "plain",
+      "x": -17,
+      "y": -21,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 183,
+      "t": "blue",
+      "x": -17,
+      "y": -22,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 184,
+      "t": "plain",
+      "x": -17,
+      "y": -23,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 185,
+      "t": "blue",
+      "x": -17,
+      "y": -24,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 186,
+      "t": "red",
+      "x": -17,
+      "y": -25,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 187,
+      "t": "blue",
+      "x": -17,
+      "y": -26,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 188,
+      "t": "blue",
+      "x": -17,
+      "y": -27,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 189,
+      "t": "red",
+      "x": -17,
+      "y": -28,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 190,
+      "t": "yellow",
+      "x": -17,
+      "y": -29,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 191,
+      "t": "blue",
+      "x": -17,
+      "y": -30,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 192,
+      "t": "yellow",
+      "x": -17,
+      "y": -31,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 193,
+      "t": "blue",
+      "x": -18,
+      "y": -32,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 194,
+      "t": "blue",
+      "x": -19,
+      "y": -32,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 195,
+      "t": "yellow",
+      "x": -19,
+      "y": -31,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 196,
+      "t": "red",
+      "x": -19,
+      "y": -30,
+      "region": "town",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 197,
+      "t": "plain",
+      "prop": "grid_suizoku_1",
+      "x": -19,
+      "y": -29,
+      "region": "town",
+      "name": "寺泊の工房",
+      "area": "寺泊"
+    },
+    {
+      "id": 198,
+      "t": "blue",
+      "x": -18,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 199,
+      "t": "blue",
+      "x": -19,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 200,
+      "t": "blue",
+      "x": -20,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 201,
+      "t": "red",
+      "x": -21,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 202,
+      "t": "blue",
+      "x": -22,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 203,
+      "t": "plain",
+      "x": -23,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 204,
+      "t": "blue",
+      "x": -24,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 205,
+      "t": "plain",
+      "x": -25,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 206,
+      "t": "blue",
+      "x": -26,
+      "y": -19,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 207,
+      "t": "plain",
+      "prop": "grid_ryokan_1",
+      "x": -27,
+      "y": -19,
+      "region": "town",
+      "name": "出雲崎のみやげ処",
+      "area": "出雲崎"
+    },
+    {
+      "id": 208,
+      "t": "red",
+      "x": -28,
+      "y": -19,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 209,
+      "t": "plain",
+      "prop": "grid_ryokan_2",
+      "x": -29,
+      "y": -19,
+      "region": "town",
+      "name": "出雲崎の工房",
+      "area": "出雲崎"
+    },
+    {
+      "id": 210,
+      "t": "red",
+      "x": -29,
+      "y": -20,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 211,
+      "t": "plain",
+      "prop": "grid_ishii_1",
+      "x": -29,
+      "y": -21,
+      "region": "town",
+      "name": "出雲崎の食堂",
+      "area": "出雲崎"
+    },
+    {
+      "id": 212,
+      "t": "blue",
+      "x": -28,
+      "y": -22,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 213,
+      "t": "blue",
+      "x": -28,
+      "y": -21,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 214,
+      "t": "plain",
+      "prop": "grid_ryokan_3",
+      "x": -30,
+      "y": -20,
+      "region": "town",
+      "name": "出雲崎の食堂",
+      "area": "出雲崎"
+    },
+    {
+      "id": 215,
+      "t": "yellow",
+      "x": -30,
+      "y": -19,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 216,
+      "t": "plain",
+      "prop": "grid_tsumairi_1",
+      "x": -31,
+      "y": -18,
+      "region": "town",
+      "name": "出雲崎のみやげ処",
+      "area": "出雲崎"
+    },
+    {
+      "id": 217,
+      "t": "plain",
+      "prop": "grid_tsumairi_2",
+      "x": -32,
+      "y": -18,
+      "region": "town",
+      "name": "出雲崎の食堂",
+      "area": "出雲崎"
+    },
+    {
+      "id": 218,
+      "t": "plain",
+      "x": -32,
+      "y": -17,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 219,
+      "t": "plain",
+      "x": -31,
+      "y": -16,
+      "region": "town",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 220,
+      "t": "plain",
+      "prop": "grid_tenryo_1",
+      "x": -30,
+      "y": -16,
+      "region": "town",
+      "name": "出雲崎の食堂",
+      "area": "出雲崎"
+    },
+    {
+      "id": 221,
+      "t": "blue",
+      "x": -29,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 222,
+      "t": "red",
+      "x": -28,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 223,
+      "t": "blue",
+      "x": -27,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 224,
+      "t": "blue",
+      "x": -26,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 225,
+      "t": "blue",
+      "x": -25,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 226,
+      "t": "yellow",
+      "x": -24,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 227,
+      "t": "blue",
+      "x": -23,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 228,
+      "t": "plain",
+      "x": -22,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 229,
+      "t": "blue",
+      "x": -21,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 230,
+      "t": "plain",
+      "x": -20,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "出雲崎"
+    },
+    {
+      "id": 231,
+      "t": "blue",
+      "x": -19,
+      "y": -16,
+      "region": "rural",
+      "name": "",
+      "area": "三島"
+    },
+    {
+      "id": 232,
+      "t": "red",
+      "x": -19,
+      "y": -17,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 233,
+      "t": "blue",
+      "x": -19,
+      "y": -18,
+      "region": "rural",
+      "name": "",
+      "area": "与板"
+    },
+    {
+      "id": 234,
+      "t": "blue",
+      "x": -19,
+      "y": -20,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 235,
+      "t": "yellow",
+      "x": -19,
+      "y": -21,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 236,
+      "t": "blue",
+      "x": -19,
+      "y": -22,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 237,
+      "t": "plain",
+      "x": -19,
+      "y": -23,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 238,
+      "t": "blue",
+      "x": -19,
+      "y": -24,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 239,
+      "t": "plain",
+      "x": -19,
+      "y": -25,
+      "region": "rural",
+      "name": "",
+      "area": "寺泊"
+    },
+    {
+      "id": 240,
+      "t": "plain",
+      "prop": "grid_suizoku_2",
+      "x": -19,
+      "y": -26,
+      "region": "town",
+      "name": "寺泊のみやげ処",
+      "area": "寺泊"
+    },
+    {
+      "id": 241,
+      "t": "plain",
+      "prop": "grid_suizoku_3",
+      "x": -19,
+      "y": -27,
+      "region": "town",
+      "name": "寺泊の食堂",
+      "area": "寺泊"
+    },
+    {
+      "id": 242,
+      "t": "yellow",
+      "x": -12,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 243,
+      "t": "blue",
+      "x": -13,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 244,
+      "t": "blue",
+      "x": -14,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 245,
+      "t": "blue",
+      "x": -15,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 246,
+      "t": "red",
+      "x": -16,
+      "y": -4,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 247,
+      "t": "blue",
+      "x": -16,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 248,
+      "t": "plain",
+      "x": -16,
+      "y": -2,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 249,
+      "t": "blue",
+      "x": -16,
+      "y": -1,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 250,
+      "t": "plain",
+      "x": -16,
+      "y": 0,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 251,
+      "t": "blue",
+      "x": -16,
+      "y": 1,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 252,
+      "t": "yellow",
+      "x": -16,
+      "y": 2,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 253,
+      "t": "blue",
+      "x": -16,
+      "y": 3,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 254,
+      "t": "blue",
+      "x": -16,
+      "y": 4,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 255,
+      "t": "blue",
+      "x": -16,
+      "y": 5,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 256,
+      "t": "plain",
+      "prop": "grid_umataka_1",
+      "x": -16,
+      "y": 6,
+      "region": "town",
+      "name": "川西の食堂",
+      "area": "川西"
+    },
+    {
+      "id": 257,
+      "t": "plain",
+      "prop": "grid_umataka_2",
+      "x": -16,
+      "y": 7,
+      "region": "town",
+      "name": "川西の工房",
+      "area": "川西"
+    },
+    {
+      "id": 258,
+      "t": "plain",
+      "x": -17,
+      "y": 8,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 259,
+      "t": "blue",
+      "x": -17,
+      "y": 9,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 260,
+      "t": "blue",
+      "x": -17,
+      "y": 10,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 261,
+      "t": "plain",
+      "prop": "grid_rekihaku_1",
+      "x": -17,
+      "y": 11,
+      "region": "town",
+      "name": "川西のみやげ処",
+      "area": "川西"
+    },
+    {
+      "id": 262,
+      "t": "plain",
+      "prop": "grid_rekihaku_2",
+      "x": -18,
+      "y": 12,
+      "region": "town",
+      "name": "川西の食堂",
+      "area": "川西"
+    },
+    {
+      "id": 263,
+      "t": "yellow",
+      "x": -19,
+      "y": 12,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 264,
+      "t": "red",
+      "x": -19,
+      "y": 13,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 265,
+      "t": "blue",
+      "x": -19,
+      "y": 14,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 266,
+      "t": "plain",
+      "x": -19,
+      "y": 15,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 267,
+      "t": "blue",
+      "x": -19,
+      "y": 16,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 268,
+      "t": "plain",
+      "x": -19,
+      "y": 17,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 269,
+      "t": "blue",
+      "x": -19,
+      "y": 18,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 270,
+      "t": "plain",
+      "prop": "grid_kyuryo_1",
+      "x": -19,
+      "y": 19,
+      "region": "town",
+      "name": "川西のみやげ処",
+      "area": "川西"
+    },
+    {
+      "id": 271,
+      "t": "plain",
+      "prop": "grid_kyuryo_2",
+      "x": -18,
+      "y": 20,
+      "region": "town",
+      "name": "川西の食堂",
+      "area": "川西"
+    },
+    {
+      "id": 272,
+      "t": "blue",
+      "x": -17,
+      "y": 20,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 273,
+      "t": "plain",
+      "x": -16,
+      "y": 20,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 274,
+      "t": "blue",
+      "x": -15,
+      "y": 20,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 275,
+      "t": "plain",
+      "x": -15,
+      "y": 21,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 276,
+      "t": "blue",
+      "x": -15,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 277,
+      "t": "plain",
+      "prop": "grid_hotoku_1",
+      "x": -15,
+      "y": 23,
+      "region": "town",
+      "name": "越路の食堂",
+      "area": "越路"
+    },
+    {
+      "id": 278,
+      "t": "red",
+      "x": -15,
+      "y": 24,
+      "region": "town",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 279,
+      "t": "red",
+      "x": -14,
+      "y": 25,
+      "region": "town",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 280,
+      "t": "plain",
+      "prop": "grid_hotoku_2",
+      "x": -13,
+      "y": 25,
+      "region": "town",
+      "name": "越路の食堂",
+      "area": "越路"
+    },
+    {
+      "id": 281,
+      "t": "blue",
+      "x": -12,
+      "y": 25,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 282,
+      "t": "yellow",
+      "x": -12,
+      "y": 26,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 283,
+      "t": "blue",
+      "x": -12,
+      "y": 27,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 284,
+      "t": "plain",
+      "prop": "grid_momiji_1",
+      "x": -12,
+      "y": 28,
+      "region": "town",
+      "name": "越路の工房",
+      "area": "越路"
+    },
+    {
+      "id": 285,
+      "t": "yellow",
+      "x": -12,
+      "y": 29,
+      "region": "town",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 286,
+      "t": "yellow",
+      "x": -11,
+      "y": 30,
+      "region": "town",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 287,
+      "t": "plain",
+      "prop": "grid_momiji_2",
+      "x": -10,
+      "y": 30,
+      "region": "town",
+      "name": "越路の工房",
+      "area": "越路"
+    },
+    {
+      "id": 288,
+      "t": "yellow",
+      "x": -10,
+      "y": 31,
+      "region": "town",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 289,
+      "t": "plain",
+      "prop": "g108",
+      "x": -11,
+      "y": 32,
+      "region": "town",
+      "name": "越路の食堂",
+      "area": "越路"
+    },
+    {
+      "id": 290,
+      "t": "plain",
+      "prop": "g109",
+      "x": -12,
+      "y": 32,
+      "region": "town",
+      "name": "越路の工房",
+      "area": "越路"
+    },
+    {
+      "id": 291,
+      "t": "blue",
+      "x": -13,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 292,
+      "t": "plain",
+      "x": -14,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 293,
+      "t": "blue",
+      "x": -15,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 294,
+      "t": "yellow",
+      "x": -16,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 295,
+      "t": "blue",
+      "x": -17,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 296,
+      "t": "blue",
+      "x": -18,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 297,
+      "t": "blue",
+      "x": -19,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 298,
+      "t": "red",
+      "x": -20,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 299,
+      "t": "blue",
+      "x": -21,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 300,
+      "t": "plain",
+      "x": -22,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 301,
+      "t": "blue",
+      "x": -23,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 302,
+      "t": "plain",
+      "x": -24,
+      "y": 32,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 303,
+      "t": "red",
+      "x": -25,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 304,
+      "t": "red",
+      "x": -26,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 305,
+      "t": "plain",
+      "x": -27,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 306,
+      "t": "red",
+      "x": -28,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 307,
+      "t": "blue",
+      "x": -28,
+      "y": 33,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 308,
+      "t": "red",
+      "x": -28,
+      "y": 34,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 309,
+      "t": "blue",
+      "x": -28,
+      "y": 35,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 310,
+      "t": "plain",
+      "x": -28,
+      "y": 36,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 311,
+      "t": "yellow",
+      "x": -28,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 312,
+      "t": "red",
+      "x": -28,
+      "y": 38,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 313,
+      "t": "red",
+      "x": -28,
+      "y": 39,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 314,
+      "t": "red",
+      "x": -28,
+      "y": 40,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 315,
+      "t": "red",
+      "x": -28,
+      "y": 41,
+      "region": "town",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 316,
+      "t": "plain",
+      "prop": "g118",
+      "x": -28,
+      "y": 42,
+      "region": "town",
+      "name": "小国の食堂",
+      "area": "小国"
+    },
+    {
+      "id": 317,
+      "t": "plain",
+      "prop": "g119",
+      "x": -29,
+      "y": 43,
+      "region": "town",
+      "name": "小国の工房",
+      "area": "小国"
+    },
+    {
+      "id": 318,
+      "t": "plain",
+      "prop": "p08",
+      "x": -30,
+      "y": 43,
+      "region": "town",
+      "name": "小国のみやげ処",
+      "area": "小国"
+    },
+    {
+      "id": 319,
+      "t": "plain",
+      "x": -31,
+      "y": 43,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 320,
+      "t": "yellow",
+      "x": -32,
+      "y": 43,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 321,
+      "t": "red",
+      "x": -33,
+      "y": 43,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 322,
+      "t": "yellow",
+      "x": -33,
+      "y": 42,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 323,
+      "t": "plain",
+      "x": -33,
+      "y": 41,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 324,
+      "t": "blue",
+      "x": -33,
+      "y": 40,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 325,
+      "t": "plain",
+      "prop": "grid_hachikoku_1",
+      "x": -33,
+      "y": 39,
+      "region": "town",
+      "name": "小国の食堂",
+      "area": "小国"
+    },
+    {
+      "id": 326,
+      "t": "yellow",
+      "x": -33,
+      "y": 38,
+      "region": "town",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 327,
+      "t": "red",
+      "x": -32,
+      "y": 37,
+      "region": "town",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 328,
+      "t": "plain",
+      "prop": "grid_hachikoku_2",
+      "x": -31,
+      "y": 37,
+      "region": "town",
+      "name": "小国の食堂",
+      "area": "小国"
+    },
+    {
+      "id": 329,
+      "t": "red",
+      "x": -30,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 330,
+      "t": "red",
+      "x": -29,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 331,
+      "t": "plain",
+      "x": -27,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 332,
+      "t": "blue",
+      "x": -26,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 333,
+      "t": "red",
+      "x": -25,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 334,
+      "t": "blue",
+      "x": -24,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 335,
+      "t": "red",
+      "x": -23,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 336,
+      "t": "plain",
+      "x": -22,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 337,
+      "t": "red",
+      "x": -21,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 338,
+      "t": "red",
+      "x": -20,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "小国"
+    },
+    {
+      "id": 339,
+      "t": "plain",
+      "x": -19,
+      "y": 37,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 340,
+      "t": "blue",
+      "x": -19,
+      "y": 36,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 341,
+      "t": "plain",
+      "x": -19,
+      "y": 35,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 342,
+      "t": "blue",
+      "x": -19,
+      "y": 34,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 343,
+      "t": "red",
+      "x": -19,
+      "y": 33,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 344,
+      "t": "blue",
+      "x": -19,
+      "y": 31,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 345,
+      "t": "blue",
+      "x": -19,
+      "y": 30,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 346,
+      "t": "yellow",
+      "x": -19,
+      "y": 29,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 347,
+      "t": "blue",
+      "x": -19,
+      "y": 28,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 348,
+      "t": "plain",
+      "x": -19,
+      "y": 27,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 349,
+      "t": "blue",
+      "x": -19,
+      "y": 26,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 350,
+      "t": "plain",
+      "x": -19,
+      "y": 25,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 351,
+      "t": "blue",
+      "x": -19,
+      "y": 24,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 352,
+      "t": "red",
+      "x": -19,
+      "y": 23,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 353,
+      "t": "yellow",
+      "x": -19,
+      "y": 22,
+      "region": "town",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 354,
+      "t": "plain",
+      "prop": "grid_kyuryo_3",
+      "x": -19,
+      "y": 21,
+      "region": "town",
+      "name": "川西のみやげ処",
+      "area": "川西"
+    },
+    {
+      "id": 355,
+      "t": "red",
+      "x": 19,
+      "y": 16,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 356,
+      "t": "red",
+      "x": 19,
+      "y": 17,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 357,
+      "t": "plain",
+      "x": 19,
+      "y": 18,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 358,
+      "t": "red",
+      "x": 19,
+      "y": 19,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 359,
+      "t": "blue",
+      "x": 19,
+      "y": 20,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 360,
+      "t": "red",
+      "x": 19,
+      "y": 21,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 361,
+      "t": "blue",
+      "x": 19,
+      "y": 22,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 362,
+      "t": "plain",
+      "x": 19,
+      "y": 23,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 363,
+      "t": "plain",
+      "x": 19,
+      "y": 24,
+      "region": "town",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 364,
+      "t": "blue",
+      "x": 19,
+      "y": 25,
+      "region": "town",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 365,
+      "t": "plain",
+      "prop": "g134",
+      "x": 18,
+      "y": 26,
+      "region": "town",
+      "name": "よもぎ平の工房",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 366,
+      "t": "red",
+      "x": 17,
+      "y": 26,
+      "region": "town",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 367,
+      "t": "plain",
+      "prop": "grid_koryu_1",
+      "x": 17,
+      "y": 27,
+      "region": "town",
+      "name": "よもぎ平の食堂",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 368,
+      "t": "plain",
+      "prop": "grid_koryu_2",
+      "x": 18,
+      "y": 28,
+      "region": "town",
+      "name": "よもぎ平の工房",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 369,
+      "t": "red",
+      "x": 19,
+      "y": 28,
+      "region": "town",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 370,
+      "t": "red",
+      "x": 19,
+      "y": 29,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 371,
+      "t": "blue",
+      "x": 19,
+      "y": 30,
+      "region": "hill",
+      "name": "",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 372,
+      "t": "red",
+      "x": 19,
+      "y": 31,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 373,
+      "t": "blue",
+      "x": 19,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 374,
+      "t": "plain",
+      "prop": "g138",
+      "x": 19,
+      "y": 33,
+      "region": "town",
+      "name": "山古志の工房",
+      "area": "山古志"
+    },
+    {
+      "id": 375,
+      "t": "plain",
+      "x": 19,
+      "y": 34,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 376,
+      "t": "blue",
+      "x": 18,
+      "y": 35,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 377,
+      "t": "plain",
+      "prop": "g139",
+      "x": 17,
+      "y": 35,
+      "region": "town",
+      "name": "山古志の工房",
+      "area": "山古志"
+    },
+    {
+      "id": 378,
+      "t": "plain",
+      "x": 17,
+      "y": 36,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 379,
+      "t": "red",
+      "x": 17,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 380,
+      "t": "yellow",
+      "x": 17,
+      "y": 38,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 381,
+      "t": "plain",
+      "prop": "grid_oratar_1",
+      "x": 17,
+      "y": 39,
+      "region": "town",
+      "name": "山古志のみやげ処",
+      "area": "山古志"
+    },
+    {
+      "id": 382,
+      "t": "plain",
+      "prop": "grid_oratar_2",
+      "x": 18,
+      "y": 40,
+      "region": "town",
+      "name": "山古志の食堂",
+      "area": "山古志"
+    },
+    {
+      "id": 383,
+      "t": "yellow",
+      "x": 19,
+      "y": 40,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 384,
+      "t": "red",
+      "x": 20,
+      "y": 40,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 385,
+      "t": "plain",
+      "x": 21,
+      "y": 40,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 386,
+      "t": "red",
+      "x": 22,
+      "y": 40,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 387,
+      "t": "blue",
+      "x": 23,
+      "y": 40,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 388,
+      "t": "blue",
+      "x": 23,
+      "y": 39,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 389,
+      "t": "plain",
+      "prop": "g132",
+      "x": 24,
+      "y": 38,
+      "region": "town",
+      "name": "山古志の工房",
+      "area": "山古志"
+    },
+    {
+      "id": 390,
+      "t": "plain",
+      "prop": "g133",
+      "x": 25,
+      "y": 38,
+      "region": "town",
+      "name": "山古志のみやげ処",
+      "area": "山古志"
+    },
+    {
+      "id": 391,
+      "t": "red",
+      "x": 26,
+      "y": 38,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 392,
+      "t": "blue",
+      "x": 27,
+      "y": 38,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 393,
+      "t": "red",
+      "x": 27,
+      "y": 37,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 394,
+      "t": "plain",
+      "x": 27,
+      "y": 36,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 395,
+      "t": "red",
+      "x": 27,
+      "y": 35,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 396,
+      "t": "blue",
+      "x": 27,
+      "y": 34,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 397,
+      "t": "blue",
+      "x": 27,
+      "y": 33,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 398,
+      "t": "blue",
+      "x": 26,
+      "y": 32,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 399,
+      "t": "blue",
+      "x": 25,
+      "y": 32,
+      "region": "town",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 400,
+      "t": "red",
+      "x": 24,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 401,
+      "t": "plain",
+      "x": 23,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 402,
+      "t": "red",
+      "x": 22,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 403,
+      "t": "blue",
+      "x": 21,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 404,
+      "t": "red",
+      "x": 20,
+      "y": 32,
+      "region": "hill",
+      "name": "",
+      "area": "山古志"
+    },
+    {
+      "id": 405,
+      "t": "plain",
+      "prop": "g135",
+      "x": 19,
+      "y": 27,
+      "region": "town",
+      "name": "よもぎ平のみやげ処",
+      "area": "よもぎ平"
+    },
+    {
+      "id": 406,
+      "t": "plain",
+      "prop": "grid_aoshiba_1",
+      "x": 20,
+      "y": 13,
+      "region": "town",
+      "name": "悠久山の食堂",
+      "area": "悠久山"
+    },
+    {
+      "id": 407,
+      "t": "plain",
+      "prop": "grid_aoshiba_2",
+      "x": 21,
+      "y": 13,
+      "region": "town",
+      "name": "悠久山の工房",
+      "area": "悠久山"
+    },
+    {
+      "id": 408,
+      "t": "blue",
+      "x": 22,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 409,
+      "t": "red",
+      "x": 23,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 410,
+      "t": "plain",
+      "x": 24,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 411,
+      "t": "red",
+      "x": 25,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 412,
+      "t": "red",
+      "x": 26,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 413,
+      "t": "red",
+      "x": 27,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 414,
+      "t": "yellow",
+      "x": 28,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 415,
+      "t": "plain",
+      "x": 29,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 416,
+      "t": "blue",
+      "x": 30,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 417,
+      "t": "red",
+      "x": 31,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 418,
+      "t": "blue",
+      "x": 32,
+      "y": 13,
+      "region": "hill",
+      "name": "",
+      "area": "悠久山"
+    },
+    {
+      "id": 419,
+      "t": "red",
+      "x": 32,
+      "y": 12,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 420,
+      "t": "plain",
+      "x": 32,
+      "y": 11,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 421,
+      "t": "red",
+      "x": 32,
+      "y": 10,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 422,
+      "t": "red",
+      "x": 32,
+      "y": 9,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 423,
+      "t": "red",
+      "x": 32,
+      "y": 8,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 424,
+      "t": "yellow",
+      "x": 32,
+      "y": 7,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 425,
+      "t": "plain",
+      "x": 32,
+      "y": 6,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 426,
+      "t": "blue",
+      "x": 32,
+      "y": 5,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 427,
+      "t": "red",
+      "x": 32,
+      "y": 4,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 428,
+      "t": "blue",
+      "x": 32,
+      "y": 3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 429,
+      "t": "plain",
+      "prop": "g120",
+      "x": 32,
+      "y": 2,
+      "region": "town",
+      "name": "栃尾のみやげ処",
+      "area": "栃尾"
+    },
+    {
+      "id": 430,
+      "t": "red",
+      "x": 32,
+      "y": 1,
+      "region": "town",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 431,
+      "t": "red",
+      "x": 31,
+      "y": 0,
+      "region": "town",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 432,
+      "t": "plain",
+      "prop": "g121",
+      "x": 30,
+      "y": 0,
+      "region": "town",
+      "name": "栃尾のみやげ処",
+      "area": "栃尾"
+    },
+    {
+      "id": 433,
+      "t": "red",
+      "x": 30,
+      "y": -1,
+      "region": "town",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 434,
+      "t": "plain",
+      "prop": "g140",
+      "x": 30,
+      "y": -2,
+      "region": "town",
+      "name": "栃尾の工房",
+      "area": "栃尾"
+    },
+    {
+      "id": 435,
+      "t": "plain",
+      "prop": "g141",
+      "x": 29,
+      "y": -3,
+      "region": "town",
+      "name": "栃尾のみやげ処",
+      "area": "栃尾"
+    },
+    {
+      "id": 436,
+      "t": "red",
+      "x": 28,
+      "y": -3,
+      "region": "town",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 437,
+      "t": "red",
+      "x": 27,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 438,
+      "t": "blue",
+      "x": 26,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 439,
+      "t": "red",
+      "x": 25,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 440,
+      "t": "blue",
+      "x": 24,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 441,
+      "t": "plain",
+      "x": 23,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 442,
+      "t": "yellow",
+      "x": 22,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 443,
+      "t": "red",
+      "x": 21,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 444,
+      "t": "red",
+      "x": 20,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 445,
+      "t": "red",
+      "x": 19,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 446,
+      "t": "plain",
+      "x": 18,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 447,
+      "t": "red",
+      "x": 17,
+      "y": -3,
+      "region": "hill",
+      "name": "",
+      "area": "栃尾"
+    },
+    {
+      "id": 448,
+      "t": "blue",
+      "x": 16,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 449,
+      "t": "red",
+      "x": 15,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 450,
+      "t": "blue",
+      "x": 14,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 451,
+      "t": "plain",
+      "x": 13,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 452,
+      "t": "blue",
+      "x": 12,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 453,
+      "t": "plain",
+      "x": 11,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 454,
+      "t": "blue",
+      "x": 10,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 455,
+      "t": "yellow",
+      "x": 9,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 456,
+      "t": "blue",
+      "x": 8,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 457,
+      "t": "blue",
+      "x": 7,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 458,
+      "t": "red",
+      "x": 5,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 459,
+      "t": "plain",
+      "prop": "grid_kinpu_2",
+      "x": 4,
+      "y": -3,
+      "region": "town",
+      "name": "蔵王のみやげ処",
+      "area": "蔵王"
+    },
+    {
+      "id": 460,
+      "t": "plain",
+      "x": 3,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 461,
+      "t": "blue",
+      "x": 2,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 462,
+      "t": "plain",
+      "x": 1,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "蔵王"
+    },
+    {
+      "id": 463,
+      "t": "blue",
+      "x": 0,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 464,
+      "t": "yellow",
+      "x": -1,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 465,
+      "t": "blue",
+      "x": -2,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 466,
+      "t": "blue",
+      "x": -3,
+      "y": -3,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 467,
+      "t": "yellow",
+      "x": -4,
+      "y": -3,
+      "region": "town",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 468,
+      "t": "plain",
+      "prop": "grid_kome100_2",
+      "x": -5,
+      "y": -3,
+      "region": "town",
+      "name": "千秋のみやげ処",
+      "area": "千秋"
+    },
+    {
+      "id": 469,
+      "t": "plain",
+      "x": 1,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 470,
+      "t": "blue",
+      "x": 0,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 471,
+      "t": "yellow",
+      "x": -1,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 472,
+      "t": "blue",
+      "x": -2,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 473,
+      "t": "blue",
+      "x": -3,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 474,
+      "t": "blue",
+      "x": -4,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 475,
+      "t": "red",
+      "x": -5,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "まちなか"
+    },
+    {
+      "id": 476,
+      "t": "blue",
+      "x": -6,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "千秋"
+    },
+    {
+      "id": 477,
+      "t": "plain",
+      "x": -7,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 478,
+      "t": "blue",
+      "x": -8,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 479,
+      "t": "plain",
+      "x": -9,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 480,
+      "t": "blue",
+      "x": -10,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 481,
+      "t": "yellow",
+      "x": -11,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 482,
+      "t": "blue",
+      "x": -12,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 483,
+      "t": "blue",
+      "x": -13,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 484,
+      "t": "blue",
+      "x": -14,
+      "y": 7,
+      "region": "rural",
+      "name": "",
+      "area": "川西"
+    },
+    {
+      "id": 485,
+      "t": "plain",
+      "prop": "grid_umataka_3",
+      "x": -15,
+      "y": 7,
+      "region": "town",
+      "name": "川西の工房",
+      "area": "川西"
+    },
+    {
+      "id": 486,
+      "t": "plain",
+      "prop": "p07",
+      "x": 2,
+      "y": 22,
+      "region": "town",
+      "name": "摂田屋のみやげ処",
+      "area": "摂田屋"
+    },
+    {
+      "id": 487,
+      "t": "yellow",
+      "x": 1,
+      "y": 22,
+      "region": "town",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 488,
+      "t": "red",
+      "x": 0,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 489,
+      "t": "blue",
+      "x": -1,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 490,
+      "t": "plain",
+      "x": -2,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 491,
+      "t": "blue",
+      "x": -3,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 492,
+      "t": "plain",
+      "x": -4,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 493,
+      "t": "blue",
+      "x": -5,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 494,
+      "t": "yellow",
+      "x": -6,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 495,
+      "t": "blue",
+      "x": -7,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "摂田屋"
+    },
+    {
+      "id": 496,
+      "t": "blue",
+      "x": -8,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 497,
+      "t": "blue",
+      "x": -9,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 498,
+      "t": "red",
+      "x": -10,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 499,
+      "t": "blue",
+      "x": -11,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 500,
+      "t": "plain",
+      "x": -12,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 501,
+      "t": "blue",
+      "x": -13,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    },
+    {
+      "id": 502,
+      "t": "plain",
+      "x": -14,
+      "y": 22,
+      "region": "rural",
+      "name": "",
+      "area": "越路"
+    }
+  ],
+  "scenery": [
+    {
+      "x": 1,
+      "y": 2,
+      "region": "rural"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "region": "town"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "region": "town"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "region": "town"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "region": "town"
+    },
+    {
+      "x": 10,
+      "y": 8,
+      "region": "town"
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "region": "town"
+    },
+    {
+      "x": 8,
+      "y": 10,
+      "region": "town"
+    },
+    {
+      "x": 3,
+      "y": 12,
+      "region": "town"
+    },
+    {
+      "x": 6,
+      "y": 12,
+      "region": "rural"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "region": "rural"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "region": "town"
+    },
+    {
+      "x": 10,
+      "y": 5,
+      "region": "town"
+    },
+    {
+      "x": 11,
+      "y": 10,
+      "region": "rural"
+    },
+    {
+      "x": 14,
+      "y": 10,
+      "region": "rural"
+    },
+    {
+      "x": 13,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": 16,
+      "y": 8,
+      "region": "hill"
+    },
+    {
+      "x": 12,
+      "y": 12,
+      "region": "rural"
+    },
+    {
+      "x": 15,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 18,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 14,
+      "y": 13,
+      "region": "hill"
+    },
+    {
+      "x": 14,
+      "y": 16,
+      "region": "hill"
+    },
+    {
+      "x": 17,
+      "y": 16,
+      "region": "town"
+    },
+    {
+      "x": 16,
+      "y": 14,
+      "region": "town"
+    },
+    {
+      "x": 4,
+      "y": 23,
+      "region": "town"
+    },
+    {
+      "x": 4,
+      "y": 20,
+      "region": "town"
+    },
+    {
+      "x": 8,
+      "y": 25,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": 21,
+      "region": "town"
+    },
+    {
+      "x": -15,
+      "y": 9,
+      "region": "town"
+    },
+    {
+      "x": -16,
+      "y": 13,
+      "region": "town"
+    },
+    {
+      "x": 3,
+      "y": -6,
+      "region": "town"
+    },
+    {
+      "x": -12,
+      "y": -9,
+      "region": "town"
+    },
+    {
+      "x": -14,
+      "y": 26,
+      "region": "town"
+    },
+    {
+      "x": -9,
+      "y": 33,
+      "region": "town"
+    },
+    {
+      "x": 24,
+      "y": 39,
+      "region": "town"
+    },
+    {
+      "x": 26,
+      "y": 31,
+      "region": "town"
+    },
+    {
+      "x": 31,
+      "y": -1,
+      "region": "town"
+    },
+    {
+      "x": -9,
+      "y": -18,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": -33,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": -27,
+      "region": "town"
+    },
+    {
+      "x": -32,
+      "y": 38,
+      "region": "town"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "region": "town"
+    },
+    {
+      "x": 5,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": 7,
+      "y": -1,
+      "region": "rural"
+    },
+    {
+      "x": 5,
+      "y": -5,
+      "region": "town"
+    },
+    {
+      "x": 7,
+      "y": -4,
+      "region": "town"
+    },
+    {
+      "x": 4,
+      "y": -7,
+      "region": "town"
+    },
+    {
+      "x": 20,
+      "y": 16,
+      "region": "town"
+    },
+    {
+      "x": 8,
+      "y": 13,
+      "region": "rural"
+    },
+    {
+      "x": 8,
+      "y": 16,
+      "region": "rural"
+    },
+    {
+      "x": 6,
+      "y": 15,
+      "region": "rural"
+    },
+    {
+      "x": 8,
+      "y": 19,
+      "region": "town"
+    },
+    {
+      "x": 6,
+      "y": 18,
+      "region": "town"
+    },
+    {
+      "x": 5,
+      "y": 19,
+      "region": "town"
+    },
+    {
+      "x": 6,
+      "y": 21,
+      "region": "town"
+    },
+    {
+      "x": -7,
+      "y": -2,
+      "region": "town"
+    },
+    {
+      "x": -10,
+      "y": -5,
+      "region": "town"
+    },
+    {
+      "x": -9,
+      "y": -3,
+      "region": "town"
+    },
+    {
+      "x": -12,
+      "y": -6,
+      "region": "rural"
+    },
+    {
+      "x": -14,
+      "y": -10,
+      "region": "town"
+    },
+    {
+      "x": -13,
+      "y": -11,
+      "region": "town"
+    },
+    {
+      "x": -9,
+      "y": -9,
+      "region": "rural"
+    },
+    {
+      "x": -10,
+      "y": -11,
+      "region": "rural"
+    },
+    {
+      "x": -9,
+      "y": -12,
+      "region": "rural"
+    },
+    {
+      "x": -7,
+      "y": -11,
+      "region": "rural"
+    },
+    {
+      "x": -9,
+      "y": -15,
+      "region": "rural"
+    },
+    {
+      "x": -7,
+      "y": -14,
+      "region": "town"
+    },
+    {
+      "x": -13,
+      "y": -20,
+      "region": "town"
+    },
+    {
+      "x": -12,
+      "y": -18,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": -20,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": -18,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": -21,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": -24,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": -23,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": -26,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": -30,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": -29,
+      "region": "town"
+    },
+    {
+      "x": -20,
+      "y": -31,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": -18,
+      "region": "rural"
+    },
+    {
+      "x": -22,
+      "y": -20,
+      "region": "rural"
+    },
+    {
+      "x": -21,
+      "y": -18,
+      "region": "rural"
+    },
+    {
+      "x": -25,
+      "y": -20,
+      "region": "rural"
+    },
+    {
+      "x": -24,
+      "y": -18,
+      "region": "rural"
+    },
+    {
+      "x": -27,
+      "y": -18,
+      "region": "town"
+    },
+    {
+      "x": -30,
+      "y": -21,
+      "region": "town"
+    },
+    {
+      "x": -27,
+      "y": -21,
+      "region": "town"
+    },
+    {
+      "x": -31,
+      "y": -20,
+      "region": "town"
+    },
+    {
+      "x": -32,
+      "y": -19,
+      "region": "town"
+    },
+    {
+      "x": -31,
+      "y": -17,
+      "region": "town"
+    },
+    {
+      "x": -33,
+      "y": -18,
+      "region": "town"
+    },
+    {
+      "x": -30,
+      "y": -15,
+      "region": "town"
+    },
+    {
+      "x": -27,
+      "y": -15,
+      "region": "rural"
+    },
+    {
+      "x": -28,
+      "y": -17,
+      "region": "rural"
+    },
+    {
+      "x": -24,
+      "y": -15,
+      "region": "rural"
+    },
+    {
+      "x": -25,
+      "y": -17,
+      "region": "rural"
+    },
+    {
+      "x": -21,
+      "y": -15,
+      "region": "rural"
+    },
+    {
+      "x": -22,
+      "y": -17,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": -15,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": -22,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": -25,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": -28,
+      "region": "town"
+    },
+    {
+      "x": -13,
+      "y": -5,
+      "region": "rural"
+    },
+    {
+      "x": -12,
+      "y": -3,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": -5,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": -3,
+      "region": "rural"
+    },
+    {
+      "x": -17,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": 0,
+      "region": "rural"
+    },
+    {
+      "x": -17,
+      "y": -1,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": 3,
+      "region": "rural"
+    },
+    {
+      "x": -17,
+      "y": 2,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -17,
+      "y": 5,
+      "region": "town"
+    },
+    {
+      "x": -16,
+      "y": 10,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": 9,
+      "region": "town"
+    },
+    {
+      "x": -20,
+      "y": 11,
+      "region": "town"
+    },
+    {
+      "x": -18,
+      "y": 15,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 14,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 18,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 17,
+      "region": "town"
+    },
+    {
+      "x": -16,
+      "y": 19,
+      "region": "rural"
+    },
+    {
+      "x": -14,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": 22,
+      "region": "town"
+    },
+    {
+      "x": -11,
+      "y": 26,
+      "region": "rural"
+    },
+    {
+      "x": -11,
+      "y": 29,
+      "region": "town"
+    },
+    {
+      "x": -13,
+      "y": 28,
+      "region": "town"
+    },
+    {
+      "x": -13,
+      "y": 31,
+      "region": "town"
+    },
+    {
+      "x": -12,
+      "y": 33,
+      "region": "rural"
+    },
+    {
+      "x": -16,
+      "y": 31,
+      "region": "rural"
+    },
+    {
+      "x": -15,
+      "y": 33,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 33,
+      "region": "rural"
+    },
+    {
+      "x": -22,
+      "y": 31,
+      "region": "rural"
+    },
+    {
+      "x": -21,
+      "y": 33,
+      "region": "rural"
+    },
+    {
+      "x": -25,
+      "y": 31,
+      "region": "rural"
+    },
+    {
+      "x": -24,
+      "y": 33,
+      "region": "hill"
+    },
+    {
+      "x": -28,
+      "y": 31,
+      "region": "hill"
+    },
+    {
+      "x": -27,
+      "y": 33,
+      "region": "hill"
+    },
+    {
+      "x": -29,
+      "y": 32,
+      "region": "hill"
+    },
+    {
+      "x": -27,
+      "y": 36,
+      "region": "hill"
+    },
+    {
+      "x": -29,
+      "y": 35,
+      "region": "hill"
+    },
+    {
+      "x": -27,
+      "y": 39,
+      "region": "hill"
+    },
+    {
+      "x": -29,
+      "y": 38,
+      "region": "hill"
+    },
+    {
+      "x": -27,
+      "y": 42,
+      "region": "town"
+    },
+    {
+      "x": -29,
+      "y": 41,
+      "region": "town"
+    },
+    {
+      "x": -30,
+      "y": 42,
+      "region": "town"
+    },
+    {
+      "x": -29,
+      "y": 44,
+      "region": "town"
+    },
+    {
+      "x": -32,
+      "y": 44,
+      "region": "hill"
+    },
+    {
+      "x": -34,
+      "y": 40,
+      "region": "hill"
+    },
+    {
+      "x": -32,
+      "y": 41,
+      "region": "hill"
+    },
+    {
+      "x": -34,
+      "y": 37,
+      "region": "town"
+    },
+    {
+      "x": -33,
+      "y": 36,
+      "region": "town"
+    },
+    {
+      "x": -30,
+      "y": 36,
+      "region": "hill"
+    },
+    {
+      "x": -26,
+      "y": 38,
+      "region": "hill"
+    },
+    {
+      "x": -23,
+      "y": 38,
+      "region": "hill"
+    },
+    {
+      "x": -24,
+      "y": 36,
+      "region": "hill"
+    },
+    {
+      "x": -20,
+      "y": 38,
+      "region": "hill"
+    },
+    {
+      "x": -21,
+      "y": 36,
+      "region": "hill"
+    },
+    {
+      "x": -20,
+      "y": 35,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 36,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 29,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 30,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 26,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 27,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -18,
+      "y": 24,
+      "region": "rural"
+    },
+    {
+      "x": -20,
+      "y": 20,
+      "region": "town"
+    },
+    {
+      "x": 20,
+      "y": 19,
+      "region": "hill"
+    },
+    {
+      "x": 18,
+      "y": 18,
+      "region": "hill"
+    },
+    {
+      "x": 20,
+      "y": 22,
+      "region": "hill"
+    },
+    {
+      "x": 18,
+      "y": 21,
+      "region": "hill"
+    },
+    {
+      "x": 20,
+      "y": 25,
+      "region": "town"
+    },
+    {
+      "x": 18,
+      "y": 24,
+      "region": "town"
+    },
+    {
+      "x": 17,
+      "y": 25,
+      "region": "town"
+    },
+    {
+      "x": 18,
+      "y": 27,
+      "region": "town"
+    },
+    {
+      "x": 16,
+      "y": 26,
+      "region": "town"
+    },
+    {
+      "x": 20,
+      "y": 31,
+      "region": "hill"
+    },
+    {
+      "x": 18,
+      "y": 30,
+      "region": "hill"
+    },
+    {
+      "x": 20,
+      "y": 34,
+      "region": "town"
+    },
+    {
+      "x": 18,
+      "y": 33,
+      "region": "town"
+    },
+    {
+      "x": 17,
+      "y": 34,
+      "region": "town"
+    },
+    {
+      "x": 18,
+      "y": 36,
+      "region": "town"
+    },
+    {
+      "x": 16,
+      "y": 35,
+      "region": "hill"
+    },
+    {
+      "x": 18,
+      "y": 39,
+      "region": "town"
+    },
+    {
+      "x": 16,
+      "y": 38,
+      "region": "town"
+    },
+    {
+      "x": 19,
+      "y": 41,
+      "region": "town"
+    },
+    {
+      "x": 22,
+      "y": 41,
+      "region": "hill"
+    },
+    {
+      "x": 21,
+      "y": 39,
+      "region": "hill"
+    },
+    {
+      "x": 22,
+      "y": 38,
+      "region": "town"
+    },
+    {
+      "x": 23,
+      "y": 37,
+      "region": "town"
+    },
+    {
+      "x": 27,
+      "y": 39,
+      "region": "hill"
+    },
+    {
+      "x": 26,
+      "y": 37,
+      "region": "hill"
+    },
+    {
+      "x": 28,
+      "y": 38,
+      "region": "hill"
+    },
+    {
+      "x": 26,
+      "y": 34,
+      "region": "hill"
+    },
+    {
+      "x": 28,
+      "y": 35,
+      "region": "town"
+    },
+    {
+      "x": 23,
+      "y": 31,
+      "region": "hill"
+    },
+    {
+      "x": 24,
+      "y": 33,
+      "region": "hill"
+    },
+    {
+      "x": 21,
+      "y": 33,
+      "region": "hill"
+    },
+    {
+      "x": 20,
+      "y": 28,
+      "region": "town"
+    },
+    {
+      "x": 22,
+      "y": 14,
+      "region": "town"
+    },
+    {
+      "x": 21,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 25,
+      "y": 14,
+      "region": "hill"
+    },
+    {
+      "x": 24,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 28,
+      "y": 14,
+      "region": "hill"
+    },
+    {
+      "x": 27,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 31,
+      "y": 14,
+      "region": "hill"
+    },
+    {
+      "x": 30,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 31,
+      "y": 11,
+      "region": "hill"
+    },
+    {
+      "x": 33,
+      "y": 12,
+      "region": "hill"
+    },
+    {
+      "x": 31,
+      "y": 8,
+      "region": "hill"
+    },
+    {
+      "x": 33,
+      "y": 9,
+      "region": "hill"
+    },
+    {
+      "x": 31,
+      "y": 5,
+      "region": "hill"
+    },
+    {
+      "x": 33,
+      "y": 6,
+      "region": "hill"
+    },
+    {
+      "x": 31,
+      "y": 2,
+      "region": "hill"
+    },
+    {
+      "x": 33,
+      "y": 3,
+      "region": "town"
+    },
+    {
+      "x": 29,
+      "y": -2,
+      "region": "town"
+    },
+    {
+      "x": 28,
+      "y": -4,
+      "region": "town"
+    },
+    {
+      "x": 25,
+      "y": -4,
+      "region": "hill"
+    },
+    {
+      "x": 26,
+      "y": -2,
+      "region": "hill"
+    },
+    {
+      "x": 22,
+      "y": -4,
+      "region": "hill"
+    },
+    {
+      "x": 23,
+      "y": -2,
+      "region": "hill"
+    },
+    {
+      "x": 19,
+      "y": -4,
+      "region": "hill"
+    },
+    {
+      "x": 20,
+      "y": -2,
+      "region": "hill"
+    },
+    {
+      "x": 16,
+      "y": -4,
+      "region": "hill"
+    },
+    {
+      "x": 17,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": 13,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": 14,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": 10,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": 11,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": 8,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": 4,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": 1,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": 2,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": -2,
+      "y": -4,
+      "region": "rural"
+    },
+    {
+      "x": -1,
+      "y": -2,
+      "region": "rural"
+    },
+    {
+      "x": -5,
+      "y": -4,
+      "region": "town"
+    },
+    {
+      "x": -4,
+      "y": -2,
+      "region": "town"
+    },
+    {
+      "x": 0,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -3,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -2,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": -6,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -5,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": -9,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -8,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": -12,
+      "y": 6,
+      "region": "rural"
+    },
+    {
+      "x": -11,
+      "y": 8,
+      "region": "rural"
+    },
+    {
+      "x": -14,
+      "y": 8,
+      "region": "town"
+    },
+    {
+      "x": 0,
+      "y": 21,
+      "region": "town"
+    },
+    {
+      "x": 1,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -3,
+      "y": 21,
+      "region": "rural"
+    },
+    {
+      "x": -2,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -6,
+      "y": 21,
+      "region": "rural"
+    },
+    {
+      "x": -5,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -9,
+      "y": 21,
+      "region": "rural"
+    },
+    {
+      "x": -8,
+      "y": 23,
+      "region": "rural"
+    },
+    {
+      "x": -12,
+      "y": 21,
+      "region": "rural"
+    },
+    {
+      "x": -11,
+      "y": 23,
+      "region": "rural"
+    }
+  ],
+  "districts": [
+    {
+      "x": 7,
+      "y": 5,
+      "name": "駅前"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "name": "まちなか"
+    },
+    {
+      "x": 17,
+      "y": 13,
+      "name": "悠久山"
+    },
+    {
+      "x": 3,
+      "y": 20,
+      "name": "摂田屋"
+    },
+    {
+      "x": -6,
+      "y": -5,
+      "name": "千秋"
+    },
+    {
+      "x": -19,
+      "y": 18,
+      "name": "川西"
+    },
+    {
+      "x": 6,
+      "y": -8,
+      "name": "蔵王"
+    },
+    {
+      "x": -13,
+      "y": -12,
+      "name": "三島"
+    },
+    {
+      "x": -15,
+      "y": 23,
+      "name": "越路"
+    },
+    {
+      "x": 17,
+      "y": 26,
+      "name": "よもぎ平"
+    },
+    {
+      "x": 23,
+      "y": 36,
+      "name": "山古志"
+    },
+    {
+      "x": 32,
+      "y": -2,
+      "name": "栃尾"
+    },
+    {
+      "x": -8,
+      "y": -19,
+      "name": "与板"
+    },
+    {
+      "x": -17,
+      "y": -34,
+      "name": "寺泊"
+    },
+    {
+      "x": -28,
+      "y": -22,
+      "name": "出雲崎"
+    },
+    {
+      "x": -28,
+      "y": 41,
+      "name": "小国"
+    }
+  ]
+}
