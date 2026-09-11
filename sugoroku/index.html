@@ -28,6 +28,14 @@
   .fork{position:absolute;width:56px;height:56px;border-radius:50%;background:#3b6fb6;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);border:3px solid #fff;padding:0;z-index:4;animation:pulse 1s infinite alternate}
   .fork.dest{background:#d9552f}
   @keyframes pulse{from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-50%) scale(1.12)}}
+  #artPop{position:absolute;left:12px;right:12px;top:110px;z-index:6;display:none;pointer-events:auto;text-align:center}
+  #artPop img{max-width:100%;max-height:36vh;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);background:#fff}
+  #artPop .cap{display:inline-block;margin-top:6px;padding:6px 12px;border-radius:12px;background:rgba(255,255,255,.94);color:#2a2118;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  #artPop.show{animation:artIn .28s ease-out}
+  @keyframes artIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+  .cardimg{width:44px;height:64px;object-fit:cover;border-radius:6px;flex:0 0 auto;margin-right:8px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+  #hand > button{position:relative;padding-left:34px}
+  #hand > button .himg{position:absolute;left:4px;top:50%;transform:translateY(-50%);width:24px;height:34px;object-fit:cover;border-radius:4px}
   #snd{position:absolute;right:12px;top:72px;width:40px;height:40px;border-radius:50%;background:#fffdf7;border:2px solid #e6dcc6;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;color:#2a2118}
 </style><link rel="stylesheet" href="kintsugi-repair.css"></head>
 <body><div id="wrap">
@@ -35,6 +43,7 @@
 <div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"><span id="destTxt"></span><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div></div>
 <div id="arrow">🎯</div>
+<div id="artPop"><img id="artImg" alt=""><br><span class="cap" id="artCap"></span></div>
 <video id="diceVid" playsinline muted preload="auto" style="position:absolute;left:50%;top:42%;width:62vw;max-width:330px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:4"></video>
 <button id="snd" title="音">🔈</button>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
@@ -55,6 +64,7 @@
    ・サイコロ 60分に1回・3回まで貯まる／分かれ道で行き先を選ぶ／目的地（探検録のスポット）に着くとご褒美→次の目的地
    ・青=もらう 赤=払う 黄=カード（仮） 紫=イベント（仮） 緑=目的地 橙=物件（買える・自分のに止まると売上）
    ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
+const D04_MODE = typeof location !== "undefined" && (new URLSearchParams(location.search).get("mode") === "d04" || new URLSearchParams(location.search).has("match") || new URLSearchParams(location.search).get("emu") === "1");
 const B = BOARD_DATA; const R = B.rules; R.freeDice = true;   /* テスト期間: サイコロ制限なし（masa 2026-09-11） */ const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
 B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
@@ -73,11 +83,12 @@ const TURNS_PER_YEAR = 36;   // 1か月＝3手番・1年＝36手番（仕様 §3
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
 const RIVALS = [{ id: "kon", name: "コン", icon: "🦊" }, { id: "kabuto", name: "愛の兜", icon: "⛑️" }, { id: "ryokan", name: "良寛さん", icon: "🧘" }];   // CPUの旅人（探検録の顔ぶれ）
 const newRivals = () => RIVALS.map(r => ({ id: r.id, pos: START, prev: null, money: R.startMoney, owned: [], dest: null, reached: 0 }));
-let S = load() || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
+let S = (!D04_MODE && load()) || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
 if (!S.rivals) { S.rivals = newRivals(); S.cards = S.cards || []; S.skip = 0; }
 /* ---- 共有盤面（Firestore）---- */
 let FB = null, UID = null, OTHERS = {}, PROPS = {}, GAME = null;   // GAME: 正本 sugoroku_games/main   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
-try { firebase.initializeApp({ apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" }); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); }
+const FIREBASE_OPTIONS = { apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" };
+if (!D04_MODE) { try { firebase.initializeApp(FIREBASE_OPTIONS); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); } }
 const ownerOf = pid => S.owned.includes(pid) ? "you" : (PROPS[pid] && PROPS[pid].owner && PROPS[pid].owner !== UID) ? "p:" + PROPS[pid].owner : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
 const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((OTHERS[o.slice(2)] || {}).name || "旅人") : ((RIVALS.find(r => r.id === o) || {}).name || "");
 async function cloudStart(preferLocal = false) { if (!FB) return; try {
@@ -97,7 +108,7 @@ function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTim
 /* 物件を買う: 早い者勝ちをトランザクションで */
 async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; if (e && e.code === "permission-denied") { console.warn("cloudBuy: ルール未設定→端末側で成立"); return true; } $("msg").textContent = "いまはつながらないので買えません（オンラインで再度）"; return false; } }   // ルール未設定・オフラインは端末側で成立させる
 function compat() { if (S.kome === true) S.kome = 3; if (S.destCount === undefined && S.reached > 0) S.destCount = S.reached; } compat();   /* 旧データ互換（クラウド読み込み後にも） */
-const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
+const save = () => { if (D04_MODE) return; localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 /* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
 let pendingGame = null;
 function applyGame(g) { if (!g || S.finalResults) return; GAME = g; if (busy || S.turnFlow || rouletteQueued || $("card").style.display === "block") { pendingGame = g; return; } pendingGame = null;
@@ -295,11 +306,11 @@ async function resolveCardArrival() {
 /* ---- ライバル（CPU）: プレイヤーが振るたびに1〜6歩。分岐は目的地に近づく方へ。物件に止まると買う ---- */
 /* ゆきんこ（貧乏神役）: 到着の瞬間、目的地から最も遠い旅人へ。毎手番いたずら。同じマスに止まるとなすりつけ */
 const WHO = () => [{ id: "you", pos: S.pos }].concat(S.rivals.map(r => ({ id: r.id, pos: r.pos })));
-function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; FX.character("yukinko", far); if (far === "you") { if (S.guard) { S.guard = false; S.yukinko = null; $("msg").textContent += "　🛡 守りカードがゆきんこを追い払った！"; } else $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; } }
+function attachYukinko() { const d = S.dest; let far = null, fd = -1; WHO().forEach(w => { const h = hops(w.pos, d); if (h > fd) { fd = h; far = w.id; } }); S.yukinko = far; FX.character("yukinko", far); if (far === "you") { if (S.guard) { S.guard = false; S.yukinko = null; $("msg").textContent += "　🛡 守りカードがゆきんこを追い払った！"; showArt("yukinko_4.png", "🛡 ゆきんこを追い払った！", 2000); } else $("msg").textContent += "　❄ ゆきんこがあなたに憑いた！"; } }
 function yukinkoAct() { if (!S.yukinko) return; const acts = ["spend", "sell", "card"]; const a = acts[Math.floor(Math.random() * acts.length)];
   if (S.yukinko === "you") { if (S.phoenix) { S.phoenix = 0; $("msg").textContent += "　❄ ゆきんこのいたずらをフェニックスカードが防いだ"; }
-    else if (a === "spend" || !S.owned.length && !S.cards.length) { const v = pay(Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15)))); $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; }
-    else if (a === "sell" && S.owned.length) { S.owned.sort((x, y) => pv(y).price - pv(x).price); const id = S.owned.splice(0, 1)[0]; S.money += Math.round(pv(id).price * 0.5); cloudRelease(id); $("msg").textContent += `　❄ ゆきんこが ${pv(id).name} を半値で売り払った`; }
+    else if (a === "spend" || !S.owned.length && !S.cards.length) { const v = pay(Math.max(50, Math.round(Math.max(0, S.money) * (0.1 + Math.random() * 0.15)))); $("msg").textContent += `　❄ ゆきんこが ${v}万両 を使い込んだ`; showArt("yukinko_2.png", `❄ ゆきんこが ${v}万両 を使い込んだ`, 2000); }
+    else if (a === "sell" && S.owned.length) { S.owned.sort((x, y) => pv(y).price - pv(x).price); const id = S.owned.splice(0, 1)[0]; S.money += Math.round(pv(id).price * 0.5); cloudRelease(id); $("msg").textContent += `　❄ ゆきんこが ${pv(id).name} を半値で売り払った`; showArt("yukinko_3.png", `❄ ${pv(id).name} を売り払われた！`, 2200); }
     else if (S.cards.length) { const id = S.cards.splice(Math.floor(Math.random() * S.cards.length), 1)[0]; const c = CARDS.find(x => x.id === id); $("msg").textContent += `　❄ ゆきんこが ${c ? c.name : "カード"} を捨てた`; } }
   else { const r = S.rivals.find(x => x.id === S.yukinko); if (!r) return; if (a === "sell" && r.owned.length) { const id = r.owned.splice(Math.floor(Math.random() * r.owned.length), 1)[0]; r.money += Math.round(pv(id).price * 0.5); } else r.money = Math.max(0, r.money - 60); }
   /* なすりつけ: ゆきんこ持ちと同じマスにいる旅人へ */
@@ -328,12 +339,12 @@ const CARDS = [
   { id: "tokkyu", price: 300, name: "特急カード", desc: "次のサイコロを3個振れる", use: () => { S.triple = true; } },
   { id: "buttobi", price: 600, name: "ぶっとびカード", desc: "目的地の近く（2〜4マス）まで一気に飛ぶ", use: () => { if (!S.dest) return; const d = distFrom(S.dest); const c = Object.keys(d).filter(k => d[k] >= 2 && d[k] <= 4).map(Number); if (c.length) { S.pos = c[Math.floor(Math.random() * c.length)]; S.prev = null; cam = { ...P[S.pos] }; draw(); } } },
   { id: "godatsu", price: 250, name: "強奪カード", desc: "いちばん金持ちのライバルから200万両", use: () => { const r = S.rivals.slice().sort((a, b) => b.money - a.money)[0]; const v = Math.min(200, Math.max(0, r.money)); r.money -= v; S.money += v; } },
-  { id: "mamori", price: 150, name: "守りカード", desc: "ゆきんこを1回だけ追い払う（憑かれた後でも）", use: () => { if (S.yukinko === "you") { S.yukinko = null; $("msg").textContent = "🛡 ゆきんこを追い払った！"; } else S.guard = true; } },
+  { id: "mamori", price: 150, name: "守りカード", desc: "ゆきんこを1回だけ追い払う（憑かれた後でも）", use: () => { if (S.yukinko === "you") { S.yukinko = null; $("msg").textContent = "🛡 ゆきんこを追い払った！"; showArt("yukinko_4.png", "🛡 ゆきんこを追い払った！", 2000); } else S.guard = true; } },
 ];
 const HAND_MAX = 8;
-function giveCard() { const c = CARDS[Math.floor(Math.random() * CARDS.length)]; if (S.cards.length >= HAND_MAX) { $("msg").textContent = `黄マス。でも手札がいっぱい（${HAND_MAX}枚まで）。`; return; } S.cards.push(c.id); $("msg").textContent = `黄マス。${c.name} を手に入れた！（${c.desc}）`; }
+function giveCard() { const c = CARDS[Math.floor(Math.random() * CARDS.length)]; if (S.cards.length < HAND_MAX) showArt(`card_${c.id}.png`, `🃏 ${c.name} を手に入れた！`, 2000); if (S.cards.length >= HAND_MAX) { $("msg").textContent = `黄マス。でも手札がいっぱい（${HAND_MAX}枚まで）。`; return; } S.cards.push(c.id); $("msg").textContent = `黄マス。${c.name} を手に入れた！（${c.desc}）`; }
 /* カード売り場: 100万両で1枚（借金してでも買える） */
-function cardShop() { if (S.finalResults) return; if (S.turnFlow) S.turnFlow.shop = {type: "cards"}; $("cTitle").textContent = "🃏 カード売り場"; $("cBody").innerHTML = ""; const box = $("cBody"); CARDS.forEach(c => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<span>${c.name}<br><small>${c.desc}</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; const price = c.price || 100; b.textContent = price + "万両"; b.disabled = S.cards.length >= HAND_MAX || S.money - price < DEBT_MIN; b.onclick = () => { if (S.finalResults || S.cards.length >= HAND_MAX || S.money - price < DEBT_MIN) return; pay(price); S.cards.push(c.id); $("msg").textContent = `${c.name} を買った。`; save(); hud(); closeCard(); }; row.appendChild(b); box.appendChild(row); });
+function cardShop() { if (S.finalResults) return; if (S.turnFlow) S.turnFlow.shop = {type: "cards"}; $("cTitle").textContent = "🃏 カード売り場"; $("cBody").innerHTML = ""; const box = $("cBody"); CARDS.forEach(c => { const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"; row.innerHTML = `<img class="cardimg" src="${ART}card_${c.id}.png" alt=""><span style="flex:1 1 auto">${c.name}<br><small>${c.desc}</small></span>`; const b = document.createElement("button"); b.style.cssText = "flex:0 0 auto;padding:8px 12px;font-size:14px"; const price = c.price || 100; b.textContent = price + "万両"; b.disabled = S.cards.length >= HAND_MAX || S.money - price < DEBT_MIN; b.onclick = () => { if (S.finalResults || S.cards.length >= HAND_MAX || S.money - price < DEBT_MIN) return; pay(price); S.cards.push(c.id); $("msg").textContent = `${c.name} を買った。`; save(); hud(); closeCard(); }; row.appendChild(b); box.appendChild(row); });
   $("cBuy").style.display = "none"; $("cSkip").textContent = "閉じる"; $("cSkip").onclick = closeCard; $("card").style.display = "block"; }
 function useCard(idx) { if (busy || S.turnFlow || isFinished() || rouletteQueued || $("card").style.display === "block") return; const c = CARDS.find(x => x.id === S.cards[idx]); if (!c) return; c.use(); S.cards.splice(idx, 1); $("msg").textContent = `${c.name} を使った。${c.desc}`; save(); hud(); if (c.id === "buttobi") { closeCard(); busy = true; setTimeout(resolveCardArrival, 300); } }
 /* ---- 紫マスの長岡イベント ---- */
@@ -350,7 +361,7 @@ const EVENTS = [
   { name: "闘牛", text: "牛の角突きに賭けた。{v}万両", f: () => { const w = Math.random() < 0.5; if (w) { S.money += 200; return 200; } return -pay(100); } },
   { name: "良寛さんに会う", text: "所持金の1割を分けた（{v}万両）。次の青マスで倍になって返ってくる", f: () => { const v = Math.round(Math.max(0, S.money) * 0.1); S.money -= v; S.ryokan = v * 2; return -v; } },
 ];
-let runEvent = function () { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; }
+let runEvent = function () { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; const k = EVENT_ART[e.name]; if (k) showArt(`event_${k}.png`, `🎆 ${e.name}`, 2400); }
 const pv = id => B.properties.find(q => q.id === id);
 const rpay = (r, v) => { const before = r.money; r.money = Math.max(-1000, r.money - v); return before - r.money; };   // ライバルも同じ下限
 const DEBT_MIN = -1000; const pay = v => { const before = S.money; S.money = Math.max(DEBT_MIN, S.money - v); return before - S.money; };   // 実際に払えた額
@@ -383,8 +394,17 @@ function playDice(n) { return new Promise(res => { const v = $("diceVid"); if (!
 function preloadDice() { try { [1, 2, 3, 4, 5, 6].forEach(n => { const l = document.createElement("link"); l.rel = "preload"; l.as = "video"; l.href = diceSrc(n); document.head.appendChild(l); }); } catch (e) {} }
 /* 絵と音の差し込み口（いまは空。image2.5 の一枚絵・Suno の短尺・H3 の演出をここから） */
 const FX = { scene: (type, node) => {}, moveStart: (a, b) => {}, moveStep: (p) => {}, moveEnd: (b) => {}, destReveal: (dest) => {}, character: (who, target) => {} };
+/* ---- 絵の層（masa の絵・2026-09-11）。順番に出して、時間経過かタップで閉じる ---- */
+const ART = "assets/art/cells/"; const artQ = []; let artBusy = false;
+function showArt(src, caption, ms) { artQ.push({ src, caption, ms: ms || 2200 }); if (!artBusy) nextArt(); }
+function nextArt() { const it = artQ.shift(); if (!it) { artBusy = false; $("artPop").style.display = "none"; return; } artBusy = true; const im = $("artImg"); im.onerror = () => { $("artPop").style.display = "none"; setTimeout(nextArt, 0); }; im.onload = () => { $("artPop").style.display = "block"; $("artPop").classList.remove("show"); void $("artPop").offsetWidth; $("artPop").classList.add("show"); }; im.src = ART + it.src; $("artCap").textContent = it.caption || ""; clearTimeout(nextArt._t); nextArt._t = setTimeout(nextArt, it.ms); }
+$("artPop").onclick = () => { clearTimeout(nextArt._t); nextArt(); };
+const destArt = n => { const st = n && n.station; return st ? `dest_${st}.png` : null; };
+const EVENT_ART = { "長岡花火": "hanabi", "豪雪": "gosetsu", "摂田屋の蔵開き": "kuraberaki", "山古志の棚田仕事": "tanada_work", "寺泊の浜焼き行列": "hamayaki", "アオーレの催事": "aore_event", "柿川ライトアップ": "kakigawa_light", "雲海": "unkai", "灯籠流し": "tourou", "闘牛": "togyu", "良寛さんに会う": "ryokan_meet" };
+FX.destReveal = dest => { const n = byId[dest]; const a = destArt(n); if (a) showArt(a, `🎡 つぎの目的地は ${stName(n)}`, 2600); };
+FX.character = (who, target) => { if (who === "yukinko" && target === "you") showArt("yukinko_1.png", "❄ ゆきんこが憑いた！", 2200); };
 function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : null; FX.scene(S.pos === S.dest ? "dest" : n.t, n);
-  if (S.pos === S.dest && !rouletteQueued) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; attachYukinko(); queueDestination(); }
+  if (S.pos === S.dest && !rouletteQueued) { const bonus = S.destBonus || destBonus(0); S.money += bonus; S.reached++; $("msg").textContent = `🎯 目的地 ${stName(n)} に到着！ 援助金 +${bonus}万両`; { const a = destArt(n); if (a) showArt(a, `🎯 ${stName(n)} に到着！ +${bonus}万両`, 3000); } attachYukinko(); queueDestination(); }
   const owner = prop ? ownerOf(prop.id) : null;
   if (prop && owner && owner !== "you") { const toll = pay(income(prop, owner)); const rv = S.rivals.find(r => r.id === owner); if (rv) rv.money += toll; $("msg").textContent = `${ownerName(owner)} の ${prop.name}。通行料 −${toll}万両`; return; }
   if (prop) { const list = stationProps(prop.station).filter(q => !ownerOf(q.id)); if (list.length) { showShop(prop.station, list); return; } }
@@ -404,7 +424,7 @@ function arrive() { const n = byId[S.pos]; const prop = n.prop ? pv(n.prop) : nu
   else if (n.t === "dest") { $("msg").textContent = `${stName(n)}（${n.area || ""}）を通過。`; }
 }
 /* 3月の決算（年の最後の手番）: 物件収益 − 借金の利子。年末の順位発表 */
-function settlement() { if (S.turn <= 0 || S.turn % TURNS_PER_YEAR !== 0 || (S.localSettledTurn || 0) >= S.turn || S.finalResults) return; S.localSettledTurn = S.turn; const yr = yearNow() - 1; const already = (S.settledYear || 0) >= yr; const y = already ? 0 : S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); let msg = `📒 ${yr}年目の3月決算: 物件 +${y}万両` + (already ? "（みんなの決算で受け取り済み）" : ""); S.money += y; S.settledYear = Math.max(S.settledYear || 0, yr); cloudSettle(yr);
+function settlement() { if (S.turn <= 0 || S.turn % TURNS_PER_YEAR !== 0 || (S.localSettledTurn || 0) >= S.turn || S.finalResults) return; S.localSettledTurn = S.turn; const yr = yearNow() - 1; const already = (S.settledYear || 0) >= yr; const y = already ? 0 : S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); showArt("settle.png", `📒 ${yr}年目の3月決算`, 2600); let msg = `📒 ${yr}年目の3月決算: 物件 +${y}万両` + (already ? "（みんなの決算で受け取り済み）" : ""); S.money += y; S.settledYear = Math.max(S.settledYear || 0, yr); cloudSettle(yr);
   if (S.money < 0) { const i = pay(Math.round(-S.money * 0.1)); msg += `　借金の利子 −${i}万両`; }
   S.rivals.forEach(r => { r.money += r.owned.reduce((a, id) => a + income(pv(id), r.id), 0); });
   const rows = [{ name: "あなた", total: total() }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total);
@@ -422,7 +442,7 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
   const step = () => { const [t, b] = INTRO[i]; $("iTitle").textContent = t; $("iBody").textContent = b; const last = i === INTRO.length - 1; $("iName").style.display = last ? "block" : "none"; $("iNext").textContent = last ? "出発！" : "つぎへ"; };
   $("iNext").onclick = () => { if (i < INTRO.length - 1) { i++; step(); return; } const v = $("iName").value.trim(); S.name = v.slice(0, 12) || "旅人"; S.introDone = true; save(); box.style.display = "none"; hud(); $("msg").textContent = `${S.name}、いってらっしゃい。まずはサイコロを。`; };
   step(); }
-if (!S.introDone && !isFinished()) setTimeout(showIntro, 400);
+if (!D04_MODE && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
 function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
@@ -435,18 +455,63 @@ const JINGLE = new Audio("music/event.mp3"); JINGLE.volume = 0.6;
 $("snd").onclick = () => { sndOn = !sndOn; $("snd").textContent = sndOn ? "🔊" : "🔈"; if (sndOn) BGM.play().catch(() => { $("snd").textContent = "🔈"; sndOn = false; }); else BGM.pause(); };
 const _runEvent = runEvent; runEvent = function () { _runEvent(); if (sndOn) { JINGLE.currentTime = 0; JINGLE.play().catch(() => {}); } };
 $("nameBtn").onclick = () => { const v = prompt("旅人の名前（順位や物件に出ます）", S.name || ""); if (v !== null) { S.name = v.trim().slice(0, 12) || "旅人"; save(); $("msg").textContent = `名前を「${S.name}」にした。`; } };
-function renderHand() { const box = $("hand"); box.innerHTML = ""; S.cards = (S.cards || []).filter(id => CARDS.some(x => x.id === id)); const wrapEl = document.getElementById("wrap"); if (wrapEl) { wrapEl.classList.toggle("has-hand", S.cards.length > 0); wrapEl.classList.toggle("hand2", S.cards.length >= 4); wrapEl.classList.toggle("hand3", S.cards.length >= 7); }   /* :has() が効かない古い Safari 向けのクラス（金継ぎCSS §6） */ if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; box.style.flexWrap = "wrap"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.disabled = busy || !!S.turnFlow || isFinished() || rouletteQueued; b.style.flex = "1 1 30%"; b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
+function renderHand() { const box = $("hand"); box.innerHTML = ""; S.cards = (S.cards || []).filter(id => CARDS.some(x => x.id === id)); const wrapEl = document.getElementById("wrap"); if (wrapEl) { wrapEl.classList.toggle("has-hand", S.cards.length > 0); wrapEl.classList.toggle("hand2", S.cards.length >= 4); wrapEl.classList.toggle("hand3", S.cards.length >= 7); }   /* :has() が効かない古い Safari 向けのクラス（金継ぎCSS §6） */ if (!S.cards.length) { box.style.display = "none"; return; } box.style.display = "flex"; box.style.flexWrap = "wrap"; S.cards.forEach((id, i) => { const c = CARDS.find(x => x.id === id); const b = document.createElement("button"); b.disabled = busy || !!S.turnFlow || isFinished() || rouletteQueued; b.style.flex = "1 1 30%"; b.className = "ghost"; b.style.fontSize = "13px"; b.textContent = c.name; b.title = c.desc; { const im = document.createElement("img"); im.className = "himg"; im.src = ART + "card_" + c.id + ".png"; im.alt = ""; b.prepend(im); } b.onclick = () => { if (busy) return; useCard(i); renderHand(); }; box.appendChild(b); }); }
 $("rank").onclick = () => { if (S.finalResults) { showResults(); return; } const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
-if (!S.dest && !S.turnFlow && !isFinished()) pickDest();
-refill(); const today = new Date().toDateString(); if (!isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
+if (!D04_MODE && !S.dest && !S.turnFlow && !isFinished()) pickDest();
+if (!D04_MODE) refill(); const today = new Date().toDateString(); if (!D04_MODE && !isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
 function showReturnDigest() { const away = Date.now() - (S.lastSeen || 0); if (S.lastSeen && away > 30 * 60000 && S.dest && byId[S.dest]) { const dd = distFrom(S.dest); const lead = S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })).sort((a, b) => a.h - b.h)[0]; const recent = (S.log || []).slice(-2).join("／"); const hrs = Math.floor(away / 3600000);
     $("msg").textContent = `🏠 ${hrs >= 1 ? hrs + "時間ぶり" : "おかえり"}。目的地は ${stName(byId[S.dest])}（あなた あと${hops(S.pos, S.dest)}マス／${lead.name} あと${lead.h}マス）` + (recent ? "　" + recent : "") + `　サイコロ ${S.dice}個`; }
   S.lastSeen = Date.now(); save(); }
+if (!D04_MODE) {
 layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); if (!S.turnFlow) cloudStart(); if (S.introDone && !S.turnFlow && !isFinished()) showReturnDigest();
 if (S.turnFlow) {
   if (S.turnFlow.stage === "arrival" && S.turnFlow.shop) { const shop = S.turnFlow.shop; if (shop.type === "cards") cardShop(); else { const list = stationProps(shop.station).filter(p => !ownerOf(p.id)); if (list.length) showShop(shop.station, list); } }
   continueTurn().then(() => cloudStart(true)).catch(e => console.warn("turn resume", e)); } else if (isFinished()) { freezeResults(); showResults(); } else if (S.nextDestination) { busy = true; roulette().finally(() => { busy = false; hud(); }); }   /* 動画の先読みはしない（通信量） */
+}
+
+if (D04_MODE) {
+  S.rivals = []; S.cards = []; busy = true;
+  layout(); draw(); $("msg").textContent = "対局に接続中";
+  ["roll", "assets", "rank", "nameBtn"].forEach(id => { $(id).onclick = null; $(id).disabled = true; });
+  globalThis.SUGOROKU_D04_VIEW = {
+    config: FIREBASE_OPTIONS,
+    catalog: {nodes: B.nodes, edges: B.edges, stations: B.stations, properties: B.properties, rules: B.rules},
+    cards: CARDS.map(({id, name, desc, price}) => ({id, name, desc, price: price || 100})),
+    nodeName: id => byId[id] ? stName(byId[id]) : "",
+    distance: (from, to) => byId[from] && byId[to] ? hops(from, to) : null,
+    paint(game, uid) {
+      const entries = Object.entries(game.seats || {});
+      const mine = entries.find(([, seat]) => seat.uid === uid);
+      if (!mine) return;
+      const owned = id => Object.keys(game.propertyOwners || {}).filter(p => game.propertyOwners[p] === id);
+      const others = entries.filter(([id]) => id !== mine[0]);
+      const previousPos = S.pos;
+      S = {...S, ...mine[1], owned: owned(mine[0]), dest: game.destination?.nodeId ?? null, destBonus: game.destination?.bonus ?? 0,
+        cards: [], rivals: others.filter(([, seat]) => P[seat.pos]).map(([id, seat]) => ({...seat, id, owned: owned(id)}))};
+      if (!P[S.pos]) S.pos = START;
+      RIVALS.splice(0, RIVALS.length, ...S.rivals.map(seat => ({id: seat.id, name: seat.name, icon: seat.kind === "cpu" ? "⛑️" : "🐑"})));
+      PROPS = {}; OTHERS = {};
+      if (S.pos !== previousPos) cam = {...P[S.pos]};
+      draw();
+    },
+    directions(ids, pick, disabled) {
+      document.querySelectorAll(".fork").forEach(el => el.remove()); forkPlace = null;
+      const valid = ids.filter(id => P[id]);
+      const elements = valid.map(id => {
+        const el = document.createElement("button"); el.className = "fork" + (S.dest && hops(id, S.dest) < hops(S.pos, S.dest) ? " dest" : "");
+        const symbol = document.createElement("span"); symbol.textContent = "➤"; el.appendChild(symbol);
+        el.title = `${dirName(S.pos, id)}・あと${hops(id, S.dest)}マス`; el.setAttribute("aria-label", el.title);
+        el.disabled = disabled; el.onclick = () => pick(id); $("wrap").appendChild(el); return el;
+      });
+      forkPlace = () => valid.forEach((id, i) => { const p = scr(P[id]); const from = scr(P[S.pos]); const angle = Math.atan2(p.y - from.y, p.x - from.x);
+        elements[i].style.left = `${p.x / DPR}px`; elements[i].style.top = `${p.y / DPR}px`; elements[i].firstChild.style.transform = `rotate(${angle}rad)`; });
+      forkPlace();
+    }
+  };
+}
+
 </script>
+<script type="module" src="d04-client.mjs"></script>
 </body></html>
