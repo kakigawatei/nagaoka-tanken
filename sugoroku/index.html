@@ -87,6 +87,8 @@
    ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
 const ENTRY_MODE = typeof location !== "undefined" && !['solo','d04'].includes(new URLSearchParams(location.search).get('mode')) && !new URLSearchParams(location.search).has('match') && new URLSearchParams(location.search).get('emu') !== '1' && !new URLSearchParams(location.search).has('kt');
 const D04_MODE = typeof location !== "undefined" && (new URLSearchParams(location.search).get("mode") === "d04" || new URLSearchParams(location.search).has("match") || new URLSearchParams(location.search).get("emu") === "1");
+const GRID_SOLO = typeof location !== 'undefined' && !D04_MODE && !ENTRY_MODE;
+let soloReady = !GRID_SOLO;
 const B = BOARD_DATA; const R = B.rules; R.freeDice = true;   /* テスト期間: サイコロ制限なし（masa 2026-09-11） */ const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
 B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
@@ -100,17 +102,17 @@ let _seed = 20260910; const srand = () => { _seed = (_seed * 1103515245 + 12345)
     let k = 0; while (list.length < 3 + (base.price >= 800 ? 2 : 0)) { const kinds = GEN[base.kind] || ["商店"]; const nm = `${town}の${kinds[k % kinds.length]}${k >= kinds.length ? k + 1 : ""}`; const price = Math.round((100 + srand() * 600) / 10) * 10; const y = [0.05, 0.08, 0.1, 0.12, 0.15][Math.floor(srand() * 5)]; const q = { id: "g" + (seq++), station: st, name: nm, kind: base.kind, price, yield: y, note: "" }; B.properties.push(q); list.push(q); k++; } });
 })();
 const stationProps = st => B.properties.filter(q => q.station === st);
-const KEY = "nagaoka_sugoroku_v3";   // 盤面 v3（道路網を広げた）で保存を切り替え
+const KEY = GRID_SOLO ? 'nagaoka_sugoroku_solo_1e48703b19599772' : 'nagaoka_sugoroku_v3';
 const TURNS_PER_YEAR = 36;   // 1か月＝3手番・1年＝36手番（仕様 §3・デク指摘）
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
 const RIVALS = [{ id: "kon", name: "コン", icon: "🦊" }, { id: "kabuto", name: "愛の兜", icon: "⛑️" }, { id: "ryokan", name: "良寛さん", icon: "🧘" }];   // CPUの旅人（探検録の顔ぶれ）
 const newRivals = () => RIVALS.map(r => ({ id: r.id, pos: START, prev: null, money: R.startMoney, owned: [], dest: null, reached: 0 }));
-let S = ((!D04_MODE && !ENTRY_MODE) && load()) || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
+let S = ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO) && load()) || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
 if (!S.rivals) { S.rivals = newRivals(); S.cards = S.cards || []; S.skip = 0; }
 /* ---- 共有盤面（Firestore）---- */
 let FB = null, UID = null, OTHERS = {}, PROPS = {}, GAME = null;   // GAME: 正本 sugoroku_games/main   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
 const FIREBASE_OPTIONS = { apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" };
-if ((!D04_MODE && !ENTRY_MODE)) { try { firebase.initializeApp(FIREBASE_OPTIONS); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); } }
+if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO)) { try { firebase.initializeApp(FIREBASE_OPTIONS); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); } }
 const ownerOf = pid => S.owned.includes(pid) ? "you" : (PROPS[pid] && PROPS[pid].owner && PROPS[pid].owner !== UID) ? "p:" + PROPS[pid].owner : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
 const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((OTHERS[o.slice(2)] || {}).name || "旅人") : ((RIVALS.find(r => r.id === o) || {}).name || "");
 async function cloudStart(preferLocal = false) { if (!FB) return; try {
@@ -130,7 +132,7 @@ function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTim
 /* 物件を買う: 早い者勝ちをトランザクションで */
 async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; if (e && e.code === "permission-denied") { console.warn("cloudBuy: ルール未設定→端末側で成立"); return true; } $("msg").textContent = "いまはつながらないので買えません（オンラインで再度）"; return false; } }   // ルール未設定・オフラインは端末側で成立させる
 function compat() { if (S.kome === true) S.kome = 3; if (S.destCount === undefined && S.reached > 0) S.destCount = S.reached; } compat();   /* 旧データ互換（クラウド読み込み後にも） */
-const save = () => { if (D04_MODE || ENTRY_MODE) return; localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
+const save = () => { if (D04_MODE || ENTRY_MODE || !soloReady) return; localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 /* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
 let pendingGame = null;
 function applyGame(g) { if (!g || S.finalResults) return; GAME = g; if (busy || S.turnFlow || rouletteQueued || $("card").style.display === "block") { pendingGame = g; return; } pendingGame = null;
@@ -523,7 +525,7 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
   const step = () => { const [t, b] = INTRO[i]; $("iTitle").textContent = t; $("iBody").textContent = b; const last = i === INTRO.length - 1; $("iName").style.display = last ? "block" : "none"; $("iNext").textContent = last ? "出発！" : "つぎへ"; };
   $("iNext").onclick = () => { if (i < INTRO.length - 1) { i++; step(); return; } const v = $("iName").value.trim(); S.name = v.slice(0, 12) || "旅人"; S.introDone = true; save(); box.style.display = "none"; hud(); $("msg").textContent = `${S.name}、いってらっしゃい。まずはサイコロを。`; };
   step(); }
-if ((!D04_MODE && !ENTRY_MODE) && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
+if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO) && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
 function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
   if(gridScene&&x>=0&&x<innerWidth&&y>=0&&y<innerHeight){el.style.display='none';return;}
@@ -541,18 +543,56 @@ function renderHand() { const box = $("hand"); box.innerHTML = ""; S.cards = (S.
 $("rank").onclick = () => { if (S.finalResults) { showResults(); return; } const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
-if ((!D04_MODE && !ENTRY_MODE) && !S.dest && !S.turnFlow && !isFinished()) pickDest();
-if ((!D04_MODE && !ENTRY_MODE)) refill(); const today = new Date().toDateString(); if ((!D04_MODE && !ENTRY_MODE) && !isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
+if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO) && !S.dest && !S.turnFlow && !isFinished()) pickDest();
+if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO)) refill(); const today = new Date().toDateString(); if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO) && !isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
 function showReturnDigest() { const away = Date.now() - (S.lastSeen || 0); if (S.lastSeen && away > 30 * 60000 && S.dest && byId[S.dest]) { const dd = distFrom(S.dest); const lead = S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })).sort((a, b) => a.h - b.h)[0]; const recent = (S.log || []).slice(-2).join("／"); const hrs = Math.floor(away / 3600000);
     $("msg").textContent = `🏠 ${hrs >= 1 ? hrs + "時間ぶり" : "おかえり"}。目的地は ${stName(byId[S.dest])}（あなた あと${hops(S.pos, S.dest)}マス／${lead.name} あと${lead.h}マス）` + (recent ? "　" + recent : "") + `　サイコロ ${S.dice}個`; }
   S.lastSeen = Date.now(); save(); }
-if ((!D04_MODE && !ENTRY_MODE)) {
+if ((!D04_MODE && !ENTRY_MODE && !GRID_SOLO)) {
 layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); if (!S.turnFlow) cloudStart(); if (S.introDone && !S.turnFlow && !isFinished()) showReturnDigest();
 if (S.turnFlow) {
   if (S.turnFlow.stage === "arrival" && S.turnFlow.shop) { const shop = S.turnFlow.shop; if (shop.type === "cards") cardShop(); else { const list = stationProps(shop.station).filter(p => !ownerOf(p.id)); if (list.length) showShop(shop.station, list); } }
   continueTurn().then(() => cloudStart(true)).catch(e => console.warn("turn resume", e)); } else if (isFinished()) { freezeResults(); showResults(); } else if (S.nextDestination) { busy = true; roulette().finally(() => { busy = false; hud(); }); }   /* 動画の先読みはしない（通信量） */
 }
 
+function installBoardData(display,catalog,renderer){
+  if(display.renderer==='grid-v1'&&!renderer?.createScene)throw new Error('Grid renderer missing');
+  const nextScene=display.renderer==='grid-v1'?renderer.createScene(display,{redraw:()=>draw(),getIcon:icon,imageFactory:()=>new Image()}):null;
+  clearForkUI();globalThis.DICE3D?.cancel();routePreview=null;routePath=[];mapGame=null;gridScene?.dispose();gridScene=nextScene;boardRenderer=renderer;
+  NODES.splice(0,NODES.length,...display.nodes);B.edges=display.edges;B.stations=display.stations;B.properties=display.properties;Object.assign(R,display.rules);
+  for(const obj of [byId,ADJ,EPTS,P])for(const key of Object.keys(obj))delete obj[key];
+  NODES.forEach(n=>{byId[n.id]=n;P[n.id]=renderer?renderer.project(n):merc(n);});
+  B.edges.forEach(e=>{const [a,b]=Array.isArray(e)?e:[e.a,e.b];(ADJ[a]||=[]).push(b);(ADJ[b]||=[]).push(a);if(e.pts){EPTS[a+'-'+b]=e.pts;EPTS[b+'-'+a]=e.pts.slice().reverse();}});
+  START=NODES.find(n=>n.station==='nagaoka_st').id;S.pos=START;S.dest=null;S.rivals=[];cam={...P[START]};zoom=15000;
+  DD={dest:null,d:null};refreshShopNodes();
+  return {catalog:{nodes:B.nodes,edges:B.edges,stations:B.stations,properties:B.properties,rules:B.rules},boardVersion:catalog.boardVersion};
+}
+if (GRID_SOLO) {
+  busy=true;layout();cv.style.visibility='hidden';
+  ['roll','assets','rank','nameBtn'].forEach(id=>$(id).disabled=true);
+  globalThis.SUGOROKU_SOLO_VIEW={
+    loading(){busy=true;soloReady=false;$('msg').textContent='地図を読み込んでいます';$('cTitle').textContent='地図を読み込んでいます';$('cBody').replaceChildren();$('cBuy').style.display='none';$('cSkip').disabled=true;$('card').style.display='block';},
+    failed(retry){$('cTitle').textContent='地図または保存データを読み込めませんでした';$('cSkip').disabled=false;$('cSkip').textContent='再確認';$('cSkip').onclick=retry;},
+    boot(display,catalog,renderer,saved){
+      installBoardData(display,catalog,renderer);
+      S=saved||{boardVersion:catalog.boardVersion,pos:START,prev:null,money:R.startMoney,owned:[],dice:R.diceStockMax,lastDice:Date.now(),turn:0,dest:null,reached:0,log:[],cards:[],skip:0,rivals:newRivals()};
+      FB=null;UID=null;PROPS={};OTHERS={};GAME=null;cam={...P[S.pos]};compat();soloReady=true;busy=false;
+      $('card').style.display='none';$('cSkip').disabled=false;$('cSkip').textContent='やめる';$('cSkip').onclick=closeCard;$('cBuy').style.display='';cv.style.visibility='visible';
+      ['assets','rank','nameBtn'].forEach(id=>$(id).disabled=false);
+      if(!S.dest&&!S.turnFlow&&!isFinished())pickDest();refill();
+      if(!isFinished()&&S.dice>=R.diceStockMax&&S.lastGift!==today){S.lastGift=today;S.money+=50;$('msg').textContent='朝市ボーナス +50万両';}
+      save();hud();draw();
+      if(!saved&&localStorage.getItem('nagaoka_sugoroku_v3')){
+        $('cTitle').textContent='盤面が新しくなったので最初から';$('cBody').replaceChildren();$('cBuy').style.display='none';$('cSkip').textContent='はじめる';$('cSkip').onclick=()=>{closeCard();showIntro();};$('card').style.display='block';hud();
+      }else if(!S.introDone&&!S.turnFlow&&!isFinished())showIntro();
+      if(S.turnFlow){const shop=S.turnFlow.shop;if(S.turnFlow.stage==='arrival'&&shop){if(shop.type==='cards')cardShop();else showShop(shop.station,stationProps(shop.station).filter(p=>!ownerOf(p.id)));}continueTurn().catch(e=>{console.warn('solo resume',e);});}
+      else if(isFinished()){freezeResults();showResults();}
+      else if(S.nextDestination){busy=true;roulette().finally(()=>{busy=false;hud();});}
+      setInterval(()=>{refill();hud();},30000);
+    }
+  };
+  SUGOROKU_SOLO_VIEW.loading();
+}
 if (ENTRY_MODE) {layout(); draw(); $('wrap').classList.add('mode-menu-open'); $('modeMenu').style.display='grid';}
 if (D04_MODE) {
   S.rivals = []; S.cards = []; busy = true;
@@ -562,16 +602,7 @@ if (D04_MODE) {
     config: FIREBASE_OPTIONS,
     catalog: {nodes: B.nodes, edges: B.edges, stations: B.stations, properties: B.properties, rules: B.rules},
     installBoard(display,catalog,renderer){
-      if(display.renderer==='grid-v1'&&!renderer?.createScene)throw new Error('Grid renderer missing');
-      const nextScene=display.renderer==='grid-v1'?renderer.createScene(display,{redraw:()=>draw(),getIcon:icon,imageFactory:()=>new Image()}):null;
-      clearForkUI();globalThis.DICE3D?.cancel();routePreview=null;routePath=[];mapGame=null;gridScene?.dispose();gridScene=nextScene;boardRenderer=renderer;
-      NODES.splice(0,NODES.length,...display.nodes);B.edges=display.edges;B.stations=display.stations;B.properties=display.properties;Object.assign(R,display.rules);
-      for(const obj of [byId,ADJ,EPTS,P])for(const key of Object.keys(obj))delete obj[key];
-      NODES.forEach(n=>{byId[n.id]=n;P[n.id]=renderer?renderer.project(n):merc(n);});
-      B.edges.forEach(e=>{const [a,b]=Array.isArray(e)?e:[e.a,e.b];(ADJ[a]||=[]).push(b);(ADJ[b]||=[]).push(a);if(e.pts){EPTS[a+'-'+b]=e.pts;EPTS[b+'-'+a]=e.pts.slice().reverse();}});
-      START=NODES.find(n=>n.station==='nagaoka_st').id;S.pos=START;S.dest=null;S.rivals=[];cam={...P[START]};zoom=15000;
-      DD={dest:null,d:null};refreshShopNodes();
-      this.catalog={nodes:B.nodes,edges:B.edges,stations:B.stations,properties:B.properties,rules:B.rules};this.boardVersion=catalog.boardVersion;
+      Object.assign(this,installBoardData(display,catalog,renderer));
     },
     cards: CARDS.map(({id, name, desc, price}) => ({id, name, desc, price: price || 100})),
     planRoute(game,uid,commit){const seat=Object.values(game.seats).find(s=>s.uid===uid);clearForkUI();return TRAVEL_ROUTE.open({...routeConfig(seat.pos,game.turnContext.remainingSteps,game.turnContext.previousNode,seat.effects?.guide||0),commit:path=>{$('mapInspect').hidden=true;commit(path);}});},
@@ -613,4 +644,5 @@ if (D04_MODE) {
 
 </script>
 <script type="module" src="d04-client.mjs"></script>
+<script type="module" src="solo-client.mjs"></script>
 </body></html>
