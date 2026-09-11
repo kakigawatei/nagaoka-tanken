@@ -577,6 +577,7 @@ if (GRID_SOLO) {
       installBoardData(display,catalog,renderer);
       S=saved||{boardVersion:catalog.boardVersion,pos:START,prev:null,money:R.startMoney,owned:[],dice:R.diceStockMax,lastDice:Date.now(),turn:0,dest:null,reached:0,log:[],cards:[],skip:0,rivals:newRivals()};
       FB=null;UID=null;PROPS={};OTHERS={};GAME=null;cam={...P[S.pos]};compat();soloReady=true;busy=false;
+      $('msg').textContent=S.finalResults?'3年の旅は終了しました':S.turnFlow?'前の手番を再開しています':S.nextDestination?'次の目的地を決めています':'あなたの番';
       $('card').style.display='none';$('cSkip').disabled=false;$('cSkip').textContent='やめる';$('cSkip').onclick=closeCard;$('cBuy').style.display='';cv.style.visibility='visible';
       ['assets','rank','nameBtn'].forEach(id=>$(id).disabled=false);
       if(!S.dest&&!S.turnFlow&&!isFinished())pickDest();refill();
