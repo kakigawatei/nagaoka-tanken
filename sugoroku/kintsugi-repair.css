@@ -207,4 +207,5 @@ html,body,button,a,input,label{touch-action:manipulation;}
  #dest{width:40%;max-height:120px;right:auto;}
  #dirs{left:auto;right:68px;bottom:10px;max-width:320px;max-height:calc(100% - 62px);}
  #travelStatus{right:auto;width:40%;max-height:65px;}
+ #dirs.map-route-controls{left:auto;right:68px;bottom:10px;width:min(310px,calc(100% - 290px));max-height:calc(100% - 62px);}
 }

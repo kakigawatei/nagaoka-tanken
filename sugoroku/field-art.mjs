@@ -11,6 +11,8 @@ export function validateManifest(m){
  if(!b||!['minX','maxX','minY','maxY'].every(k=>Number.isInteger(b[k]))||b.maxX<b.minX||b.maxY<b.minY||(b.maxX-b.minX+1)*(b.maxY-b.minY+1)>400)throw new Error('Invalid trial bounds');
  for(const a of Object.values(m.assets))if(!/^tiles\/[a-zA-Z0-9_]+\.png$/.test(a.src)||!Array.isArray(a.anchor)||a.anchor.length!==2||!a.anchor.every(n=>Number.isFinite(n)&&n>=0&&n<=1)||!Array.isArray(a.footprint)||a.footprint.length!==2||!a.footprint.every(n=>n===1)||!['ground','road','building'].includes(a.layer))throw new Error('Invalid field asset');
  for(const id of ['ground_town_01',...Object.values(roads).map(k=>'road_'+k)])if(!m.assets[id])throw new Error('Missing field tile');
+ if(m.groundSeamless===true&&(!m.groundTile||m.assets[m.groundTile]?.layer!=='ground'))throw new Error('Invalid active ground');
+ for(const a of Object.values(m.assets))if(a.scale!==undefined&&(!Number.isFinite(a.scale)||a.scale<0.5||a.scale>2||a.layer!=='building'))throw new Error('Invalid field scale');
  return m;
 }
 export function createFieldLayer(display,{redraw=()=>{},imageFactory=()=>new Image(),fetcher=url=>fetch(url)}={}){
@@ -31,16 +33,16 @@ export function createFieldLayer(display,{redraw=()=>{},imageFactory=()=>new Ima
    if(disposed)return false;manifest=next;redraw();return true;
   }catch{for(const cancel of [...pending])cancel();images.clear();return false;}
  })();
- function paint(ctx,id,p,w,h=w){const a=manifest?.assets[id],im=images.get(id);if(!a||!im)return null;const r={x:p.x-w*a.anchor[0],y:p.y-h*a.anchor[1],width:w,height:h};ctx.drawImage(im,r.x,r.y,w,h);return r;}
+ function paint(ctx,id,p,w,h=w){const a=manifest?.assets[id],im=images.get(id);if(!a||!im)return null;w*=a.scale??1;h*=a.scale??1;const r={x:p.x-w*a.anchor[0],y:p.y-h*a.anchor[1],width:w,height:h};ctx.drawImage(im,r.x,r.y,w,h);return r;}
  return {ready,inside,
   dispose(){disposed=true;manifest=null;for(const cancel of [...pending])cancel();images.clear();},
   ground(ctx,screen,cell,width,height){if(!manifest)return;const b=manifest.trialBounds;
    // Non-seamless trial art is retained on disk, not repeated across the map.
-   if(!manifest.groundSeamless)return;
+   if(manifest.groundSeamless!==true)return;
    for(let y=b.minY;y<=b.maxY;y++)for(let x=b.minX;x<=b.maxX;x++){const p=screen({x,y});if(p.x+cell/2<0||p.x-cell/2>width||p.y+cell/2<0||p.y-cell/2>height)continue;
     // Share snapped boundaries, avoiding transparent cracks at fractional zoom.
     const left=Math.round(p.x-cell/2),top=Math.round(p.y-cell/2),right=Math.round(p.x+cell/2),bottom=Math.round(p.y+cell/2);
-    ctx.drawImage(images.get('ground_town_01'),left,top,right-left,bottom-top);
+    ctx.drawImage(images.get(manifest.groundTile),left,top,right-left,bottom-top);
    }
   },
   roads(ctx,screen,cell){if(!manifest)return;for(const n of display.nodes)if(inside(n))paint(ctx,routeTiles.get(n.id),screen(n),cell);},
