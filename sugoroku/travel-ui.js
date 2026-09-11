@@ -15,6 +15,7 @@
     globalThis.addEventListener?.('keydown',event=>{if(event.key==='Escape'&&!menu.hidden)toggle(false);});
   }
   function spin() {
+    if(globalThis.DICE3D){try{return globalThis.DICE3D.spin();}catch{/* Static fallback when WebGL is unavailable. */}}
     if(spinning)return spinning;
     const box=el('div','travel-dice travel-spinning'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','サイコロ');
     const face=el('div','travel-die travel-spin-face'); face.setAttribute('aria-hidden','true');
@@ -105,6 +106,7 @@
   }
   async function dice(faces) {
     if(!Array.isArray(faces)||!faces.length||faces.length>3||faces.some(n=>!Number.isInteger(n)||n<1||n>6))return;
+    if(globalThis.DICE3D){try{await globalThis.DICE3D.dice(faces);return;}catch{globalThis.DICE3D.cancel();}}
     const old=$('diceVid'); if(old){old.pause();old.style.display='none';}
     const box=el('div','travel-dice'); box.setAttribute('role','status');
     const row=el('div','travel-dice-row');

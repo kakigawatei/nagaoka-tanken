@@ -58,7 +58,7 @@ export function createView(bridge) {
         const result=await session.send(type,payload);
         if(result?.status==='applied' && result.result?.faces && session.matchId===matchId) await globalThis.TRAVEL_UI.dice(result.result.faces);
       } catch {session.error='CONNECTION';}
-      finally {dicePicking=false;render();}
+      finally {globalThis.DICE3D?.cancel();dicePicking=false;render();}
       return;
     }
     session.send(type, payload).catch(() => {session.error = 'CONNECTION'; session.posting = false; render();});
