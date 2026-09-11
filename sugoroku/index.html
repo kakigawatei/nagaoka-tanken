@@ -148,7 +148,7 @@ const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR =
 const merc = n => ({ x: n.lng, y: -Math.log(Math.tan(Math.PI / 4 + n.lat * Math.PI / 360)) * 180 / Math.PI });
 const P = Object.fromEntries(NODES.map(n => [n.id, merc(n)]));
 let cam = { ...P[S.pos] }, zoom = 15000;
-let routePreview = null, mapGame = null;
+let routePreview = null, mapGame = null, routePath = [], gridScene = null, boardRenderer = null;
 function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; }
 const scr = p => ({ x: W / 2 + (p.x - cam.x) * zoom * DPR, y: H * 0.42 + (p.y - cam.y) * zoom * DPR });
 const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd0", dest: "#3aa66a", prop: "#f08a1e", fork: "#fff" };
@@ -174,7 +174,8 @@ function drawTracks() {
   pass("#4a3f35", 14); pass("#fff8e8", 10);   // 道路帯（濃い縁取り＋クリーム）＝線路
   if (zoom > 7000) { ctx.setLineDash([3 * DPR, 10 * DPR]); ctx.strokeStyle = "#9a8a76"; ctx.lineWidth = 6 * DPR; for (const e of B.edges) { const pts = e.pts; if (!pts) continue; const a = scr(P[e.a]), b = scr(P[e.b]); if (Math.max(a.x, b.x) < -200 || Math.min(a.x, b.x) > W + 200 || Math.max(a.y, b.y) < -200 || Math.min(a.y, b.y) > H + 200) continue; ctx.beginPath(); pts.forEach((p, i) => { const q = scr({ x: p[1], y: mercY(p[0]) }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); } ctx.setLineDash([]); }   // 枕木風の短線
 }
-let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawTracks();
+let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H);
+  if(gridScene){drawGrid(tokenPos);return;} drawTerrain(); drawTracks();
   NODES.forEach(n => { const p = scr(P[n.id]); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return; const big = n.t === "dest" || n.t === "prop"; const mine = n.prop && S.owned.includes(n.prop);
     const owner = n.prop ? ownerOf(n.prop) : null;
     ctx.fillStyle = owner === "you" ? "#e0b84a" : owner ? "#9c8bd6" : COL[n.t] || "#fff"; ctx.lineWidth = 3 * DPR; ctx.strokeStyle = "#3a2f26";
@@ -187,6 +188,20 @@ let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawT
   Object.entries(OTHERS).forEach(([uid,o],i) => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+12*DPR,q.y-12*DPR,DPR,i+1,false,()=>draw(),{key:'other:'+uid,world:P[o.pos]}); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+(i-1)*20*DPR,q.y-18*DPR,DPR,r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,false,()=>draw(),{key:'rival:'+(r.id ?? i),world:P[r.pos]}); });
   const p = scr(tokenPos || P[routePreview ?? S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw(),{key:'you',world:tokenPos || P[routePreview ?? S.pos]}); }
+function drawGrid(tokenPos){
+  ctx.save();ctx.scale(DPR,DPR);
+  const screen=n=>{const p=scr(boardRenderer.project(n));return {x:p.x/DPR,y:p.y/DPR};};
+  const cell=Math.abs(boardRenderer.project({x:1,y:0}).x)*zoom;
+  const {sizes}=gridScene.draw(ctx,{screen,width:W/DPR,height:H/DPR,cell,goal:S.dest,
+    owner:id=>{const seat=mapGame?.propertyOwners?.[id];return seat?(seat==='s'+S.visualSeat?'you':seat):ownerOf(id);},shops:SHOP_NODES,path:routePath,
+    tokens:[tokenPos||P[routePreview??S.pos],...S.rivals.map(r=>P[r.pos])].filter(Boolean).map(world=>{const p=scr(world);return {x:p.x/DPR,y:p.y/DPR};})});
+  const tokenScale=sizes.token/48;
+  const paint=(world,variant,key,moving,offset=0)=>{if(!world)return;const q=scr(world),x=q.x/DPR+offset,y=q.y/DPR;if(x<-80||x>W/DPR+80||y<-80||y>H/DPR+80)return;
+    globalThis.TRAVEL_UI?.token(ctx,x,y-4*tokenScale,tokenScale,variant,moving,()=>draw(),{key,world});};
+  S.rivals.forEach((r,i)=>paint(P[r.pos],r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,'rival:'+(r.id??i),false,(i-1)*16*tokenScale));
+  paint(tokenPos||P[routePreview??S.pos],S.visualSeat??0,'you',!!tokenPos);
+  ctx.restore();
+}
 addEventListener("resize", () => { layout(); draw(); });
 /* 指でドラッグして地図を見回す（サイコロを振るとコマに戻る） */
 let drag = null; cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; });
@@ -215,7 +230,7 @@ function inspectNode(id){
 function routeConfig(start,steps,previous=null,guide=0){return {start,steps,previous,guide,adj:ADJ,distance:id=>hops(id,S.dest),
   choice:(from,id)=>({x:P[id].x-P[from].x,y:P[id].y-P[from].y,distance:hops(id,S.dest),label:dirName(from,id)}),
   name:id=>stName(byId[id])||({blue:'青マス',red:'赤マス',yellow:'カードマス',event:'イベントマス'}[byId[id].t]||'道のマス'),inspect:inspectNode,
-  preview(id){if(id!==routePreview){routePreview=id;if(id!==null)cam={...P[id]};draw();}}
+  preview(id,path=[]){routePath=id===null?[]:[start,...path];routePreview=id;if(id!==null)cam={...P[id]};draw();}
 };}
 function planSoloRoute(flow){return new Promise(resolve=>{const planner=TRAVEL_ROUTE.open({...routeConfig(S.pos,flow.remaining,flow.prev,S.guide||0),commit:path=>{planner.close();$('mapInspect').hidden=true;resolve(path);}});});}
 if($('zoomIn')){
@@ -249,7 +264,7 @@ let hud = function () { if (!S.dest || !byId[S.dest]) { $("destTxt").textContent
   globalThis.TRAVEL_UI?.destination(stName(byId[S.dest]),hp,S.destBonus || destBonus(hp),byId[S.dest].area || "");
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = R.freeDice ? "サイコロ 何回でも（テスト中・順番に振れます）" : `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || !!S.turnFlow || rouletteQueued || isFinished() || $("card").style.display === "block"; if (isFinished()) { $("date").textContent = "3年の旅 終了"; $("stock").textContent = "最終結果"; } }
-async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
+async function tween(a, b) { FX.moveStart(a, b); const pts = gridScene ? [P[a],P[b]] : edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
   const steps = 5; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); FX.moveStep(p); await new Promise(r => setTimeout(r, 16)); } FX.moveEnd(b); }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
 /* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
@@ -511,6 +526,7 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
 if ((!D04_MODE && !ENTRY_MODE) && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
 function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
+  if(gridScene&&x>=0&&x<innerWidth&&y>=0&&y<innerHeight){el.style.display='none';return;}
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
   const cx = w / 2, cy = h / 2; const dx = x - cx, dy = y - cy; const ang = Math.atan2(dy, dx); const rx = cx - 34, ry = cy - 34; const t = Math.min(Math.abs(rx / Math.cos(ang)), Math.abs(ry / Math.sin(ang)));
   el.style.display = "flex"; el.style.left = (cx + Math.cos(ang) * t - 22) + "px"; el.style.top = (cy + Math.sin(ang) * t - 22 + 20) + "px"; el.style.transform = ""; }
@@ -545,13 +561,15 @@ if (D04_MODE) {
   globalThis.SUGOROKU_D04_VIEW = {
     config: FIREBASE_OPTIONS,
     catalog: {nodes: B.nodes, edges: B.edges, stations: B.stations, properties: B.properties, rules: B.rules},
-    installBoard(display,catalog){
-      clearForkUI();globalThis.DICE3D?.cancel();routePreview=null;mapGame=null;
+    installBoard(display,catalog,renderer){
+      if(display.renderer==='grid-v1'&&!renderer?.createScene)throw new Error('Grid renderer missing');
+      const nextScene=display.renderer==='grid-v1'?renderer.createScene(display,{redraw:()=>draw(),getIcon:icon,imageFactory:()=>new Image()}):null;
+      clearForkUI();globalThis.DICE3D?.cancel();routePreview=null;routePath=[];mapGame=null;gridScene?.dispose();gridScene=nextScene;boardRenderer=renderer;
       NODES.splice(0,NODES.length,...display.nodes);B.edges=display.edges;B.stations=display.stations;B.properties=display.properties;Object.assign(R,display.rules);
       for(const obj of [byId,ADJ,EPTS,P])for(const key of Object.keys(obj))delete obj[key];
-      NODES.forEach(n=>{byId[n.id]=n;P[n.id]=merc(n);});
+      NODES.forEach(n=>{byId[n.id]=n;P[n.id]=renderer?renderer.project(n):merc(n);});
       B.edges.forEach(e=>{const [a,b]=Array.isArray(e)?e:[e.a,e.b];(ADJ[a]||=[]).push(b);(ADJ[b]||=[]).push(a);if(e.pts){EPTS[a+'-'+b]=e.pts;EPTS[b+'-'+a]=e.pts.slice().reverse();}});
-      START=NODES.find(n=>n.station==='nagaoka_st').id;S.pos=START;S.dest=null;S.rivals=[];cam={...P[START]};
+      START=NODES.find(n=>n.station==='nagaoka_st').id;S.pos=START;S.dest=null;S.rivals=[];cam={...P[START]};zoom=15000;
       DD={dest:null,d:null};refreshShopNodes();
       this.catalog={nodes:B.nodes,edges:B.edges,stations:B.stations,properties:B.properties,rules:B.rules};this.boardVersion=catalog.boardVersion;
     },

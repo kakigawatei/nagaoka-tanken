@@ -1,5 +1,6 @@
 import {canonical,catalogMatches} from './d04-catalog.mjs';
-export const SUPPORTED_BOARDS=Object.freeze(['8060e7bdbda4cde3']);
+import {DISPLAY_RENDERERS,validateDisplay} from './d04-renderers.mjs';
+export const SUPPORTED_BOARDS=Object.freeze(['8060e7bdbda4cde3','1e48703b19599772']);
 const fail=code=>{throw Object.assign(new Error(code),{boardError:code});};
 export async function fetchBoard(version,{fetcher=fetch,digest=bytes=>crypto.subtle.digest('SHA-256',bytes),supported=SUPPORTED_BOARDS}={}){
  if(!supported.includes(version)||!/^[0-9a-f]{16}$/.test(version))fail('VERSION_MISMATCH');
@@ -7,8 +8,7 @@ export async function fetchBoard(version,{fetcher=fetch,digest=bytes=>crypto.sub
  const [catalog,display]=await Promise.all([read('catalog'),read('display')]);
  const {boardVersion,...content}=catalog;
  const hash=Array.from(new Uint8Array(await digest(new TextEncoder().encode(canonical(content)))),v=>v.toString(16).padStart(2,'0')).join('').slice(0,16);
- if(boardVersion!==version||hash!==version||display.boardVersion!==version||!catalogMatches(display,catalog)||display.renderer!=='mercator-v1')fail('VERSION_MISMATCH');
- if(!display.nodes.every(n=>Number.isFinite(n.lat)&&Math.abs(n.lat)<85&&Number.isFinite(n.lng)))fail('VERSION_MISMATCH');
+ if(boardVersion!==version||hash!==version||display.boardVersion!==version||!catalogMatches(display,catalog)||!validateDisplay(display))fail('VERSION_MISMATCH');
  return {catalog,display};
 }
 
@@ -29,7 +29,7 @@ export class BoardConnection{
    if(game.schemaVersion!==1||game.rulesVersion!=='d04-v1')fail('VERSION_MISMATCH');
    const assets=await this.load(game.boardVersion);
    if(generation!==this.generation)return false;
-   this.onReset();this.bridge.installBoard(assets.display,assets.catalog);
+   this.onReset();this.bridge.installBoard(assets.display,assets.catalog,DISPLAY_RENDERERS[assets.display.renderer]);
    s.boardVersion=assets.catalog.boardVersion;s.loading=false;
    s.connect(matchId,minimumRevision);
    s.accept(game,true);
