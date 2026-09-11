@@ -3,37 +3,943 @@
   "tilePixels": 512,
   "logicalPixels": 256,
   "style": "masa-isometric-trial",
-  "sourceSheetPixels": [1254, 1254],
+  "sourceSheetPixels": [
+    1254,
+    1254
+  ],
   "boardVersion": "1e48703b19599772",
-  "trialBounds": {"minX": 1, "maxX": 10, "minY": 1, "maxY": 12},
+  "trialBounds": {
+    "minX": -35,
+    "maxX": 34,
+    "minY": -34,
+    "maxY": 45
+  },
   "groundSeamless": true,
   "groundTile": "ground_town_02",
   "assets": {
-    "ground_town_02": {"src":"tiles/ground_town_02.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"ground"},
-    "ground_town_01": {"src":"tiles/ground_town_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"ground"},
-    "ground_rural_01": {"src":"tiles/ground_rural_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"ground"},
-    "ground_hill_01": {"src":"tiles/ground_hill_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"ground"},
-    "road_NS": {"src":"tiles/road_NS_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_EW": {"src":"tiles/road_EW_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_NE": {"src":"tiles/road_NE_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_ES": {"src":"tiles/road_ES_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_SW": {"src":"tiles/road_SW_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_WN": {"src":"tiles/road_WN_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_NES": {"src":"tiles/road_NES_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_ESW": {"src":"tiles/road_ESW_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_SWN": {"src":"tiles/road_SWN_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_WNE": {"src":"tiles/road_WNE_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_NESW": {"src":"tiles/road_NESW_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_end_N": {"src":"tiles/road_end_N_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_end_E": {"src":"tiles/road_end_E_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_end_S": {"src":"tiles/road_end_S_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "road_end_W": {"src":"tiles/road_end_W_01.png","anchor":[0.5,0.5],"footprint":[1,1],"layer":"road"},
-    "decor_tree_broad_01": {"src":"tiles/decor_tree_broad_01.png","anchor":[0.5,0.936],"footprint":[1,1],"layer":"building"},
-    "decor_rice_01": {"src":"tiles/decor_rice_01.png","anchor":[0.5,0.904],"footprint":[1,1],"layer":"building"},
-    "decor_house_01": {"src":"tiles/decor_house_01.png","anchor":[0.5,0.936],"footprint":[1,1],"layer":"building"},
-    "decor_shop_01": {"src":"tiles/decor_shop_01.png","anchor":[0.5,0.936],"footprint":[1,1],"layer":"building"},
-    "landmark_nagaoka_st": {"src":"tiles/landmark_nagaoka_st.png","anchor":[0.5,0.918],"footprint":[1,1],"layer":"building","scale":1.4},
-    "landmark_aore": {"src":"tiles/landmark_aore.png","anchor":[0.5,0.904],"footprint":[1,1],"layer":"building","scale":1.4},
-    "landmark_honmaru": {"src":"tiles/landmark_honmaru.png","anchor":[0.5,0.904],"footprint":[1,1],"layer":"building","scale":1.4}
-  }
+    "ground_town_02": {
+      "src": "tiles/ground_town_02.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "ground"
+    },
+    "ground_town_01": {
+      "src": "tiles/ground_town_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "ground"
+    },
+    "ground_rural_01": {
+      "src": "tiles/ground_rural_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "ground"
+    },
+    "ground_hill_01": {
+      "src": "tiles/ground_hill_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "ground"
+    },
+    "road_NS": {
+      "src": "tiles/road_NS_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_EW": {
+      "src": "tiles/road_EW_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_NE": {
+      "src": "tiles/road_NE_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_ES": {
+      "src": "tiles/road_ES_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_SW": {
+      "src": "tiles/road_SW_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_WN": {
+      "src": "tiles/road_WN_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_NES": {
+      "src": "tiles/road_NES_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_ESW": {
+      "src": "tiles/road_ESW_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_SWN": {
+      "src": "tiles/road_SWN_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_WNE": {
+      "src": "tiles/road_WNE_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_NESW": {
+      "src": "tiles/road_NESW_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_end_N": {
+      "src": "tiles/road_end_N_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_end_E": {
+      "src": "tiles/road_end_E_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_end_S": {
+      "src": "tiles/road_end_S_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "road_end_W": {
+      "src": "tiles/road_end_W_01.png",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "road"
+    },
+    "decor_tree_broad_01": {
+      "src": "tiles/decor_tree_broad_01.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_rice_01": {
+      "src": "tiles/decor_rice_01.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_house_01": {
+      "src": "tiles/decor_house_01.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_shop_01": {
+      "src": "tiles/decor_shop_01.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "landmark_nagaoka_st": {
+      "src": "tiles/landmark_nagaoka_st.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_aore": {
+      "src": "tiles/landmark_aore.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_honmaru": {
+      "src": "tiles/landmark_honmaru.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_tsuginosuke": {
+      "src": "tiles/landmark_tsuginosuke.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_kakigawa": {
+      "src": "tiles/landmark_kakigawa.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_isoroku": {
+      "src": "tiles/landmark_isoroku.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_yukyuzan": {
+      "src": "tiles/landmark_yukyuzan.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_aoshiba": {
+      "src": "tiles/landmark_aoshiba.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_saffron": {
+      "src": "tiles/landmark_saffron.png",
+      "anchor": [
+        0.5,
+        0.918
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_yoshinogawa": {
+      "src": "tiles/landmark_yoshinogawa.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_murasaki": {
+      "src": "tiles/landmark_murasaki.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_hasegawa_sake": {
+      "src": "tiles/landmark_hasegawa_sake.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_kome100": {
+      "src": "tiles/landmark_kome100.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_lyric": {
+      "src": "tiles/landmark_lyric.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_kyuryo": {
+      "src": "tiles/landmark_kyuryo.png",
+      "anchor": [
+        0.5,
+        0.926
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_umataka": {
+      "src": "tiles/landmark_umataka.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_rekihaku": {
+      "src": "tiles/landmark_rekihaku.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_kinpu": {
+      "src": "tiles/landmark_kinpu.png",
+      "anchor": [
+        0.5,
+        0.92
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_keyaki": {
+      "src": "tiles/landmark_keyaki.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_takeakari": {
+      "src": "tiles/landmark_takeakari.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_wakinomachi": {
+      "src": "tiles/landmark_wakinomachi.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_hotoku": {
+      "src": "tiles/landmark_hotoku.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_momiji": {
+      "src": "tiles/landmark_momiji.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_asahi": {
+      "src": "tiles/landmark_asahi.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_koryu": {
+      "src": "tiles/landmark_koryu.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_yomogi_onsen": {
+      "src": "tiles/landmark_yomogi_onsen.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_togyu": {
+      "src": "tiles/landmark_togyu.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_alpaca": {
+      "src": "tiles/landmark_alpaca.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_tanada": {
+      "src": "tiles/landmark_tanada.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_oratar": {
+      "src": "tiles/landmark_oratar.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_akiha": {
+      "src": "tiles/landmark_akiha.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_gangi": {
+      "src": "tiles/landmark_gangi.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_tsuno": {
+      "src": "tiles/landmark_tsuno.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_kanetsugu": {
+      "src": "tiles/landmark_kanetsugu.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_teradomari_ichiba": {
+      "src": "tiles/landmark_teradomari_ichiba.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_suizoku": {
+      "src": "tiles/landmark_suizoku.png",
+      "anchor": [
+        0.5,
+        0.924
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_ryokan": {
+      "src": "tiles/landmark_ryokan.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_tsumairi": {
+      "src": "tiles/landmark_tsumairi.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_tenryo": {
+      "src": "tiles/landmark_tenryo.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_ishii": {
+      "src": "tiles/landmark_ishii.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_oguni_washi": {
+      "src": "tiles/landmark_oguni_washi.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "landmark_hachikoku": {
+      "src": "tiles/landmark_hachikoku.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building",
+      "scale": 1.4
+    },
+    "decor_tree_broad_02": {
+      "src": "tiles/decor_tree_broad_02.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_tree_conifer_01": {
+      "src": "tiles/decor_tree_conifer_01.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_tree_conifer_02": {
+      "src": "tiles/decor_tree_conifer_02.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_rice_02": {
+      "src": "tiles/decor_rice_02.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_house_02": {
+      "src": "tiles/decor_house_02.png",
+      "anchor": [
+        0.5,
+        0.912
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_shop_02": {
+      "src": "tiles/decor_shop_02.png",
+      "anchor": [
+        0.5,
+        0.936
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_rock_01": {
+      "src": "tiles/decor_rock_01.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    },
+    "decor_flower_01": {
+      "src": "tiles/decor_flower_01.png",
+      "anchor": [
+        0.5,
+        0.904
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "layer": "building"
+    }
+  },
+  "groundByRegion": {
+    "town": "ground_town_02",
+    "rural": "ground_town_02",
+    "hill": "ground_town_02"
+  },
+  "coverage": "regional"
 }
