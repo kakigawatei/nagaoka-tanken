@@ -65,3 +65,9 @@ button, input{ font-family:inherit; }
   /* 物件カードの「やめる」は脇役 → 幅を内容に合わせて格下げ（行き先・DOMは不変） */
   #cSkip{ flex:0 0 auto; padding-left:22px; padding-right:22px; }
 }
+
+
+/* D02/D03: keep turn history and final standings within the viewport. */
+#msg{max-height:96px;overflow-y:auto;overflow-wrap:anywhere;}
+#wrap.results-open #card{top:16px;bottom:auto;left:16px;right:16px;max-height:calc(100% - 32px);overflow-y:auto;z-index:6;}
+#wrap.results-open #cBody p{overflow-wrap:anywhere;}
