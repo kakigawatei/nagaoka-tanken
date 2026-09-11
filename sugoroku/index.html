@@ -91,7 +91,7 @@ const B = BOARD_DATA; const R = B.rules; R.freeDice = true;   /* テスト期間
 const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
 B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
 const edgePts = (a, b) => EPTS[a + "-" + b] || [[byId[a].lat, byId[a].lng], [byId[b].lat, byId[b].lng]];
-const START = NODES.find(n => n.station === "nagaoka_st").id;
+let START = NODES.find(n => n.station === "nagaoka_st").id;
 /* 物件駅: 元の18物件を駅（station）ごとに束ね、3件未満の駅には伏せ名の物件を足す（価格・収益率は桃鉄風のレンジ） */
 const GEN = { "飲食": ["らーめん処", "そば処", "甘味処", "喫茶"], "観光": ["みやげ処", "資料館", "遊覧船", "展望台"], "工芸": ["工房", "問屋", "ギャラリー"], "酒蔵": ["直売所", "酒房"], "市場": ["浜焼き屋", "干物屋"], "宿": ["民宿", "湯宿"], "生産": ["直売所", "加工場"], "食": ["茶屋", "総菜屋"], "醸造": ["直売所"] };
 let _seed = 20260910; const srand = () => { _seed = (_seed * 1103515245 + 12345) & 0x7fffffff; return _seed / 0x7fffffff; };   // 全端末で同じ物件リスト（デク指摘）
@@ -227,7 +227,9 @@ if($('zoomIn')){
 const ICON_KEYS = new Set(["aore","honmaru","kome100","nagaoka_st","oguni_washi","ryokan","teradomari_ichiba","togyu","yukyuzan","p01","p02","p03","p04","p05","p06","p07","p08","p09","p10","p11","p12","p13","p15","p16","p17","p18"]);
 const ICON_ALIAS = { p14: "togyu" };
 const ICONS = {}; function icon(key) { key = ICON_ALIAS[key] || key; if (!ICON_KEYS.has(key)) return null; if (!ICONS[key]) { const im = new Image(); im.onload = () => draw(); im.src = "icons/" + key + ".png"; ICONS[key] = im; } return ICONS[key].complete && ICONS[key].naturalWidth ? ICONS[key] : null; }
-const SHOP_NODES = (() => { const out = new Set(); ["nagaoka_st", "aore", "teradomari_ichiba", "yukyuzan"].forEach(st => { const src = NODES.find(n => n.station === st); if (!src) return; const d = distFrom(src.id); let best = null; NODES.forEach(n => { if (n.t === "yellow" && d[n.id] !== undefined && (best === null || d[n.id] < d[best])) best = n.id; }); if (best !== null) out.add(best); }); return out; })();
+const SHOP_NODES = new Set();
+function refreshShopNodes(){SHOP_NODES.clear();["nagaoka_st","aore","teradomari_ichiba","yukyuzan"].forEach(st=>{const src=NODES.find(n=>n.station===st);if(!src)return;const d=distFrom(src.id);let best=null;NODES.forEach(n=>{if(n.t==='yellow'&&d[n.id]!==undefined&&(best===null||d[n.id]<d[best]))best=n.id;});if(best!==null)SHOP_NODES.add(best);});}
+refreshShopNodes();
 const stName = n => (n.name || (n.t === "dest" ? n.station : "")).replace(/（.*?）|／.*$/g, "");
 function distFrom(src) { const q = [src], d = { [src]: 0 }; while (q.length) { const u = q.shift(); for (const v of ADJ[u] || []) if (d[v] === undefined) { d[v] = d[u] + 1; q.push(v); } } return d; }
 let DD = { dest: null, d: null }; function destDist() { if (DD.dest !== S.dest || !DD.d) { DD.dest = S.dest; DD.d = distFrom(S.dest); } return DD.d; }   /* 目的地までの距離表（目的地が変わった時だけ再計算） */
@@ -543,6 +545,16 @@ if (D04_MODE) {
   globalThis.SUGOROKU_D04_VIEW = {
     config: FIREBASE_OPTIONS,
     catalog: {nodes: B.nodes, edges: B.edges, stations: B.stations, properties: B.properties, rules: B.rules},
+    installBoard(display,catalog){
+      clearForkUI();globalThis.DICE3D?.cancel();routePreview=null;mapGame=null;
+      NODES.splice(0,NODES.length,...display.nodes);B.edges=display.edges;B.stations=display.stations;B.properties=display.properties;Object.assign(R,display.rules);
+      for(const obj of [byId,ADJ,EPTS,P])for(const key of Object.keys(obj))delete obj[key];
+      NODES.forEach(n=>{byId[n.id]=n;P[n.id]=merc(n);});
+      B.edges.forEach(e=>{const [a,b]=Array.isArray(e)?e:[e.a,e.b];(ADJ[a]||=[]).push(b);(ADJ[b]||=[]).push(a);if(e.pts){EPTS[a+'-'+b]=e.pts;EPTS[b+'-'+a]=e.pts.slice().reverse();}});
+      START=NODES.find(n=>n.station==='nagaoka_st').id;S.pos=START;S.dest=null;S.rivals=[];cam={...P[START]};
+      DD={dest:null,d:null};refreshShopNodes();
+      this.catalog={nodes:B.nodes,edges:B.edges,stations:B.stations,properties:B.properties,rules:B.rules};this.boardVersion=catalog.boardVersion;
+    },
     cards: CARDS.map(({id, name, desc, price}) => ({id, name, desc, price: price || 100})),
     planRoute(game,uid,commit){const seat=Object.values(game.seats).find(s=>s.uid===uid);clearForkUI();return TRAVEL_ROUTE.open({...routeConfig(seat.pos,game.turnContext.remainingSteps,game.turnContext.previousNode,seat.effects?.guide||0),commit:path=>{$('mapInspect').hidden=true;commit(path);}});},
     nodeName: id => byId[id] ? stName(byId[id]) : "",

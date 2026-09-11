@@ -1,4 +1,18 @@
 import {extendRegionalBoard} from './grid-regional.mjs';
+export function layoutMapLabels(items,bounds){
+ const placed=[];
+ const overlaps=(a,b)=>a.x<b.x+b.width+4&&a.x+a.width+4>b.x&&a.y<b.y+b.height+4&&a.y+a.height+4>b.y;
+ for(const item of items){
+  if(item.x<bounds.left||item.x>bounds.right||item.y<bounds.top||item.y>bounds.bottom)continue;
+  const width=Math.min(item.width,bounds.right-bounds.left),height=20;
+  for(const offset of [0,-24,24,-48,48]){
+   const rect={...item,width,height,x:Math.max(bounds.left,Math.min(bounds.right-width,item.x-width/2)),y:Math.max(bounds.top,Math.min(bounds.bottom-height,item.y+offset))};
+   if(placed.some(p=>overlaps(rect,p)))continue;placed.push(rect);break;
+  }
+ }
+ return placed;
+}
+export const mapSpriteSizes=cell=>({token:Math.max(10,Math.min(48,cell*.73)),goal:Math.max(14,Math.min(72,cell)),place:Math.max(5,Math.min(48,cell*.7))});
 export const landmarks=[
   {key:'nagaoka_st',name:'長岡駅',x:7,y:7,art:'nagaoka_st'},
   {key:'aore',name:'アオーレ長岡',x:5,y:8,art:'aore'},

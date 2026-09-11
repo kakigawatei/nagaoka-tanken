@@ -1,4 +1,4 @@
-import {buildBoard,distances} from './grid-board.mjs';
+import {buildBoard,distances,layoutMapLabels,mapSpriteSizes} from './grid-board.mjs';
 const board=buildBoard(globalThis.location?.search?.includes('map=regional')),$=id=>document.getElementById(id),canvas=$('map'),ctx=canvas.getContext('2d');
 const art={};for(const key of ['nagaoka_st','aore','honmaru']){const im=new Image();im.onload=()=>draw();im.src=`icons/${key}.png`;art[key]=im;}
 for(const region of ['town','rural','hill']){const im=new Image();im.onload=()=>draw();im.src=`assets/art/grid/${region}-v1.png`;art[region]=im;}
@@ -20,19 +20,26 @@ function draw(){
   if(p.x<-size||p.x>width+size||p.y<-size||p.y>height+size)continue;
   if(im?.complete&&im.naturalWidth)ctx.drawImage(im,p.x-size/2,p.y-size/2,size,size);
  }
- for(const district of board.districts||[{x:5,y:0.9,name:'長岡駅周辺'},{x:12,y:8,name:'田園エリア'},{x:17,y:8,name:'悠久山方面'}]){
-  const p=point(district);ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeText(district.name,p.x,p.y);ctx.fillStyle='#263934';ctx.fillText(district.name,p.x,p.y);
- }
  const paths=()=>{ctx.beginPath();for(const [a,b] of board.edges){const p=point(board.nodes[a]),q=point(board.nodes[b]);ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);}ctx.stroke();};
- ctx.lineCap='square';ctx.strokeStyle='#626c65';ctx.lineWidth=14;paths();ctx.strokeStyle='#fffdf7';ctx.lineWidth=9;paths();
+ ctx.lineCap='square';ctx.strokeStyle='#626c65';ctx.lineWidth=Math.max(1.5,Math.min(14,cell*.22));paths();ctx.strokeStyle='#fffdf7';ctx.lineWidth=Math.max(.7,Math.min(9,cell*.14));paths();
  if(draft?.path.length){ctx.beginPath();[pos,...draft.path].forEach((id,i)=>{const p=point(board.nodes[id]);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.strokeStyle='#d9552f';ctx.lineWidth=4;ctx.stroke();}
  const colors={blue:'#3984c4',red:'#d9552f',yellow:'#e3bd3c',plain:'#fffdf7',place:'#3f977e',shop:'#9968ad'};
  const side=Math.min(23,cell*.38);
  for(const n of board.nodes){const p=point(n);ctx.fillStyle=colors[n.type];ctx.fillRect(p.x-side/2,p.y-side/2,side,side);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(p.x-side/2,p.y-side/2,side,side);if(n.id===dest){ctx.strokeStyle='#d9552f';ctx.lineWidth=3;ctx.strokeRect(p.x-side/2-4,p.y-side/2-4,side+8,side+8);}}
- for(const place of board.places){const p=point(place),im=art[place.art]||(place.key==='yukyuzan'?art.hill:null);if(im?.complete&&im.naturalWidth){const size=place.id===dest?Math.max(42,Math.min(72,cell)):Math.min(48,cell*.7);ctx.drawImage(im,p.x-size/2,p.y-size-12,size,size);}if(cell>=32||place.id===dest){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeText(place.name,p.x,p.y+side/2+15);ctx.fillStyle='#263934';ctx.fillText(place.name,p.x,p.y+side/2+15);}}
- const goal=point(board.nodes[dest]);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.strokeText('▼ 目的地',goal.x,goal.y-64);ctx.fillStyle='#c13824';ctx.fillText('▼ 目的地',goal.x,goal.y-64);
- const p=point(board.nodes[current()]);ctx.fillStyle='#d9552f';ctx.beginPath();ctx.ellipse(p.x,p.y-3,12,5,0,0,Math.PI*2);ctx.fill();
- if(token.complete&&token.naturalWidth){const h=48,w=h*token.naturalWidth/token.naturalHeight;ctx.drawImage(token,p.x-w/2,p.y-h-4,w,h);}
+ const sizes=mapSpriteSizes(cell);
+ for(const place of board.places){const p=point(place),im=art[place.art]||(place.key==='yukyuzan'?art.hill:null);if(im?.complete&&im.naturalWidth){const size=place.id===dest?sizes.goal:sizes.place;ctx.drawImage(im,p.x-size/2,p.y-size-4,size,size);}if(cell>=32&&place.id!==dest){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeText(place.name,p.x,p.y+side/2+15);ctx.fillStyle='#263934';ctx.fillText(place.name,p.x,p.y+side/2+15);}}
+ const p=point(board.nodes[current()]);ctx.fillStyle='#d9552f';ctx.beginPath();ctx.ellipse(p.x,p.y-2,sizes.token/4,sizes.token/10,0,0,Math.PI*2);ctx.fill();
+ if(token.complete&&token.naturalWidth){const h=sizes.token,w=h*token.naturalWidth/token.naturalHeight;ctx.drawImage(token,p.x-w/2,p.y-h-4,w,h);}
+ const goal=point(board.nodes[dest]),goalText=`▼目的地 ${name(dest)}`;
+ const labels=[{x:goal.x,y:goal.y-sizes.goal-24,text:goalText,width:goalText.length*14+8,goal:true}];
+ const major=new Set(['駅前','寺泊','出雲崎','与板','川西','越路','山古志','栃尾','小国','悠久山']);
+ for(const district of board.districts||[{x:5,y:0.9,name:'長岡駅周辺'},{x:12,y:8,name:'田園エリア'},{x:17,y:8,name:'悠久山方面'}]){
+  if(board.regional&&cell<24&&!major.has(district.name))continue;
+  const q=point(district);labels.push({x:q.x,y:q.y,text:district.name,width:district.name.length*13+8});
+ }
+ for(const label of layoutMapLabels(labels,{left:10,right:width-62,top:height<450?94:156,bottom:height-110})){
+  ctx.font=`bold ${label.goal?14:13}px sans-serif`;ctx.textAlign='left';ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeText(label.text,label.x+4,label.y+15,label.width-8);ctx.fillStyle=label.goal?'#c13824':'#263934';ctx.fillText(label.text,label.x+4,label.y+15,label.width-8);
+ }
  arrows();
 }
 function arrows(){

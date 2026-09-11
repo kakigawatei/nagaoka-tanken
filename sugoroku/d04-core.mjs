@@ -48,7 +48,7 @@ export class D04Session {
   }
   emit() { this.onChange(this); }
   persist() { this.storage.setItem(this.key, JSON.stringify({matchId: this.matchId, revision: this.game?.revision ?? -1, awaitRevision: this.awaitRevision, pending: this.pending})); }
-  get blocked() { return this.posting || !!this.pending || !this.online || !this.game || this.game.revision < this.awaitRevision; }
+  get blocked() { return this.loading || this.posting || !!this.pending || !this.online || !this.game || this.game.revision < this.awaitRevision; }
   connect(matchId, minimumRevision = -1) {
     if (!/^sugo_[a-zA-Z0-9_-]{1,120}$/.test(matchId)) throw new Error('INVALID_MATCH');
     if (this.pending && this.pending.body.matchId !== matchId) throw new Error('UNCONFIRMED_ACTION');
@@ -105,7 +105,7 @@ export class D04Session {
       turnId: this.game.turnId, type, payload: copy(payload)}, intent: intentOf(this.game, type, payload)};
   }
   async retryPending() {
-    if (!this.pending || this.posting) return;
+    if (!this.pending || this.posting || this.loading || !this.online || this.game?.boardVersion !== this.boardVersion) return;
     return this.execute(this.pending, 0);
   }
   async execute(request, retries) {

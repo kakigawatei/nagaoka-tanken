@@ -1,6 +1,7 @@
 import {canAct, ownSeat} from './d04-core.mjs';
 
 const messages = {
+  BOARD_LOAD_FAILED: '盤面を読み込めません。再確認してください', CLIENT_UPDATE_REQUIRED: 'ページを更新してください', REQUEST_ID_REUSED: '操作の記録が一致しません。再確認してください',
   CONNECTION: '接続が切れています', HAND_CONNECTION: '手札を確認できません', MATCH_NOT_FOUND: '対局が見つかりません',
   VERSION_MISMATCH: '対局の版が異なります。ページを更新してください', NOT_A_PARTICIPANT: 'この対局には参加していません',
   UNCONFIRMED_ACTION: '操作の結果を確認できません。再確認してください', STALE_REVISION: '対局が進みました。もう一度選んでください',
@@ -104,7 +105,7 @@ export function createView(bridge) {
     entry.hidden = !!game && !entryRequested; other.hidden = game?.status !== 'finished' || entryRequested; members.replaceChildren();
     if (game) Object.entries(game.seats).forEach(([id, seat]) => members.appendChild(element('li', `${seat.name}${id === own ? '（あなた）' : ''}　${seat.kind === 'cpu' ? 'CPU' : seat.ready ? '準備OK' : '準備中'}`)));
     const locked = !session || session.blocked || activeLife || dicePicking;
-    create.disabled = !commands || activeLife || !!session?.pending; join.disabled = create.disabled;
+    create.disabled = !commands || activeLife || !!session?.pending || !!session?.loading || !!session?.posting; join.disabled = create.disabled;
     readyLabel.hidden = game?.status !== 'lobby'; ready.disabled = locked; ready.checked = !!game?.seats[own]?.ready;
     start.hidden = game?.status !== 'lobby' || game?.hostUid !== session?.uid;
     start.disabled = locked || Object.values(game?.seats || {}).some(seat => seat.kind === 'human' && !seat.ready);
