@@ -49,6 +49,10 @@
 #wrap:has(#hand[style*="display: flex"]) .card{ bottom:250px; }
 #wrap:has(#hand > button:nth-child(4)) .card{ bottom:305px; }
 #wrap:has(#hand > button:nth-child(7)) .card{ bottom:360px; }
+/* :has() が使えない古い Safari（iOS 15.3 以前）向け: JS が #wrap に has-hand / hand2 / hand3 を付ける（同じ持ち上げ幅） */
+#wrap.has-hand .card{ bottom:250px; }
+#wrap.hand2 .card{ bottom:305px; }
+#wrap.hand3 .card{ bottom:360px; }
 
 /* 7. 書体: 釦と入力欄が UA 既定の書体で描かれていた → 本文と同じ書体を継ぐ（大きさは触らない） */
 button, input{ font-family:inherit; }
