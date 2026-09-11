@@ -55,7 +55,7 @@
    ・サイコロ 60分に1回・3回まで貯まる／分かれ道で行き先を選ぶ／目的地（探検録のスポット）に着くとご褒美→次の目的地
    ・青=もらう 赤=払う 黄=カード（仮） 紫=イベント（仮） 緑=目的地 橙=物件（買える・自分のに止まると売上）
    ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
-const B = BOARD_DATA; const R = B.rules; const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+const B = BOARD_DATA; const R = B.rules; R.freeDice = true;   /* テスト期間: サイコロ制限なし（masa 2026-09-11） */ const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
 B.edges.forEach(e => { const [a, b] = Array.isArray(e) ? e : [e.a, e.b]; (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); if (e.pts) { EPTS[a + "-" + b] = e.pts; EPTS[b + "-" + a] = e.pts.slice().reverse(); } });
 const edgePts = (a, b) => EPTS[a + "-" + b] || [[byId[a].lat, byId[a].lng], [byId[b].lat, byId[b].lng]];
@@ -109,7 +109,7 @@ async function cloudSetDest(prevDest) { if (!FB || !UID) return; try { await FB.
   catch (e) { if (e && e.adopt) { S.dest = e.adopt.destId; S.destBonus = e.adopt.destBonus || destBonus(hops(S.pos, S.dest)); save(); hud(); draw(); } else console.warn("cloudSetDest fallback local", e && e.code); } }
 async function cloudSettle(year) { if (!FB || !UID) return; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_games").doc("main"); const d = await tx.get(ref); const g = d.exists ? d.data() : {}; if ((g.settlementDoneYear || 0) >= year) return; tx.set(ref, { settlementDoneYear: year, updatedAt: Date.now() }, { merge: true }); }); } catch (e) { console.warn("cloudSettle", e && e.code); } }
 function cloudRelease(propId) { if (!FB || !UID) return; FB.collection("sugoroku_props").doc(propId).delete().catch(() => {}); }
-function refill() { const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
+function refill() { if (R.freeDice) { if (S.dice < R.diceStockMax) { S.dice = R.diceStockMax; S.lastDice = Date.now(); } return; } const g = Math.floor((Date.now() - S.lastDice) / (R.diceCooldownMin * 60000)); if (g > 0) { S.dice = Math.min(R.diceStockMax, S.dice + g); S.lastDice += g * R.diceCooldownMin * 60000; if (S.dice >= R.diceStockMax) S.lastDice = Date.now(); save(); } }
 /* 座標 → 画面: 緯度経度をメルカトルで平面に。カメラはコマを追う */
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR = devicePixelRatio || 1; let W, H;
 const merc = n => ({ x: n.lng, y: -Math.log(Math.tan(Math.PI / 4 + n.lat * Math.PI / 360)) * 180 / Math.PI });
@@ -181,7 +181,7 @@ let hud = function () { if (!S.dest || !byId[S.dest]) pickDest(); $("money").tex
   const dd = destDist(); const hp = dd[S.pos] === undefined ? hops(S.pos, S.dest) : dd[S.pos]; const racers = [{ name: "あなた", h: hp }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })), Object.values(OTHERS).map(o => ({ name: o.name || "旅人", h: dd[o.pos] === undefined ? 999 : dd[o.pos] }))).sort((a, b) => a.h - b.h); const lead = racers[0];
   $("destTxt").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 6 ? "　🔥一振りで届くかも！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
-  $("stock").textContent = `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
+  $("stock").textContent = R.freeDice ? "サイコロ 何回でも（テスト中・順番に振れます）" : `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || $("card").style.display === "block"; }
 async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
   const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); FX.moveStep(p); await new Promise(r => setTimeout(r, 24)); } FX.moveEnd(b); }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
@@ -322,7 +322,7 @@ $("roll").onclick = roll;
 /* ---- 初回の導線 ---- */
 const INTRO = [
   ["ながおかスゴ録へようこそ", "アルパカの旅人になって、本物の長岡の道を旅します。道も川も駅も、全部実際の場所です。"],
-  ["サイコロは1時間に1回", "サイコロは1時間に1つ貯まり、3つまで持てます。毎日ちょっと開いて、少しずつ進むゲームです。分かれ道では行き先を自分で選べます。"],
+  ["サイコロを振って旅をする", "🎲を押すと自分が進み、そのあとコンピューターの旅人3人が順番に動きます。いまはテスト中なので何回でも続けて振れます。分かれ道では行き先を自分で選べます。"],
   ["目的地と物件", "上に出ている目的地（探検録のスポット）に着くとご褒美。橙のマスでは店や蔵などの物件が買えて、他の旅人が止まると通行料が入ります。3年後の総資産で勝負。"],
   ["名前を決めて出発", "順位や物件に出る名前です。"],
 ];
