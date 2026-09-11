@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>長岡駅周辺・試作盤面</title><link rel="stylesheet" href="grid-prototype.css"></head>
+<body><main id="gridApp">
+<canvas id="map" aria-label="長岡駅周辺の試作盤面"></canvas>
+<header><a href="./" aria-label="ゲームに戻る" title="ゲームに戻る">‹</a><div><strong>長岡駅周辺</strong><span>試作盤面</span></div><output id="money">1000万両</output></header>
+<div id="destination"><span>目的地</span><strong id="destinationName"></strong><span id="distance"></span></div>
+<output id="remaining" aria-live="polite"></output>
+<nav id="directions" aria-label="進む方向"></nav>
+<nav id="mapTools" aria-label="地図表示"><button id="zoomIn" title="拡大" aria-label="拡大">＋</button><button id="zoomOut" title="縮小" aria-label="縮小">−</button><button id="fit" title="全体地図" aria-label="全体地図">⊡</button><button id="home" title="自分の位置" aria-label="自分の位置">◎</button></nav>
+<footer><div id="status" role="status"></div><div id="commands"><button id="roll">サイコロ</button><button id="undo" title="1マス戻す" aria-label="1マス戻す">↶</button><button id="inspect">下見</button><label>出目<input id="steps" type="number" min="1" max="6" step="1" value="6"></label><button id="trial">試す</button></div></footer>
+<section id="landing" role="dialog" aria-label="着地確認" hidden><strong id="landingName"></strong><p>このマスに止まりますか？</p><div><button id="yes">はい</button><button id="no">いいえ</button></div></section>
+<section id="details" role="dialog" aria-label="マスの情報" hidden><button id="closeDetails" title="閉じる" aria-label="閉じる">×</button><h2 id="detailsName"></h2><p id="detailsBody"></p><button id="buy" hidden>購入</button></section>
+</main><script src="route-ui.js"></script><script type="module" src="grid-prototype.mjs"></script></body></html>
