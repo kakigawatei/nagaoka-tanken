@@ -1,5 +1,5 @@
 import {buildBoard,distances} from './grid-board.mjs';
-const board=buildBoard(),$=id=>document.getElementById(id),canvas=$('map'),ctx=canvas.getContext('2d');
+const board=buildBoard(globalThis.location?.search?.includes('map=regional')),$=id=>document.getElementById(id),canvas=$('map'),ctx=canvas.getContext('2d');
 const art={};for(const key of ['nagaoka_st','aore','honmaru']){const im=new Image();im.onload=()=>draw();im.src=`icons/${key}.png`;art[key]=im;}
 for(const region of ['town','rural','hill']){const im=new Image();im.onload=()=>draw();im.src=`assets/art/grid/${region}-v1.png`;art[region]=im;}
 const token=new Image();token.onload=()=>draw();token.src='assets/art/cells/token_you_1.png';
@@ -14,12 +14,13 @@ function draw(){
  if(!width)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#d6e8c4';ctx.fillRect(0,0,width,height);
  // A small river segment locates Kakigawa without inventing a full regional map.
  const river=point({x:1,y:11.7});ctx.fillStyle='#8bcce3';ctx.fillRect(river.x,river.y,cell*7,cell*.45);
+ if(board.regional){const p=point({x:-2,y:-8}),q=point({x:-2,y:25});ctx.fillStyle='#8bcce3';ctx.fillRect(p.x-cell*.35,p.y,cell*.7,q.y-p.y);ctx.font='12px sans-serif';ctx.fillStyle='#245c76';ctx.fillText('信濃川',p.x+6,p.y);}
  for(const lot of board.scenery){
   const p=point(lot),im=art[lot.region],size=cell*1.25;
   if(p.x<-size||p.x>width+size||p.y<-size||p.y>height+size)continue;
   if(im?.complete&&im.naturalWidth)ctx.drawImage(im,p.x-size/2,p.y-size/2,size,size);
  }
- for(const district of [{x:5,y:0.9,name:'長岡駅周辺'},{x:12,y:8,name:'田園エリア'},{x:17,y:8,name:'悠久山方面'}]){
+ for(const district of board.districts||[{x:5,y:0.9,name:'長岡駅周辺'},{x:12,y:8,name:'田園エリア'},{x:17,y:8,name:'悠久山方面'}]){
   const p=point(district);ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeText(district.name,p.x,p.y);ctx.fillStyle='#263934';ctx.fillText(district.name,p.x,p.y);
  }
  const paths=()=>{ctx.beginPath();for(const [a,b] of board.edges){const p=point(board.nodes[a]),q=point(board.nodes[b]);ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);}ctx.stroke();};
@@ -68,11 +69,12 @@ $('yes').onclick=()=>{
 $('no').onclick=undo;$('undo').onclick=undo;$('inspect').onclick=()=>inspect();$('closeDetails').onclick=()=>{$('details').hidden=true;render();};
 $('buy').onclick=()=>{const n=board.nodes[selected];if(draft||selected!==pos||!n?.shop||owned.has(selected)||cash<n.shop.price)return;cash-=n.shop.price;owned.add(selected);$('status').textContent=`${n.shop.name}を購入`;render();inspect(selected);};
 $('roll').onclick=()=>begin(1+Math.floor(Math.random()*6));$('trial').onclick=()=>{const n=Number($('steps').value);if(Number.isInteger(n)&&n>=1&&n<=6)begin(n);};
-$('zoomIn').onclick=()=>{cell=Math.min(100,cell*1.25);draw();};$('zoomOut').onclick=()=>{cell=Math.max(24,cell/1.25);draw();};
-$('fit').onclick=()=>{camera={x:9.5,y:8.5};cell=Math.max(8,Math.min((width-80)/19,(height-230)/17));draw();};$('home').onclick=()=>{cell=66;follow();draw();};
+$('zoomIn').onclick=()=>{cell=Math.min(100,cell*1.25);draw();};$('zoomOut').onclick=()=>{cell=Math.max(2,cell/1.25);draw();};
+$('fit').onclick=()=>{const xs=board.nodes.map(n=>n.x),ys=board.nodes.map(n=>n.y),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);camera={x:(minX+maxX)/2,y:(minY+maxY)/2};cell=Math.max(1,Math.min((width-80)/(maxX-minX+4),(height-230)/(maxY-minY+4)));draw();};$('home').onclick=()=>{cell=66;follow();draw();};
 canvas.addEventListener('pointerdown',e=>{if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,camera:{...camera}};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;camera={x:drag.camera.x-(e.clientX-drag.x)/cell,y:drag.camera.y-(e.clientY-drag.y)/cell};draw();});
-canvas.addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.id)return;const tap=Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8;drag=null;if(tap){const rect=canvas.getBoundingClientRect();let best=24,id=null;for(const n of board.nodes){const p=point(n),d=Math.hypot(p.x-e.clientX+rect.left,p.y-e.clientY+rect.top);if(d<best){best=d;id=n.id;}}if(id!==null)inspect(id);}});
+canvas.addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.id)return;const tap=Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8;drag=null;if(tap){const rect=canvas.getBoundingClientRect();let best=24,id=null;for(const n of board.nodes){const p=point(n),d=Math.hypot(p.x-e.clientX+rect.left,p.y-e.clientY+rect.top);if(d<best){best=d;id=n.id;}}if(id!==null){if(cell<24){camera={x:board.nodes[id].x,y:board.nodes[id].y};cell=50;draw();}else inspect(id);}}});
 canvas.addEventListener('pointercancel',()=>drag=null);document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('details').hidden=true;render();}});addEventListener('resize',resize);
+if(board.regional){const heading=document.querySelector?.('header strong');if(heading)heading.textContent='ながおか広域マップ';}
 resize();$('status').textContent='長岡駅から出発';render();

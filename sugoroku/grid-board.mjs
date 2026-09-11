@@ -1,3 +1,4 @@
+import {extendRegionalBoard} from './grid-regional.mjs';
 export const landmarks=[
   {key:'nagaoka_st',name:'長岡駅',x:7,y:7,art:'nagaoka_st'},
   {key:'aore',name:'アオーレ長岡',x:5,y:8,art:'aore'},
@@ -11,7 +12,7 @@ export const landmarks=[
 const corridors=[[[2,3],[9,3]],[[2,7],[9,7]],[[2,9],[9,9]],[[2,11],[7,11]],[[2,3],[2,11]],[[5,2],[5,11]],[[7,3],[7,11]],[[9,3],[9,9]]];
 const regionalCorridors=[[[9,9],[17,9]],[[9,11],[17,11]],[[9,9],[9,11]],[[13,9],[13,15]],[[13,15],[17,15]],[[17,9],[17,15]]];
 export const regionAt=(x)=>x<=9?'town':x<=14?'rural':'hill';
-export function buildBoard(){
+export function buildBoard(regional=false){
   const nodes=[],edges=[],adj={},byCoord=new Map(),edgeKeys=new Set();
   const node=(x,y)=>{const key=`${x},${y}`;if(!byCoord.has(key)){const id=nodes.length;byCoord.set(key,id);nodes.push({id,x,y,type:['blue','plain','plain','red','plain','yellow'][id%6]});adj[id]=[];}return byCoord.get(key);};
   for(const [[x0,y0],[x1,y1]] of [...corridors,...regionalCorridors]){
@@ -33,6 +34,7 @@ export function buildBoard(){
     if(byCoord.has(`${x},${y}`)||!nodes.some(n=>Math.abs(n.x-x)+Math.abs(n.y-y)<=2))continue;
     if((x+y)%2)continue;scenery.push({x,y,region:regionAt(x)});
   }
-  return {nodes,edges,adj,places,scenery,start:places[0].id,destination:places[1].id};
+  const board={nodes,edges,adj,places,scenery,start:places[0].id,destination:places[1].id};
+  return regional?extendRegionalBoard(board):board;
 }
 export function distances(adj,goal){const d={[goal]:0},q=[goal];for(let i=0;i<q.length;i++)for(const id of adj[q[i]])if(d[id]===undefined){d[id]=d[q[i]]+1;q.push(id);}return d;}
