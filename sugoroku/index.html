@@ -56,6 +56,7 @@
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
+<script src="travel-ui.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -112,7 +113,7 @@ const save = () => { if (D04_MODE) return; localStorage.setItem(KEY, JSON.string
 /* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
 let pendingGame = null;
 function applyGame(g) { if (!g || S.finalResults) return; GAME = g; if (busy || S.turnFlow || rouletteQueued || $("card").style.display === "block") { pendingGame = g; return; } pendingGame = null;
-  if (g.destId !== undefined && byId[g.destId] && g.destId !== S.dest) { S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); $("msg").textContent = `🎡 誰かが到着。つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
+  if (g.destId !== undefined && byId[g.destId] && g.destId !== S.dest) { S.dest = g.destId; S.destBonus = g.destBonus || destBonus(hops(S.pos, S.dest)); $("msg").textContent = `🎡 誰かが到着。つぎの目的地は ${stName(byId[S.dest])}${String(byId[S.dest].area || "").trim() ? "（" + String(byId[S.dest].area).trim() + "）" : ""}！ 援助金 ${S.destBonus}万両`; save(); hud(); draw(); }
   if ((g.settlementDoneYear || 0) > (S.settledYear || 0)) { const y = S.owned.reduce((a, id) => a + income(pv(id), "you"), 0); S.money += y; S.settledYear = g.settlementDoneYear; $("msg").textContent = `📒 ${g.settlementDoneYear}年目の3月決算（みんな共通）: 物件 +${y}万両`; save(); hud(); } }
 async function cloudSetDest(prevDest) { if (!FB || !UID) return; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_games").doc("main"); const d = await tx.get(ref); const g = d.exists ? d.data() : {};
       if (g.destId !== undefined && g.destId !== prevDest && byId[g.destId]) { throw { adopt: g }; }   // 先に誰かが変えていた → それに従う
@@ -186,11 +187,11 @@ function pickDest() { let cands = NODES.filter(n => (n.t === "dest" || n.t === "
   const dd = distFrom(S.pos); const [lo, hi] = !(S.destCount > 0) ? [5, 8] : DEST_RANGE[Math.min(2, yearNow() - 1)]; const near = cands.filter(n => dd[n.id] >= lo && dd[n.id] <= hi); if (near.length) cands = near;   /* 最初の目的地は10分以内に着ける近さ */ S.dest = cands[Math.floor(Math.random() * cands.length)].id; S.destBonus = destBonus(hops(S.pos, S.dest)); S.destCount = (S.destCount || 0) + 1; }
 /* ルーレット演出: 候補の名前を高速で回して止める（0.9秒） */
 let rouletteQueued = !!S.nextDestination;
-async function roulette() { rouletteQueued = true; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）！ 援助金 ${S.destBonus}万両`; FX.destReveal(S.dest); S.nextDestination = null; rouletteQueued = false; save(); hud(); draw(); }
+async function roulette() { rouletteQueued = true; const cands = NODES.filter(n => (n.t === "dest" || n.t === "prop") && n.id !== S.pos); const el = $("msg"); for (let i = 0; i < 14; i++) { const c = cands[Math.floor(Math.random() * cands.length)]; el.textContent = `🎡 つぎの目的地は…  ${stName(c)}`; await new Promise(r => setTimeout(r, 40 + i * 12)); } const prevDest = rouletteFrom; pickDest(); await cloudSetDest(prevDest); el.textContent = `🎡 つぎの目的地は ${stName(byId[S.dest])}${String(byId[S.dest].area || "").trim() ? "（" + String(byId[S.dest].area).trim() + "）" : ""}！ 援助金 ${S.destBonus}万両`; FX.destReveal(S.dest); S.nextDestination = null; rouletteQueued = false; save(); hud(); draw(); }
 let rouletteFrom = S.nextDestination ? S.nextDestination.from : null;
 let hud = function () { if (!S.dest || !byId[S.dest]) { $("destTxt").textContent = "目的地を決めています"; $("roll").disabled = true; return; } $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const dd = destDist(); const hp = dd[S.pos] === undefined ? hops(S.pos, S.dest) : dd[S.pos]; const racers = [{ name: "あなた", h: hp }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })), Object.values(OTHERS).map(o => ({ name: o.name || "旅人", h: dd[o.pos] === undefined ? 999 : dd[o.pos] }))).sort((a, b) => a.h - b.h); const lead = racers[0];
-  $("destTxt").textContent = `🎯 目的地: ${stName(byId[S.dest])}（${byId[S.dest].area || ""}）　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 6 ? "　🔥一振りで届くかも！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
+  $("destTxt").textContent = `🎯 目的地: ${stName(byId[S.dest])}${String(byId[S.dest].area || "").trim() ? "（" + String(byId[S.dest].area).trim() + "）" : ""}　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 6 ? "　🔥一振りで届くかも！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = R.freeDice ? "サイコロ 何回でも（テスト中・順番に振れます）" : `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || !!S.turnFlow || rouletteQueued || isFinished() || $("card").style.display === "block"; if (isFinished()) { $("date").textContent = "3年の旅 終了"; $("stock").textContent = "最終結果"; } }
 async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
@@ -198,10 +199,15 @@ async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
 /* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
 let forkPlace = null;
+let forkGeneration = 0;
+function clearForkUI() { document.querySelectorAll('.fork').forEach(el=>el.remove()); forkPlace=null; forkGeneration++; globalThis.TRAVEL_UI?.clearPad(); }
 function chooseDir(opts) { return new Promise(res => { const wrap = document.getElementById("wrap"); const els = []; const h0 = hops(S.pos, S.dest);
+    clearForkUI(); const generation=forkGeneration;
+    let picked = false; const finish = id => { if(picked || generation!==forkGeneration)return; picked=true; els.forEach(e=>e.remove()); clearForkUI(); res(id); };
     const place = () => opts.forEach((o, i) => { const p = scr(P[o.to]); const from = scr(P[S.pos]); const ang = Math.atan2(p.y - from.y, p.x - from.x); const el = els[i]; el.style.left = (p.x / DPR) + "px"; el.style.top = (p.y / DPR) + "px"; el.style.setProperty("--rot", ang + "rad"); el.firstChild.style.transform = `rotate(${ang}rad)`; });
-    opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); forkPlace = null; res(o.to); }; wrap.appendChild(el); els.push(el); });
-    place(); forkPlace = place; $("msg").textContent = "分かれ道。赤い矢印＝目的地に近い道。迷ったら赤をタップ。"; }); }
+    opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => finish(o.to); wrap.appendChild(el); els.push(el); });
+    globalThis.TRAVEL_UI?.pad(opts.map(o=>({id:o.to,x:scr(P[o.to]).x-scr(P[S.pos]).x,y:scr(P[o.to]).y-scr(P[S.pos]).y,distance:hops(o.to,S.dest),label:dirName(S.pos,o.to)})),S.turnFlow?.remaining,finish);
+    place(); forkPlace = place; $("msg").textContent = `あと${S.turnFlow?.remaining ?? '-'}歩。分かれ道です`; }); }
 
 const isFinished = () => !!S.finalResults || S.turn >= TURNS_PER_YEAR * R.years;
 let buyInFlight = false;
@@ -257,7 +263,7 @@ async function continueTurn() {
           if (S.guide > 0) { const distances = destDist(); nexts.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); to = nexts[0]; S.guide--; }
           else to = await chooseDir(nexts.map(x => ({to: x})));
         }
-        await tween(S.pos, to); flow.prev = S.pos; S.pos = to; flow.remaining--;
+        await tween(S.pos, to); flow.prev = S.pos; S.pos = to; flow.remaining--; $("msg").textContent = `あと${flow.remaining}歩`;
         if (S.pos === S.dest) flow.remaining = 0;
         save();
       }
@@ -287,15 +293,15 @@ async function roll() {
   refill(); if (S.dice <= 0) return;
   busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; }
-  const skipped = S.skip > 0; let d = 0, firstDie = 1;
+  const skipped = S.skip > 0; let d = 0, firstDie = 1; const faces = [];
   if (skipped) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; }
   else {
     const count = S.triple ? 3 : S.double ? 2 : 1;
-    for (let i = 0; i < count; i++) { const die = 1 + Math.floor(Math.random() * 6); if (i === 0) firstDie = die; d += die; }
-    S.triple = false; S.double = false; $("msg").textContent = `サイコロ ${d}！`;
+    for (let i = 0; i < count; i++) { const die = 1 + Math.floor(Math.random() * 6); if (i === 0) firstDie = die; faces.push(die); d += die; }
+    S.triple = false; S.double = false; $("msg").textContent = `${faces.join(' + ')}が出ました。${d}歩進めます`;
   }
   S.turnFlow = {stage: "moving", remaining: d, prev: S.prev, skipped, notes: []}; save(); hud();
-  if (!skipped) await playDice(firstDie);
+  if (!skipped) await playDice(firstDie, faces);
   await continueTurn();
 }
 async function resolveCardArrival() {
@@ -388,10 +394,9 @@ function total() { return S.money + S.owned.reduce((a, id) => a + pv(id).price, 
 /* サイコロの転がり（H3 生成・背景抜き）。再生できない端末は素通り */
 const DICE_EXT = (() => { const v = document.createElement("video"); return v.canPlayType && v.canPlayType('video/mp4; codecs="hvc1"') ? "mov" : "webm"; })();   // iPhone/Safari は透過HEVC、それ以外は透過webm
 function diceSrc(n) { return `assets/dice/dice_${n}.${DICE_EXT}`; }
-function playDice(n) { return new Promise(res => { const v = $("diceVid"); if (!v || !v.canPlayType) return res(); let done = false; const fin = () => { if (done) return; done = true; v.style.display = "none"; v.pause(); res(); };
-  try { v.src = diceSrc(n); v.style.display = "block"; v.playbackRate = 2; const pr = v.play(); if (pr && pr.catch) pr.catch(fin); v.onended = fin; setTimeout(fin, 3200); } catch (e) { fin(); } }); }
+function playDice(n, faces = [n]) { return globalThis.TRAVEL_UI?.dice(faces) || Promise.resolve(); }
 /* 次の出目を先読み（サイコロが貯まっている間に） */
-function preloadDice() { try { [1, 2, 3, 4, 5, 6].forEach(n => { const l = document.createElement("link"); l.rel = "preload"; l.as = "video"; l.href = diceSrc(n); document.head.appendChild(l); }); } catch (e) {} }
+function preloadDice() { /* The dice presentation no longer downloads alpha videos. */ }
 /* 絵と音の差し込み口（いまは空。image2.5 の一枚絵・Suno の短尺・H3 の演出をここから） */
 const FX = { scene: (type, node) => {}, moveStart: (a, b) => {}, moveStep: (p) => {}, moveEnd: (b) => {}, destReveal: (dest) => {}, character: (who, target) => {} };
 /* ---- 絵の層（masa の絵・2026-09-11）。順番に出して、時間経過かタップで閉じる ---- */
@@ -496,14 +501,16 @@ if (D04_MODE) {
       if (S.pos !== previousPos) cam = {...P[S.pos]};
       draw();
     },
-    directions(ids, pick, disabled) {
-      document.querySelectorAll(".fork").forEach(el => el.remove()); forkPlace = null;
+    directions(ids, pick, disabled, remaining) {
+      clearForkUI(); const generation=forkGeneration;
       const valid = ids.filter(id => P[id]);
+      const finish = id => { if(disabled || generation!==forkGeneration || !valid.includes(id))return; clearForkUI(); pick(id); };
+      globalThis.TRAVEL_UI?.pad(valid.map(id=>({id,x:scr(P[id]).x-scr(P[S.pos]).x,y:scr(P[id]).y-scr(P[S.pos]).y,distance:hops(id,S.dest),label:dirName(S.pos,id)})),remaining,finish,disabled);
       const elements = valid.map(id => {
         const el = document.createElement("button"); el.className = "fork" + (S.dest && hops(id, S.dest) < hops(S.pos, S.dest) ? " dest" : "");
         const symbol = document.createElement("span"); symbol.textContent = "➤"; el.appendChild(symbol);
         el.title = `${dirName(S.pos, id)}・あと${hops(id, S.dest)}マス`; el.setAttribute("aria-label", el.title);
-        el.disabled = disabled; el.onclick = () => pick(id); $("wrap").appendChild(el); return el;
+        el.disabled = disabled; el.onclick = () => finish(id); $("wrap").appendChild(el); return el;
       });
       forkPlace = () => valid.forEach((id, i) => { const p = scr(P[id]); const from = scr(P[S.pos]); const angle = Math.atan2(p.y - from.y, p.x - from.x);
         elements[i].style.left = `${p.x / DPR}px`; elements[i].style.top = `${p.y / DPR}px`; elements[i].firstChild.style.transform = `rotate(${angle}rad)`; });
