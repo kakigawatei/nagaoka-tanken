@@ -17,6 +17,7 @@ const element = (tag, text, className) => {const el = document.createElement(tag
 export function createView(bridge) {
   const $ = id => document.getElementById(id);
   let session = null, commands = null, lobbyRequested = false, entryRequested = false, panel = null, dismissedResult = null, activeLife = false, inviteCode = '';
+  let dicePicking = false;
   const lobby = element('section', '', 'd04-lobby'); lobby.id = 'd04Lobby';
   const heading = element('h2', 'ながおかスゴ録');
   const nameLabel = element('label', '名前'); const name = element('input'); name.maxLength = 12; name.autocomplete = 'nickname'; name.value = '旅人'; nameLabel.appendChild(name);
@@ -37,7 +38,7 @@ export function createView(bridge) {
   const propertyName = id => bridge.catalog.properties.find(p => p.id === id)?.name || id;
   const current = () => session?.game;
 
-  function lifecycle(api, body) { if (activeLife) return; commands.lifecycle(api, body).catch(() => {}); }
+  function lifecycle(api, body) { if (activeLife || dicePicking) return; commands.lifecycle(api, body).catch(() => {}); }
   create.onclick = () => lifecycle('sugorokuCreateMatch', {name: name.value.trim() || '旅人'});
   join.onclick = () => {if (code.value.trim()) lifecycle('sugorokuJoinMatch', {name: name.value.trim() || '旅人', inviteCode: code.value.trim()});};
   ready.onchange = () => lifecycle('sugorokuSetReady', {matchId: session.matchId, expectedRevision: current().revision, ready: ready.checked});
@@ -45,8 +46,19 @@ export function createView(bridge) {
   close.onclick = () => {lobbyRequested = false; render();};
   retry.onclick = () => commands.retry(code.value.trim());
 
-  function action(type, payload, revision) {
-    if (!session || current()?.revision !== revision || activeLife) return;
+  async function action(type, payload, revision) {
+    if (!session || current()?.revision !== revision || activeLife || dicePicking) return;
+    if(type === 'ROLL' && globalThis.TRAVEL_UI?.spin) {
+      const matchId=session.matchId;
+      dicePicking=true;render();
+      try {
+        if(!await globalThis.TRAVEL_UI.spin() || session.matchId!==matchId || current()?.revision!==revision)return;
+        const result=await session.send(type,payload);
+        if(result?.status==='applied' && result.result?.faces && session.matchId===matchId) await globalThis.TRAVEL_UI.dice(result.result.faces);
+      } catch {session.error='CONNECTION';}
+      finally {dicePicking=false;render();}
+      return;
+    }
     session.send(type, payload).catch(() => {session.error = 'CONNECTION'; session.posting = false; render();});
   }
   function hideCard() {$('card').style.display = 'none'; $('wrap').classList.remove('results-open');}
@@ -89,7 +101,7 @@ export function createView(bridge) {
     lobby.hidden = !showLobby;
     entry.hidden = !!game && !entryRequested; other.hidden = game?.status !== 'finished' || entryRequested; members.replaceChildren();
     if (game) Object.entries(game.seats).forEach(([id, seat]) => members.appendChild(element('li', `${seat.name}${id === own ? '（あなた）' : ''}　${seat.kind === 'cpu' ? 'CPU' : seat.ready ? '準備OK' : '準備中'}`)));
-    const locked = !session || session.blocked || activeLife;
+    const locked = !session || session.blocked || activeLife || dicePicking;
     create.disabled = !commands || activeLife || !!session?.pending; join.disabled = create.disabled;
     readyLabel.hidden = game?.status !== 'lobby'; ready.disabled = locked; ready.checked = !!game?.seats[own]?.ready;
     start.hidden = game?.status !== 'lobby' || game?.hostUid !== session?.uid;
@@ -103,6 +115,7 @@ export function createView(bridge) {
     const round = Math.max(1, Math.min(game.round, 108)); const month = (3 + Math.floor((round - 1) % 36 / 3)) % 12 + 1;
     $('date').textContent = game.status === 'finished' ? '3年の旅 終了' : `${1 + Math.floor((round - 1) / 36)}年目 ${month}月`;
     $('destTxt').textContent = game.destination ? `目的地: ${bridge.nodeName(game.destination.nodeId)}　あと${bridge.distance(me?.pos, game.destination.nodeId) ?? '-'}マス　援助金 ${game.destination.bonus}万両` : '出発前';
+    if(game.destination) globalThis.TRAVEL_UI?.destination?.(bridge.nodeName(game.destination.nodeId),bridge.distance(me?.pos,game.destination.nodeId) ?? '-',game.destination.bonus);
     $('tip').textContent = '';
     const active = game.seats[game.activeSeat]?.name || '';
     const cpuBusy = session.cpuAdvance?.matchId === session.matchId && session.cpuAdvance?.epoch === session.epoch && game.status === 'playing' && game.seats[game.activeSeat]?.kind === 'cpu';

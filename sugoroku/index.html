@@ -40,7 +40,7 @@
 </style><link rel="stylesheet" href="kintsugi-repair.css"></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
-<div id="hud"><div>🐑 <b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
+<div id="hud"><div><b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"><span id="destTxt"></span><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div></div>
 <div id="arrow">🎯</div>
 <div id="artPop"><img id="artImg" alt=""><br><span class="cap" id="artCap"></span></div>
@@ -56,7 +56,7 @@
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
-<script src="travel-ui.js"></script>
+<script src="travel-ui.js?v=d17"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -162,9 +162,9 @@ let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawT
     if (S.dest === n.id) { ctx.fillStyle = "#d9552f"; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.lineTo(p.x + 34 * DPR, p.y - 33 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 26 * DPR); ctx.fill(); ctx.strokeStyle = "#3a2f26"; ctx.lineWidth = 2 * DPR; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.stroke(); }   // 目的地＝旗
     if (SHOP_NODES.has(n.id) && zoom > 5000) { ctx.fillStyle = "#2a2118"; ctx.font = `${10 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🃏カード売り場", p.x, p.y + 22 * DPR); }
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
-  Object.values(OTHERS).forEach(o => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${22 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🐑", q.x + 12 * DPR, q.y - 24 * DPR); });
-  S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; ctx.font = `${26 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(RIVALS[i].icon, q.x + (i - 1) * 14 * DPR, q.y - 30 * DPR); });
-  const p = scr(tokenPos || P[S.pos]); ctx.font = `${36 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🦙", p.x, p.y - 8 * DPR); }
+  Object.values(OTHERS).forEach((o,i) => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+12*DPR,q.y-12*DPR,DPR,i+1,false,()=>draw()); });
+  S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+(i-1)*20*DPR,q.y-18*DPR,DPR,r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,false,()=>draw()); });
+  const p = scr(tokenPos || P[S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw()); }
 addEventListener("resize", () => { layout(); draw(); });
 /* 指でドラッグして地図を見回す（サイコロを振るとコマに戻る） */
 let drag = null; cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; });
@@ -192,6 +192,7 @@ let rouletteFrom = S.nextDestination ? S.nextDestination.from : null;
 let hud = function () { if (!S.dest || !byId[S.dest]) { $("destTxt").textContent = "目的地を決めています"; $("roll").disabled = true; return; } $("money").textContent = S.money; const y = 1 + Math.floor(S.turn / TURNS_PER_YEAR), m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); $("date").textContent = `${y}年目 ${m > 12 ? m - 12 : m}月`;
   const dd = destDist(); const hp = dd[S.pos] === undefined ? hops(S.pos, S.dest) : dd[S.pos]; const racers = [{ name: "あなた", h: hp }].concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })), Object.values(OTHERS).map(o => ({ name: o.name || "旅人", h: dd[o.pos] === undefined ? 999 : dd[o.pos] }))).sort((a, b) => a.h - b.h); const lead = racers[0];
   $("destTxt").textContent = `🎯 目的地: ${stName(byId[S.dest])}${String(byId[S.dest].area || "").trim() ? "（" + String(byId[S.dest].area).trim() + "）" : ""}　あと約 ${hp} マス・援助金 ${S.destBonus || destBonus(hp)}万両` + (hp <= 6 ? "　🔥一振りで届くかも！" : lead.name !== "あなた" ? `　先頭: ${lead.name} あと${lead.h}マス` : "　あなたが先頭！");
+  globalThis.TRAVEL_UI?.destination(stName(byId[S.dest]),hp,S.destBonus || destBonus(hp),byId[S.dest].area || "");
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = R.freeDice ? "サイコロ 何回でも（テスト中・順番に振れます）" : `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || !!S.turnFlow || rouletteQueued || isFinished() || $("card").style.display === "block"; if (isFinished()) { $("date").textContent = "3年の旅 終了"; $("stock").textContent = "最終結果"; } }
 async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
@@ -291,7 +292,12 @@ async function continueTurn() {
 async function roll() {
   if (busy || S.turnFlow || isFinished() || $("card").style.display === "block" || rouletteQueued || !S.dest) return;
   refill(); if (S.dice <= 0) return;
-  busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now();
+  busy = true; hud();
+  if (!(S.skip > 0 && !S.snowGuard) && globalThis.TRAVEL_UI?.spin) {
+    try { if(!await globalThis.TRAVEL_UI.spin()){busy=false;hud();return;} }
+    catch {busy=false;hud();return;}
+  }
+  S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; }
   const skipped = S.skip > 0; let d = 0, firstDie = 1; const faces = [];
   if (skipped) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; }
@@ -493,7 +499,7 @@ if (D04_MODE) {
       const owned = id => Object.keys(game.propertyOwners || {}).filter(p => game.propertyOwners[p] === id);
       const others = entries.filter(([id]) => id !== mine[0]);
       const previousPos = S.pos;
-      S = {...S, ...mine[1], owned: owned(mine[0]), dest: game.destination?.nodeId ?? null, destBonus: game.destination?.bonus ?? 0,
+      S = {...S, ...mine[1], visualSeat:Number(mine[0].slice(1)), owned: owned(mine[0]), dest: game.destination?.nodeId ?? null, destBonus: game.destination?.bonus ?? 0,
         cards: [], rivals: others.filter(([, seat]) => P[seat.pos]).map(([id, seat]) => ({...seat, id, owned: owned(id)}))};
       if (!P[S.pos]) S.pos = START;
       RIVALS.splice(0, RIVALS.length, ...S.rivals.map(seat => ({id: seat.id, name: seat.name, icon: seat.kind === "cpu" ? "⛑️" : "🐑"})));

@@ -101,3 +101,22 @@ button, input{ font-family:inherit; }
 .travel-dice-result{display:block;width:fit-content;max-width:100%;margin:18px auto 0;padding:8px 12px;font-size:17px;line-height:1.5;background:#fff;color:var(--ink);border-radius:8px;overflow-wrap:anywhere;}
 @keyframes travel-tumble{0%{transform:translate(-35px,-24px) rotate(-100deg)}65%{transform:translate(4px,0) rotate(9deg)}82%{transform:translate(0,-7px) rotate(-5deg)}100%{transform:translate(0,0) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.travel-die{animation:none;}}
+
+/* D17: destination and throw action remain readable above the map. */
+#panel{z-index:5;}
+#card{z-index:6;}
+#dest{top:48px;left:12px;right:60px;width:auto;max-width:none;padding:10px 12px;border-radius:8px;}
+#destTxt{display:block;}
+.travel-dest-label{display:block;font-size:13px;font-weight:700;}
+.travel-dest-name{display:block;font-size:22px;line-height:1.25;overflow-wrap:anywhere;margin:3px 0 6px;}
+.travel-dest-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;}
+.travel-dest-distance{font-size:23px;line-height:1.2;white-space:nowrap;}
+.travel-dest-bonus{font-size:12px;overflow-wrap:anywhere;}
+.travel-remaining{font-size:22px;}
+.travel-dice{z-index:9;}
+.travel-spinning{pointer-events:auto;}
+.travel-spin-face{animation:travel-spin .7s linear infinite;}
+.travel-throw{display:block;margin:24px auto 0;min-width:150px;min-height:52px;font-size:21px;border-radius:8px;touch-action:manipulation;}
+@keyframes travel-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.travel-spin-face{animation:none;}}
+@media(max-height:450px) and (orientation:landscape){#dest{right:auto;width:42%;max-height:34%;overflow:hidden;padding:6px 10px;}.travel-dest-name{font-size:18px;margin:0 0 3px;}.travel-dest-distance{font-size:20px;}#dest #tip{display:none;}.travel-spinning{top:16%;left:48%;}}
