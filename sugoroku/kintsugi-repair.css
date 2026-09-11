@@ -76,6 +76,7 @@ button, input{ font-family:inherit; }
 .d04-lobby{position:absolute;inset:16px 16px auto;max-width:480px;max-height:calc(100% - 32px);margin:auto;padding:16px;overflow:auto;background:var(--paper);color:var(--ink);border-radius:8px;z-index:8;box-shadow:0 4px 20px #0003;}
 .d04-lobby[hidden],.d04-lobby [hidden],#d04Retry[hidden]{display:none!important;}
 .d04-lobby h2{font-size:22px;margin:0 0 16px;}
+.d04-lobby > a{display:inline-block;min-height:44px;color:var(--ink);padding:8px 0;}
 .d04-entry{display:grid;gap:12px;}
 .d04-lobby label{display:block;font-size:14px;}
 .d04-lobby input:not([type=checkbox]){display:block;box-sizing:border-box;width:100%;margin-top:4px;padding:10px;font-size:16px;}
@@ -104,6 +105,15 @@ button, input{ font-family:inherit; }
 
 /* D17: destination and throw action remain readable above the map. */
 #panel{z-index:5;}
+#modeHome{position:absolute;right:12px;top:34px;z-index:7;background:#fff;color:var(--ink);padding:7px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;text-decoration:none;}
+#modeMenu{position:absolute;inset:0;z-index:10;align-content:center;justify-items:center;gap:20px;padding:24px 16px;overflow:auto;background:rgba(255,255,255,.94);}
+#modeMenu h1{margin:0;font-size:28px;text-align:center;overflow-wrap:anywhere;}
+.mode-cast{display:flex;align-items:end;justify-content:center;gap:12px;height:84px;max-width:100%;}
+.mode-cast img{height:80px;width:48px;object-fit:contain;}
+#modeMenu nav{display:grid;gap:12px;width:100%;max-width:340px;}
+#modeMenu nav a{display:block;padding:16px 12px;min-height:56px;border:2px solid var(--accent);border-radius:8px;font-size:18px;font-weight:700;text-align:center;text-decoration:none;overflow-wrap:anywhere;background:#fff;color:var(--ink);}
+#modeMenu nav a:last-child{background:var(--accent);color:#fff;}
+.mode-menu-open #hud,.mode-menu-open #dest,.mode-menu-open #panel,.mode-menu-open #snd,.mode-menu-open #arrow,.mode-menu-open #modeHome{display:none!important;}
 #card{z-index:6;}
 #dest{top:48px;left:12px;right:60px;width:auto;max-width:none;padding:10px 12px;border-radius:8px;}
 #destTxt{display:block;}

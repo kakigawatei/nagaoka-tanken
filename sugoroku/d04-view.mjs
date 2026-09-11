@@ -20,10 +20,11 @@ export function createView(bridge) {
   let dicePicking = false;
   const lobby = element('section', '', 'd04-lobby'); lobby.id = 'd04Lobby';
   const heading = element('h2', 'ながおかスゴ録');
+  const back = element('a', '遊び方を選び直す'); back.href = '?';
   const nameLabel = element('label', '名前'); const name = element('input'); name.maxLength = 12; name.autocomplete = 'nickname'; name.value = '旅人'; nameLabel.appendChild(name);
-  const create = element('button', '対局をつくる');
+  const create = element('button', '部屋をつくる');
   const codeLabel = element('label', '招待コード'); const code = element('input'); code.autocomplete = 'off'; code.maxLength = 120; codeLabel.appendChild(code);
-  const join = element('button', '参加する', 'ghost');
+  const join = element('button', 'コードで参加', 'ghost');
   const entry = element('div', '', 'd04-entry'); entry.append(nameLabel, create, codeLabel, join);
   const invite = element('p'); const members = element('ul', '', 'd04-members');
   const copyInvite = element('button', '招待コードをコピー', 'ghost'); copyInvite.hidden = true;
@@ -32,7 +33,7 @@ export function createView(bridge) {
   const readyLabel = element('label', '', 'd04-ready'); const ready = element('input'); ready.type = 'checkbox'; readyLabel.append(ready, document.createTextNode('準備できた'));
   const start = element('button', '出発'); const close = element('button', '閉じる', 'ghost');
   const status = element('p'); status.setAttribute('role', 'status');
-  lobby.append(heading, entry, invite, copyInvite, members, readyLabel, start, other, close, status); $('wrap').appendChild(lobby);
+  lobby.append(heading, back, entry, invite, copyInvite, members, readyLabel, start, other, close, status); $('wrap').appendChild(lobby);
   const retry = element('button', '再確認', 'ghost'); retry.id = 'd04Retry'; retry.hidden = true; $('panel').appendChild(retry);
   const cardName = id => bridge.cards.find(c => c.id === id)?.name || id;
   const propertyName = id => bridge.catalog.properties.find(p => p.id === id)?.name || id;

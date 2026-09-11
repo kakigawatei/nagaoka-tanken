@@ -40,6 +40,12 @@
 </style><link rel="stylesheet" href="kintsugi-repair.css"></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
+<a id="modeHome" href="?" aria-label="遊び方を選び直す">切替</a>
+<section id="modeMenu" aria-label="遊び方を選ぶ" style="display:none">
+<h1>ながおかスゴ録</h1>
+<div class="mode-cast" aria-hidden="true"><img src="assets/art/cells/token_you_1.png" alt=""><img src="assets/art/cells/token_kon_1.png" alt=""><img src="assets/art/cells/token_kabuto_1.png" alt=""><img src="assets/art/cells/token_ryokan_1.png" alt=""></div>
+<nav aria-label="ゲームモード"><a href="?mode=solo">ひとりで遊ぶ</a><a href="?mode=d04">みんなで対戦（β）</a></nav>
+</section>
 <div id="hud"><div><b id="money">1000</b> 万両</div><div id="date">1年目 4月</div></div>
 <div id="dest"><span id="destTxt"></span><div id="tip" style="font-size:12px;color:#8a5a2b;margin-top:2px"></div></div>
 <div id="arrow">🎯</div>
@@ -65,6 +71,7 @@
    ・サイコロ 60分に1回・3回まで貯まる／分かれ道で行き先を選ぶ／目的地（探検録のスポット）に着くとご褒美→次の目的地
    ・青=もらう 赤=払う 黄=カード（仮） 紫=イベント（仮） 緑=目的地 橙=物件（買える・自分のに止まると売上）
    ・絵はまだ無い（masa の image2.5 の地図とマス絵を後で敷く）。データは端末保存（Firestore 共有は次） */
+const ENTRY_MODE = typeof location !== "undefined" && !['solo','d04'].includes(new URLSearchParams(location.search).get('mode')) && !new URLSearchParams(location.search).has('match') && new URLSearchParams(location.search).get('emu') !== '1' && !new URLSearchParams(location.search).has('kt');
 const D04_MODE = typeof location !== "undefined" && (new URLSearchParams(location.search).get("mode") === "d04" || new URLSearchParams(location.search).has("match") || new URLSearchParams(location.search).get("emu") === "1");
 const B = BOARD_DATA; const R = B.rules; R.freeDice = true;   /* テスト期間: サイコロ制限なし（masa 2026-09-11） */ const NODES = B.nodes; const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const ADJ = {}; const EPTS = {};   // EPTS["a-b"] = 道路のポリライン（a→b の向き）
@@ -84,12 +91,12 @@ const TURNS_PER_YEAR = 36;   // 1か月＝3手番・1年＝36手番（仕様 §3
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
 const RIVALS = [{ id: "kon", name: "コン", icon: "🦊" }, { id: "kabuto", name: "愛の兜", icon: "⛑️" }, { id: "ryokan", name: "良寛さん", icon: "🧘" }];   // CPUの旅人（探検録の顔ぶれ）
 const newRivals = () => RIVALS.map(r => ({ id: r.id, pos: START, prev: null, money: R.startMoney, owned: [], dest: null, reached: 0 }));
-let S = (!D04_MODE && load()) || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
+let S = ((!D04_MODE && !ENTRY_MODE) && load()) || { pos: START, prev: null, money: R.startMoney, owned: [], dice: R.diceStockMax, lastDice: Date.now(), turn: 0, dest: null, reached: 0, log: [], cards: [], skip: 0, rivals: newRivals() };
 if (!S.rivals) { S.rivals = newRivals(); S.cards = S.cards || []; S.skip = 0; }
 /* ---- 共有盤面（Firestore）---- */
 let FB = null, UID = null, OTHERS = {}, PROPS = {}, GAME = null;   // GAME: 正本 sugoroku_games/main   // OTHERS: 他の実プレイヤー / PROPS: 物件の持ち主 {propId: {owner, name}}
 const FIREBASE_OPTIONS = { apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" };
-if (!D04_MODE) { try { firebase.initializeApp(FIREBASE_OPTIONS); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); } }
+if ((!D04_MODE && !ENTRY_MODE)) { try { firebase.initializeApp(FIREBASE_OPTIONS); FB = firebase.firestore(); } catch (e) { console.warn("firebase off", e); } }
 const ownerOf = pid => S.owned.includes(pid) ? "you" : (PROPS[pid] && PROPS[pid].owner && PROPS[pid].owner !== UID) ? "p:" + PROPS[pid].owner : (S.rivals.find(r => r.owned.includes(pid)) || {}).id || null;
 const ownerName = o => o === "you" ? "あなた" : o && o.startsWith("p:") ? ((OTHERS[o.slice(2)] || {}).name || "旅人") : ((RIVALS.find(r => r.id === o) || {}).name || "");
 async function cloudStart(preferLocal = false) { if (!FB) return; try {
@@ -109,7 +116,7 @@ function cloudPush() { if (!FB || !UID) return; clearTimeout(pushTimer); pushTim
 /* 物件を買う: 早い者勝ちをトランザクションで */
 async function cloudBuy(propId) { if (!FB || !UID) return true; try { await FB.runTransaction(async tx => { const ref = FB.collection("sugoroku_props").doc(propId); const d = await tx.get(ref); if (d.exists && d.data().owner && d.data().owner !== UID) throw new Error("taken"); tx.set(ref, { owner: UID, name: S.name || "旅人", at: Date.now() }); }); return true; } catch (e) { if (e && e.message === "taken") return false; if (e && e.code === "permission-denied") { console.warn("cloudBuy: ルール未設定→端末側で成立"); return true; } $("msg").textContent = "いまはつながらないので買えません（オンラインで再度）"; return false; } }   // ルール未設定・オフラインは端末側で成立させる
 function compat() { if (S.kome === true) S.kome = 3; if (S.destCount === undefined && S.reached > 0) S.destCount = S.reached; } compat();   /* 旧データ互換（クラウド読み込み後にも） */
-const save = () => { if (D04_MODE) return; localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
+const save = () => { if (D04_MODE || ENTRY_MODE) return; localStorage.setItem(KEY, JSON.stringify(S)); cloudPush(); };
 /* 正本を自分の状態に反映。移動中・カード表示中は pendingGame に退避して後で */
 let pendingGame = null;
 function applyGame(g) { if (!g || S.finalResults) return; GAME = g; if (busy || S.turnFlow || rouletteQueued || $("card").style.display === "block") { pendingGame = g; return; } pendingGame = null;
@@ -453,7 +460,7 @@ function showIntro() { let i = 0; const box = $("intro"); box.style.display = "f
   const step = () => { const [t, b] = INTRO[i]; $("iTitle").textContent = t; $("iBody").textContent = b; const last = i === INTRO.length - 1; $("iName").style.display = last ? "block" : "none"; $("iNext").textContent = last ? "出発！" : "つぎへ"; };
   $("iNext").onclick = () => { if (i < INTRO.length - 1) { i++; step(); return; } const v = $("iName").value.trim(); S.name = v.slice(0, 12) || "旅人"; S.introDone = true; save(); box.style.display = "none"; hud(); $("msg").textContent = `${S.name}、いってらっしゃい。まずはサイコロを。`; };
   step(); }
-if (!D04_MODE && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
+if ((!D04_MODE && !ENTRY_MODE) && !S.introDone && !isFinished()) setTimeout(showIntro, 400);
 /* ---- 目的地の方角矢印（画面の外にあるとき） ---- */
 function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.style.display = "none"; return; } const p = scr(P[S.dest]); const x = p.x / DPR, y = p.y / DPR, w = innerWidth, h = innerHeight - 180;
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
@@ -470,18 +477,19 @@ function renderHand() { const box = $("hand"); box.innerHTML = ""; S.cards = (S.
 $("rank").onclick = () => { if (S.finalResults) { showResults(); return; } const rows = [{ name: "あなた", total: total() }].concat(Object.values(OTHERS).map(o => ({ name: o.name || "旅人", total: (o.money || 0) + (o.owned || []).reduce((a, id) => a + (pv(id) ? pv(id).price : 0), 0) }))).concat(S.rivals.map((r, i) => ({ name: RIVALS[i].name, total: r.money + r.owned.reduce((a, id) => a + pv(id).price, 0) }))).sort((a, b) => b.total - a.total); $("msg").textContent = "総資産: " + rows.map((r, i) => `${i + 1}位 ${r.name} ${r.total}`).join("　"); };
 const _hud = hud; hud = function () { _hud(); renderHand(); };
 $("assets").onclick = () => { const l = S.owned.map(id => pv(id).name); $("msg").textContent = l.length ? "持ち物件: " + l.join("、") + `　／ 総資産 ${total()}万両` : "まだ物件はありません。"; };
-if (!D04_MODE && !S.dest && !S.turnFlow && !isFinished()) pickDest();
-if (!D04_MODE) refill(); const today = new Date().toDateString(); if (!D04_MODE && !isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
+if ((!D04_MODE && !ENTRY_MODE) && !S.dest && !S.turnFlow && !isFinished()) pickDest();
+if ((!D04_MODE && !ENTRY_MODE)) refill(); const today = new Date().toDateString(); if ((!D04_MODE && !ENTRY_MODE) && !isFinished() && S.dice >= R.diceStockMax && S.lastGift !== today) { S.lastGift = today; S.money += 50; save(); setTimeout(() => { $("msg").textContent = "☀ 朝市ボーナス +50万両（サイコロが満タンの日に開くともらえる）"; }, 300); }
 function showReturnDigest() { const away = Date.now() - (S.lastSeen || 0); if (S.lastSeen && away > 30 * 60000 && S.dest && byId[S.dest]) { const dd = distFrom(S.dest); const lead = S.rivals.map((r, i) => ({ name: RIVALS[i].name, h: dd[r.pos] === undefined ? 999 : dd[r.pos] })).sort((a, b) => a.h - b.h)[0]; const recent = (S.log || []).slice(-2).join("／"); const hrs = Math.floor(away / 3600000);
     $("msg").textContent = `🏠 ${hrs >= 1 ? hrs + "時間ぶり" : "おかえり"}。目的地は ${stName(byId[S.dest])}（あなた あと${hops(S.pos, S.dest)}マス／${lead.name} あと${lead.h}マス）` + (recent ? "　" + recent : "") + `　サイコロ ${S.dice}個`; }
   S.lastSeen = Date.now(); save(); }
-if (!D04_MODE) {
+if ((!D04_MODE && !ENTRY_MODE)) {
 layout(); hud(); draw(); setInterval(() => { refill(); hud(); }, 30000); if (!S.turnFlow) cloudStart(); if (S.introDone && !S.turnFlow && !isFinished()) showReturnDigest();
 if (S.turnFlow) {
   if (S.turnFlow.stage === "arrival" && S.turnFlow.shop) { const shop = S.turnFlow.shop; if (shop.type === "cards") cardShop(); else { const list = stationProps(shop.station).filter(p => !ownerOf(p.id)); if (list.length) showShop(shop.station, list); } }
   continueTurn().then(() => cloudStart(true)).catch(e => console.warn("turn resume", e)); } else if (isFinished()) { freezeResults(); showResults(); } else if (S.nextDestination) { busy = true; roulette().finally(() => { busy = false; hud(); }); }   /* 動画の先読みはしない（通信量） */
 }
 
+if (ENTRY_MODE) {layout(); draw(); $('wrap').classList.add('mode-menu-open'); $('modeMenu').style.display='grid';}
 if (D04_MODE) {
   S.rivals = []; S.cards = []; busy = true;
   layout(); draw(); $("msg").textContent = "対局に接続中";
