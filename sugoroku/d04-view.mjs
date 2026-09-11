@@ -18,6 +18,7 @@ export function createView(bridge) {
   const $ = id => document.getElementById(id);
   let session = null, commands = null, lobbyRequested = false, entryRequested = false, panel = null, dismissedResult = null, activeLife = false, inviteCode = '';
   let dicePicking = false;
+  let routeView=null,routeKey=null;
   const lobby = element('section', '', 'd04-lobby'); lobby.id = 'd04Lobby';
   const heading = element('h2', 'ながおかスゴ録');
   const back = element('a', '遊び方を選び直す'); back.href = '?';
@@ -124,7 +125,7 @@ export function createView(bridge) {
     $('msg').textContent = messages[session.error] || (session.error ? '操作を完了できませんでした' : !session.online ? '接続を確認しています' : cpuBusy ? `${active || 'CPU'}が移動しています` : stateText);
     $('stock').textContent = session.posting ? '送信中' : session.pending ? '結果を確認中' : cpuBusy && session.online && !session.error ? 'CPU進行中' : `${Math.min(game.completedRounds, 108)} / 108`;
     $('roll').disabled = locked || showLobby || !canAct(game, session.hand, session.uid, 'ROLL');
-    $('roll').onclick = () => action('ROLL', {}, game.revision);
+    $('roll').onclick = () => action('ROLL', bridge.planRoute ? {planRoute:true} : {}, game.revision);
     ['rank', 'assets', 'nameBtn'].forEach(id => {$(id).disabled = false;});
     $('nameBtn').textContent = '対局'; $('nameBtn').onclick = () => {lobbyRequested = true; render();};
     $('rank').onclick = () => {panel = 'rank'; renderCard(game, own);};
@@ -138,7 +139,13 @@ export function createView(bridge) {
       const payload = {cardInstanceId: card.instanceId}; button.disabled = locked || showLobby || !canAct(game, session.hand, session.uid, 'USE_CARD', payload);
       button.onclick = () => action('USE_CARD', payload, game.revision); hand.appendChild(button);
     });
-    bridge.directions(game.phase === 'await_direction' && game.activeSeat === own && !showLobby ? game.turnContext.allowedNextNodes : [], id => action('CHOOSE_DIRECTION', {toNodeId: id}, game.revision), locked, game.turnContext?.remainingSteps);
+    const planning=game.phase==='await_direction'&&game.turnContext?.planning&&game.activeSeat===own&&!showLobby&&!dicePicking;
+    const key=planning?`${session.matchId}:${game.revision}`:null;
+    if(routeView&&key!==routeKey){routeView.close();routeView=null;routeKey=null;}
+    if(planning&&bridge.planRoute){
+      if(!routeView){routeKey=key;routeView=bridge.planRoute(game,session.uid,path=>action('COMMIT_ROUTE',{path},game.revision));}
+      routeView.setLocked(locked);
+    } else bridge.directions(game.phase === 'await_direction' && !game.turnContext?.planning && game.activeSeat === own && !showLobby ? game.turnContext.allowedNextNodes : [], id => action('CHOOSE_DIRECTION', {toNodeId: id}, game.revision), locked, game.turnContext?.remainingSteps);
     if (showLobby) hideCard(); else renderCard(game, own);
   }
   render();
@@ -147,6 +154,6 @@ export function createView(bridge) {
     busy(value) {activeLife = value; render();},
     invite(value) {inviteCode = value || ''; invite.textContent = value ? `招待コード: ${value}` : ''; copyInvite.hidden = !value;},
     message(value) {$('msg').textContent = value; status.textContent = value;},
-    newMatch() {globalThis.TRAVEL_UI?.resetTokens?.(); panel = null; dismissedResult = null; lobbyRequested = false; entryRequested = false; inviteCode = ''; invite.textContent = ''; copyInvite.hidden = true; hideCard();},
+    newMatch() {routeView?.close();routeView=null;routeKey=null;globalThis.TRAVEL_UI?.resetTokens?.(); panel = null; dismissedResult = null; lobbyRequested = false; entryRequested = false; inviteCode = ''; invite.textContent = ''; copyInvite.hidden = true; hideCard();},
   };
 }

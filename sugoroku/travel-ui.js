@@ -5,6 +5,7 @@
   let spinning = null, tokenFrameRequest = null;
   const tokenImages = new Map(), tokenMotion = new Map();
   const menuButton=typeof document==='undefined' ? null : $('menuToggle');
+  if(typeof document!=='undefined')document.addEventListener?.('dblclick',event=>event.preventDefault(),{passive:false});
   if(menuButton) {
     const menu=$('panel');
     const toggle=open=>{menu.hidden=!open;menuButton.setAttribute('aria-expanded',String(open));if(!open)menuButton.focus?.();};

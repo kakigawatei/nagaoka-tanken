@@ -61,10 +61,13 @@
 <div class="row"><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
 <a id="modeHome" href="?" aria-label="遊び方を選び直す">遊び方を選び直す</a>
 <div id="stock"></div></div>
+<nav id="mapZoom" aria-label="地図表示"><button id="zoomIn" title="拡大" aria-label="拡大">＋</button><button id="zoomOut" title="縮小" aria-label="縮小">−</button><button id="zoomFit" title="全体地図" aria-label="全体地図">⊡</button><button id="zoomHome" title="自分の位置" aria-label="自分の位置">◎</button></nav>
+<section id="mapInspect" hidden aria-label="マスの情報"><button id="inspectClose" title="閉じる" aria-label="閉じる">×</button><h3 id="inspectTitle"></h3><div id="inspectBody"></div></section>
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
-<script src="travel-ui.js?v=d20"></script>
+<script src="travel-ui.js?v=d23"></script>
+<script src="route-ui.js?v=d23"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -135,7 +138,8 @@ function refill() { if (isFinished()) return; if (R.freeDice) { if (S.dice < R.d
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d"); const DPR = devicePixelRatio || 1; let W, H;
 const merc = n => ({ x: n.lng, y: -Math.log(Math.tan(Math.PI / 4 + n.lat * Math.PI / 360)) * 180 / Math.PI });
 const P = Object.fromEntries(NODES.map(n => [n.id, merc(n)]));
-let cam = { ...P[S.pos] }, zoom = 15000;   // 1度 ≒ 15000px（1マス≒200m が約 26px・絵の解像度に合わせて引き気味）
+let cam = { ...P[S.pos] }, zoom = 15000;
+let routePreview = null, mapGame = null;
 function layout() { W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR; }
 const scr = p => ({ x: W / 2 + (p.x - cam.x) * zoom * DPR, y: H * 0.42 + (p.y - cam.y) * zoom * DPR });
 const COL = { blue: "#4a7fd6", red: "#d9553a", yellow: "#e6c34a", event: "#9a6fd0", dest: "#3aa66a", prop: "#f08a1e", fork: "#fff" };
@@ -173,13 +177,43 @@ let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawT
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
   Object.entries(OTHERS).forEach(([uid,o],i) => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+12*DPR,q.y-12*DPR,DPR,i+1,false,()=>draw(),{key:'other:'+uid,world:P[o.pos]}); });
   S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+(i-1)*20*DPR,q.y-18*DPR,DPR,r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,false,()=>draw(),{key:'rival:'+(r.id ?? i),world:P[r.pos]}); });
-  const p = scr(tokenPos || P[S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw(),{key:'you',world:tokenPos || P[S.pos]}); }
+  const p = scr(tokenPos || P[routePreview ?? S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw(),{key:'you',world:tokenPos || P[routePreview ?? S.pos]}); }
 addEventListener("resize", () => { layout(); draw(); });
 /* 指でドラッグして地図を見回す（サイコロを振るとコマに戻る） */
 let drag = null; cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; });
 cv.addEventListener("pointermove", e => { if (!drag) return; cam.x = drag.cx - (e.clientX - drag.x) / zoom; cam.y = drag.cy - (e.clientY - drag.y) / zoom; draw(); });
-cv.addEventListener("pointerup", () => drag = null); cv.addEventListener("pointercancel", () => drag = null);
+cv.addEventListener("pointerup", e => {
+  if(drag && Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8){
+    const rect=cv.getBoundingClientRect();let nearest=null,best=24*DPR;
+    NODES.forEach(n=>{const p=scr(P[n.id]),d=Math.hypot(p.x-(e.clientX-rect.left)*DPR,p.y-(e.clientY-rect.top)*DPR);if(d<best){best=d;nearest=n.id;}});
+    if(nearest!==null)inspectNode(nearest);
+  }
+  drag=null;
+}); cv.addEventListener("pointercancel", () => drag = null);
 const $ = id => document.getElementById(id); let busy = false;
+function inspectNode(id){
+  const n=byId[id];if(!n)return;
+  const box=$('inspectBody');box.replaceChildren();$('inspectTitle').textContent=stName(n)||({blue:'青マス',red:'赤マス',yellow:'カードマス',event:'イベントマス'}[n.t]||'道のマス');
+  const line=text=>{const p=document.createElement('p');p.textContent=text;box.appendChild(p);};
+  if(id===S.dest)line(`目的地・援助金 ${S.destBonus}万両`);
+  const station=n.prop?pv(n.prop)?.station:n.station;
+  const props=station?B.properties.filter(p=>p.station===station):[];
+  props.forEach(p=>{const owner=mapGame?mapGame.propertyOwners[p.id]:ownerOf(p.id);const who=mapGame?.seats[owner]?.name;line(`${p.name}・${p.price}万両・実り${Math.round(p.yield*100)}%・${owner?(who||'所有者あり'):'売り出し中'}`);});
+  if(SHOP_NODES.has(id))CARDS.forEach(c=>line(`${c.name}・${c.price||100}万両・${c.desc}`));
+  if(!props.length&&!SHOP_NODES.has(id))line({blue:'止まるとお金がもらえる',red:'止まると支払い',yellow:'止まるとカード',event:'止まるとイベント'}[n.t]||'');
+  $('mapInspect').hidden=false;
+}
+function routeConfig(start,steps,previous=null,guide=0){return {start,steps,previous,guide,adj:ADJ,distance:id=>hops(id,S.dest),
+  choice:(from,id)=>({x:P[id].x-P[from].x,y:P[id].y-P[from].y,distance:hops(id,S.dest),label:dirName(from,id)}),
+  name:id=>stName(byId[id])||({blue:'青マス',red:'赤マス',yellow:'カードマス',event:'イベントマス'}[byId[id].t]||'道のマス'),inspect:inspectNode,
+  preview(id){if(id!==routePreview){routePreview=id;if(id!==null)cam={...P[id]};draw();}}
+};}
+function planSoloRoute(flow){return new Promise(resolve=>{const planner=TRAVEL_ROUTE.open({...routeConfig(S.pos,flow.remaining,flow.prev,S.guide||0),commit:path=>{planner.close();$('mapInspect').hidden=true;resolve(path);}});});}
+if($('zoomIn')){
+  $('zoomIn').onclick=()=>{zoom=Math.min(60000,zoom*1.4);draw();};$('zoomOut').onclick=()=>{zoom=Math.max(300,zoom/1.4);draw();};
+  $('zoomFit').onclick=()=>{const pts=Object.values(P),xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);cam={x:(x0+x1)/2,y:(y0+y1)/2};zoom=Math.min(W/DPR*.78/(x1-x0),H/DPR*.62/(y1-y0));draw();};
+  $('zoomHome').onclick=()=>{cam={...P[routePreview??S.pos]};zoom=15000;draw();};$('inspectClose').onclick=()=>{$('mapInspect').hidden=true;};
+}
 /* アイコン: 物件マスは icons/<prop>.png、目的地マスは icons/<station>.png（無ければ従来の丸） */
 const ICON_KEYS = new Set(["aore","honmaru","kome100","nagaoka_st","oguni_washi","ryokan","teradomari_ichiba","togyu","yukyuzan","p01","p02","p03","p04","p05","p06","p07","p08","p09","p10","p11","p12","p13","p15","p16","p17","p18"]);
 const ICON_ALIAS = { p14: "togyu" };
@@ -205,7 +239,7 @@ let hud = function () { if (!S.dest || !byId[S.dest]) { $("destTxt").textContent
   const tip = S.cards.includes("mamori") && S.yukinko === "you" ? "守り" : (S.cards.includes("buttobi") && hp >= 8) ? "ぶっとび" : (S.cards.includes("tokkyu") && hp >= 8) ? "特急" : (S.cards.includes("chosei") || S.cards.includes("koi")) && hp >= 5 ? "分かれ道の" : null; if (tip && !busy && $("card").style.display !== "block") $("tip").textContent = `💡 いま ${tip}カードが効きそう`; else $("tip").textContent = ""; const wait = Math.max(0, R.diceCooldownMin * 60000 - (Date.now() - S.lastDice));
   $("stock").textContent = R.freeDice ? "サイコロ 何回でも（テスト中・順番に振れます）" : `サイコロ ${S.dice}/${R.diceStockMax}` + (S.dice < R.diceStockMax ? `　次まで ${Math.ceil(wait / 60000)}分` : ""); $("roll").disabled = S.dice <= 0 || busy || !!S.turnFlow || rouletteQueued || isFinished() || $("card").style.display === "block"; if (isFinished()) { $("date").textContent = "3年の旅 終了"; $("stock").textContent = "最終結果"; } }
 async function tween(a, b) { FX.moveStart(a, b); const pts = edgePts(a, b).map(p => ({ x: p[1], y: mercY(p[0]) })); const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(d); L += d; }
-  const steps = 9; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); FX.moveStep(p); await new Promise(r => setTimeout(r, 24)); } FX.moveEnd(b); }
+  const steps = 5; for (let k = 0; k <= steps; k++) { let want = L * k / steps, i = 0; while (i < segs.length - 1 && want > segs[i]) { want -= segs[i]; i++; } const f = segs[i] ? want / segs[i] : 0; const p = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; cam.x += (p.x - cam.x) * 0.5; cam.y += (p.y - cam.y) * 0.5; draw(p); FX.moveStep(p); await new Promise(r => setTimeout(r, 16)); } FX.moveEnd(b); }
 function dirName(from, to) { const dx = P[to].x - P[from].x, dy = P[to].y - P[from].y; return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "東へ" : "西へ") : (dy > 0 ? "南へ" : "北へ"); }
 /* 分かれ道: 地図の上、その先のマスの位置に矢印を出す。矢印をタップした方へ進む（masa 2026-09-10 23:01） */
 let forkPlace = null;
@@ -266,10 +300,12 @@ async function continueTurn() {
   busy = true;
   try {
     if (flow.stage === "moving") {
+      if(flow.remaining>0&&!flow.route&&globalThis.TRAVEL_ROUTE){flow.route=await planSoloRoute(flow);save();}
       while (flow.remaining > 0) {
         let nexts = (ADJ[S.pos] || []).filter(x => x !== flow.prev); if (!nexts.length) nexts = ADJ[S.pos];
         let to = nexts[0];
-        if (nexts.length > 1) {
+        if(flow.route){to=flow.route.shift();if(!nexts.includes(to))throw new Error('INVALID_ROUTE');if(nexts.length>1&&S.guide>0)S.guide--;}
+        else if (nexts.length > 1) {
           if (S.guide > 0) { const distances = destDist(); nexts.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); to = nexts[0]; S.guide--; }
           else to = await chooseDir(nexts.map(x => ({to: x})));
         }
@@ -499,9 +535,11 @@ if (D04_MODE) {
     config: FIREBASE_OPTIONS,
     catalog: {nodes: B.nodes, edges: B.edges, stations: B.stations, properties: B.properties, rules: B.rules},
     cards: CARDS.map(({id, name, desc, price}) => ({id, name, desc, price: price || 100})),
+    planRoute(game,uid,commit){const seat=Object.values(game.seats).find(s=>s.uid===uid);clearForkUI();return TRAVEL_ROUTE.open({...routeConfig(seat.pos,game.turnContext.remainingSteps,game.turnContext.previousNode,seat.effects?.guide||0),commit:path=>{$('mapInspect').hidden=true;commit(path);}});},
     nodeName: id => byId[id] ? stName(byId[id]) : "",
     distance: (from, to) => byId[from] && byId[to] ? hops(from, to) : null,
     paint(game, uid) {
+      mapGame=game;
       const entries = Object.entries(game.seats || {});
       const mine = entries.find(([, seat]) => seat.uid === uid);
       if (!mine) return;

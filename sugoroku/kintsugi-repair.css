@@ -128,11 +128,11 @@ button, input{ font-family:inherit; }
 .travel-spin-face{animation:travel-spin .7s linear infinite;}
 .travel-throw{display:block;margin:24px auto 0;min-width:150px;min-height:52px;font-size:21px;border-radius:8px;touch-action:manipulation;}
 @keyframes travel-spin{
-  0%{transform:translate(-12px,5px) rotate(-25deg) skew(8deg,4deg) scale(.92)}
-  25%{transform:translate(9px,-14px) rotate(90deg) skew(-10deg,6deg) scale(1.05)}
-  50%{transform:translate(14px,3px) rotate(195deg) skew(8deg,-6deg) scale(.92)}
-  75%{transform:translate(-8px,-9px) rotate(290deg) skew(-8deg,4deg) scale(1.04)}
-  100%{transform:translate(-12px,5px) rotate(335deg) skew(8deg,4deg) scale(.92)}
+  0%{transform:translate(-12px,0) rotate(0deg)}
+  25%{transform:translate(0,-10px) rotate(90deg)}
+  50%{transform:translate(12px,0) rotate(180deg)}
+  75%{transform:translate(0,-10px) rotate(270deg)}
+  100%{transform:translate(-12px,0) rotate(360deg)}
 }
 @media(prefers-reduced-motion:reduce){.travel-spin-face{animation:none;}}
 @media(max-height:450px) and (orientation:landscape){#dest{right:auto;width:42%;max-height:34%;overflow:hidden;padding:6px 10px;}.travel-dest-name{font-size:18px;margin:0 0 3px;}.travel-dest-distance{font-size:20px;}#dest #tip{display:none;}.travel-spinning{top:16%;left:48%;}}
@@ -142,6 +142,20 @@ button, input{ font-family:inherit; }
 #mapTools button,#mapTools #snd{position:static;width:48px;height:48px;min-height:48px;padding:0;border-radius:8px;font-size:25px;display:grid;place-items:center;}
 #menuToggle{background:#fff;color:var(--ink);border:1px solid #ccc;box-shadow:0 2px 5px #0002;}
 #panel[hidden]{display:none!important;}
+html,body,button,a,input,label{touch-action:manipulation;}
+#mapZoom{position:absolute;right:10px;bottom:max(12px,env(safe-area-inset-bottom));display:grid;gap:6px;z-index:5;}
+#mapZoom button{width:44px;height:44px;padding:0;border-radius:8px;background:#fff;color:var(--ink);font-size:24px;box-shadow:0 2px 3px #0002;}
+#mapInspect{position:absolute;left:10px;right:68px;top:44px;max-height:calc(100% - 64px);overflow:auto;padding:12px;background:#fff;border:1px solid #ccc;border-radius:8px;z-index:8;}
+#mapInspect[hidden]{display:none;}
+#mapInspect h3{font-size:18px;margin:0 48px 8px 0;}
+#mapInspect p{font-size:14px;overflow-wrap:anywhere;}
+#inspectClose{float:right;width:44px;height:44px;padding:0;font-size:24px;background:#fff;color:var(--ink);box-shadow:none;}
+.route-summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:1 1 100%;min-width:0;}
+.route-summary strong,.route-summary p{flex:1 1 100%;margin:0;font-size:15px;overflow-wrap:anywhere;}
+.route-summary button{min-height:44px;padding:6px;font-size:15px;border-radius:8px;}
+#dirs:has(.route-summary){flex-wrap:wrap;max-height:calc(100% - 250px);}
+.mode-menu-open #mapZoom{display:none;}
+@media(max-height:450px) and (orientation:landscape){#mapZoom{right:auto;left:10px;bottom:84px;display:flex;}#dirs:has(.route-summary){max-height:calc(100% - 62px);}}
 #wrap:has(#panel:not([hidden])) #dirs,#wrap:has(#panel:not([hidden])) .fork{visibility:hidden;pointer-events:none;}
 #panel{left:auto;right:68px;top:46px;bottom:auto;width:330px;max-width:calc(100% - 80px);max-height:calc(100% - 62px);padding:12px;border:1px solid #ccc;border-radius:8px;z-index:5;}
 .menu-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}

@@ -18,7 +18,8 @@ export function canAct(game, hand, uid, type, payload = {}) {
   const seat = game.seats[seatId];
   if (type === 'ROLL') return game.phase === 'await_roll';
   if (type === 'USE_CARD') return game.phase === 'await_roll' && hand?.uid === uid && hand.cards?.some(c => c.instanceId === payload.cardInstanceId);
-  if (type === 'CHOOSE_DIRECTION') return game.phase === 'await_direction' && game.turnContext?.allowedNextNodes?.includes(payload.toNodeId);
+  if (type === 'COMMIT_ROUTE') return game.phase === 'await_direction' && game.turnContext?.planning === true && Array.isArray(payload.path) && payload.path.length === game.turnContext.remainingSteps && payload.path.length<=18 && payload.path.every(Number.isInteger);
+  if (type === 'CHOOSE_DIRECTION') return game.phase === 'await_direction' && !game.turnContext?.planning && game.turnContext?.allowedNextNodes?.includes(payload.toNodeId);
   if (game.phase !== 'await_purchase') return false;
   if (type === 'CLOSE_PURCHASE') return true;
   const offer = offers(game).find(o => o.id === offerId(payload));
