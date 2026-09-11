@@ -19,17 +19,23 @@
   }
   function open(config) {
     const state=model(config);const host=document.getElementById('dirs');
-    let closed=false,locked=false;
+    let closed=false,locked=false,generation=0;
     const button=(text,fn)=>{const b=document.createElement('button');b.textContent=text;b.onclick=()=>{if(!closed)fn();};return b;};
     function render(){
       if(closed)return;
+      const currentGeneration=++generation;
       config.preview(state.at(),state.path);
-      TRAVEL_UI.pad(state.remaining()?state.next().map(id=>({...config.choice(state.at(),id),id})):[],state.remaining(),id=>{if(!closed&&!locked&&state.move(id))render();},locked);
+      const backId=state.path.length>1?state.path.at(-2):state.path.length?config.start:null;
+      const choices=state.remaining()?state.next().filter(id=>id!==backId).map(id=>({...config.choice(state.at(),id),id})):[];
+      if(backId!==null)choices.push({...config.choice(state.at(),backId),id:backId,label:'1マス戻す'});
+      TRAVEL_UI.pad(choices,state.remaining(),id=>{
+        if(closed||locked||currentGeneration!==generation||!choices.some(c=>c.id===id))return;
+        if(id===backId?state.undo():state.move(id))render();
+      },locked);
       host.style.display='flex';
       const details=document.createElement('div');details.className='route-summary';
       const title=document.createElement('strong');title.textContent=config.name(state.at());details.appendChild(title);
       const info=button('このマスを見る',()=>config.inspect(state.at()));info.disabled=locked;details.appendChild(info);
-      const back=button('↶',()=>{if(!locked&&state.undo())render();});back.title='1マス戻す';back.setAttribute('aria-label',back.title);back.disabled=locked||!state.path.length;details.appendChild(back);
       if(!state.remaining()){
         const question=document.createElement('p');question.textContent='このマスに止まりますか？';details.appendChild(question);
         const yes=button('はい',()=>{if(!locked){locked=true;render();config.commit([...state.path]);}});yes.disabled=locked;
