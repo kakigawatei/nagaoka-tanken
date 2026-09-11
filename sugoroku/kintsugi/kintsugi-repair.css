@@ -1,0 +1,63 @@
+/* ===================================================================
+   金継ぎ 追補CSS — ながおかスゴ録（2026-09-11）
+   index.html の </head> の直前に
+     <link rel="stylesheet" href="kintsugi-repair.css">
+   を1行足すだけ。既存のCSSは1行も消さない。DOM・文言・JSは変えない。
+   （地図 canvas の描画は対象外。ここで触るのは DOM の UI だけ）
+   =================================================================== */
+
+/* 0. 元栓（:root の変数）
+   --accent: 朱 #d9552f の上の白文字が比3.97で床4.5に届かなかった。
+             同じ色相のまま明度だけ落とした派生1色（白との比4.80）。新しい色相は足していない。 */
+:root{ --accent:#c8471f; }
+
+/* 1. 破れ: 低コントラスト（釦の白文字 on 朱）→ 元栓の --accent で解決。
+      朱を直書きしていた2箇所（分かれ道の赤矢印・画面外の目的地リング）も同じ元栓に繋ぐ */
+.fork.dest{ background:var(--accent); }
+#arrow{ border-color:var(--accent); }
+
+/* 2. 乱れ: 似て非なる色 — 白が2つ（#fff と #fffdf7・距離8）＋ 生成り2つ（#fffdf7 と --paper #f6f1e6・距離23）
+      → 面（パネル・カード・イントロ箱・丸釦）は #fff の1本に。生成り（--paper）は上の HUD の霞だけに残す */
+#panel, #intro .box, #arrow, #snd{ background:#fff; }
+
+/* 3. 乱れ: 文字サイズの段（その他 6段→3・釦 3段→2）
+      文字: 15px の1段（メッセージ・HUD・目的地の行）／数字 18px／絵記号 26px */
+#hud{ font-size:15px; }
+#dest{ font-size:15px; }
+#stock{ font-size:15px; }
+#arrow{ font-size:26px; }
+/* 物件カードの本文は HTML の style 属性で 14px 直書き → !important で 15px の段に載せる */
+#cBody{ font-size:15px !important; }
+.card p{ font-size:15px; }
+/* 手札の釦（カードの札）は JS が style 属性で 13px を直書きしている → !important で 14px に。
+   15px だと「へぎそばカード」（7字）が幅390で1列に入らないため、札は 14px の段に置く（釦の段は 18/15/14 の3段で1段だけ超過＝理由つきで残す）。
+   それでも足りない端末（幅360など）では文字を「…」で省き、横はみ出しは作らない */
+#hand > button{ font-size:14px !important; padding:11px 2px; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+
+/* 4. 乱れ: 角丸 5種→3（12=釦・18=面・50%=丸） */
+#intro input{ border-radius:12px; }
+.card{ border-radius:18px; }
+
+/* 5. 未計測の解消 + 読みやすさ: 目的地の行（#dest）が地図の上に直に載り、
+      画面上端の目的地リング（#arrow・y=32〜72px）とも重なっていた
+      → HUD の霞と同じ生成りの札にして、リングの帯の下（76px）へ。文字は同じ */
+#dest{ top:76px; left:12px; right:auto; width:max-content; max-width:calc(100% - 76px); padding:6px 10px; border-radius:12px; background:var(--paper); line-height:1.4; }
+
+/* 6. レスポンシブ（縦の重なり）: 手札が出るとパネルが高くなり、物件カードの「買う／やめる」がパネルの下に隠れた
+      → 手札の行が出ているとき（JS が #hand に display:flex を書く）だけ、カードを手札1列ぶん（55px）持ち上げる。
+        4枚以上（2列）・7枚以上（3列）はさらに1列ぶんずつ。DOM・JSは触らない（:has は iOS 15.4+/Chrome 105+） */
+#wrap:has(#hand[style*="display: flex"]) .card{ bottom:250px; }
+#wrap:has(#hand > button:nth-child(4)) .card{ bottom:305px; }
+#wrap:has(#hand > button:nth-child(7)) .card{ bottom:360px; }
+
+/* 7. 書体: 釦と入力欄が UA 既定の書体で描かれていた → 本文と同じ書体を継ぐ（大きさは触らない） */
+button, input{ font-family:inherit; }
+
+/* 8. 広い画面（タブレット以上）: パネルの釦とカードが画面いっぱいに伸びていた → 器に上限幅。
+      スマホ幅の見え方は 1px も変わらない */
+@media (min-width:768px){
+  #panel > *{ max-width:720px; margin-left:auto; margin-right:auto; }
+  .card{ max-width:440px; margin-left:auto; margin-right:auto; }
+  /* 物件カードの「やめる」は脇役 → 幅を内容に合わせて格下げ（行き先・DOMは不変） */
+  #cSkip{ flex:0 0 auto; padding-left:22px; padding-right:22px; }
+}
