@@ -27,15 +27,17 @@
       config.preview(state.at(),state.path);
       const backId=state.path.length>1?state.path.at(-2):state.path.length?config.start:null;
       const choices=state.remaining()?state.next().filter(id=>id!==backId).map(id=>({...config.choice(state.at(),id),id})):[];
-      if(backId!==null)choices.push({...config.choice(state.at(),backId),id:backId,label:'1マス戻す'});
-      TRAVEL_UI.pad(choices,state.remaining(),id=>{
+      if(backId!==null)choices.push({...config.choice(state.at(),backId),id:backId,back:true,label:'1マス戻す'});
+      const showPad=config.mapPosition&&TRAVEL_UI.mapPad?TRAVEL_UI.mapPad:TRAVEL_UI.pad;
+      showPad(choices,state.remaining(),id=>{
         if(closed||locked||currentGeneration!==generation||!choices.some(c=>c.id===id))return;
         if(id===backId?state.undo():state.move(id))render();
-      },locked);
+      },locked,config.mapPosition?()=>config.mapPosition(state.at()):null);
       host.style.display='flex';
       const details=document.createElement('div');details.className='route-summary';
       const title=document.createElement('strong');title.textContent=config.name(state.at());details.appendChild(title);
       const info=button('このマスを見る',()=>config.inspect(state.at()));info.disabled=locked;details.appendChild(info);
+      if(config.mapPosition&&TRAVEL_UI.mapPad){info.textContent='ⓘ';info.title='このマスを見る';info.setAttribute('aria-label',info.title);}
       if(!state.remaining()){
         const question=document.createElement('p');question.textContent='このマスに止まりますか？';details.appendChild(question);
         const yes=button('はい',()=>{if(!locked){locked=true;render();config.commit([...state.path]);}});yes.disabled=locked;

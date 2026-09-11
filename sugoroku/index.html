@@ -37,7 +37,7 @@
   #hand > button{position:relative;padding-left:34px}
   #hand > button .himg{position:absolute;left:4px;top:50%;transform:translateY(-50%);width:24px;height:34px;object-fit:cover;border-radius:4px}
   #snd{position:absolute;right:12px;top:72px;width:40px;height:40px;border-radius:50%;background:#fffdf7;border:2px solid #e6dcc6;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;color:#2a2118}
-</style><link rel="stylesheet" href="kintsugi-repair.css?v=d28">
+</style><link rel="stylesheet" href="kintsugi-repair.css?v=d42">
 <style id="title-layout-critical">
 /* Keep the entrance usable even when a previous stylesheet is cached. */
 #modeMenu{width:100%;height:100%;min-width:0;min-height:0;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;align-content:stretch;gap:0;padding:env(safe-area-inset-top) 0 0;overflow:hidden;background:#1b2a5a;}
@@ -74,8 +74,8 @@
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
-<script src="travel-ui.js?v=d23"></script>
-<script src="route-ui.js?v=d39"></script>
+<script src="travel-ui.js?v=d42"></script>
+<script src="route-ui.js?v=d42"></script>
 <script type="module" src="dice-three.mjs?v=d24"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -230,7 +230,8 @@ function inspectNode(id){
   $('mapInspect').hidden=false;
 }
 function routeConfig(start,steps,previous=null,guide=0){return {start,steps,previous,guide,adj:ADJ,distance:id=>hops(id,S.dest),
-  choice:(from,id)=>({x:P[id].x-P[from].x,y:P[id].y-P[from].y,distance:hops(id,S.dest),label:dirName(from,id)}),
+  mapPosition:id=>{const p=scr(P[id]);return {x:p.x/DPR,y:p.y/DPR,width:W/DPR,height:H/DPR};},
+  choice:(from,id)=>({x:P[id].x-P[from].x,y:P[id].y-P[from].y,distance:hops(id,S.dest),closer:hops(id,S.dest)<hops(from,S.dest),label:dirName(from,id)}),
   name:id=>stName(byId[id])||({blue:'青マス',red:'赤マス',yellow:'カードマス',event:'イベントマス'}[byId[id].t]||'道のマス'),inspect:inspectNode,
   preview(id,path=[]){routePath=id===null?[]:[start,...path];routePreview=id;if(id!==null)cam={...P[id]};draw();}
 };}
@@ -532,7 +533,7 @@ function drawArrow() { const el = $("arrow"); if (!S.dest || !P[S.dest]) { el.st
   if (x > 20 && x < w - 20 && y > 90 && y < h) { el.style.display = "none"; return; }
   const cx = w / 2, cy = h / 2; const dx = x - cx, dy = y - cy; const ang = Math.atan2(dy, dx); const rx = cx - 34, ry = cy - 34; const t = Math.min(Math.abs(rx / Math.cos(ang)), Math.abs(ry / Math.sin(ang)));
   el.style.display = "flex"; el.style.left = (cx + Math.cos(ang) * t - 22) + "px"; el.style.top = (cy + Math.sin(ang) * t - 22 + 20) + "px"; el.style.transform = ""; }
-const _draw = draw; draw = function (tp) { _draw(tp); drawArrow(); if (forkPlace) forkPlace(); };
+const _draw = draw; draw = function (tp) { _draw(tp); drawArrow(); if (forkPlace) forkPlace(); globalThis.TRAVEL_UI?.placeMapPad?.(); };
 /* ---- BGM（あれば） ---- */
 const hourNow = new Date().getHours(); const BGM = new Audio(hourNow >= 18 || hourNow < 6 ? "music/night.mp3" : "music/travel.mp3"); BGM.loop = true; BGM.volume = 0.45; let sndOn = false;   // 夜は夕暮れの曲
 const JINGLE = new Audio("music/event.mp3"); JINGLE.volume = 0.6;

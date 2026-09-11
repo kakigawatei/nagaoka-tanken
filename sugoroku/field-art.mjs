@@ -35,6 +35,8 @@ export function createFieldLayer(display,{redraw=()=>{},imageFactory=()=>new Ima
  return {ready,inside,
   dispose(){disposed=true;manifest=null;for(const cancel of [...pending])cancel();images.clear();},
   ground(ctx,screen,cell,width,height){if(!manifest)return;const b=manifest.trialBounds;
+   // Non-seamless trial art is retained on disk, not repeated across the map.
+   if(!manifest.groundSeamless)return;
    for(let y=b.minY;y<=b.maxY;y++)for(let x=b.minX;x<=b.maxX;x++){const p=screen({x,y});if(p.x+cell/2<0||p.x-cell/2>width||p.y+cell/2<0||p.y-cell/2>height)continue;
     // Share snapped boundaries, avoiding transparent cracks at fractional zoom.
     const left=Math.round(p.x-cell/2),top=Math.round(p.y-cell/2),right=Math.round(p.x+cell/2),bottom=Math.round(p.y+cell/2);

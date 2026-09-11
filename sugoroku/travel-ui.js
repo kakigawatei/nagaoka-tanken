@@ -78,7 +78,30 @@
     }
   }
   function direction(x,y) {return Math.abs(x)>Math.abs(y) ? (x>0?'right':'left') : (y>0?'down':'up');}
-  function clearPad() {const box=$('dirs'); box.replaceChildren(); box.style.display='none';}
+  let mapArrows=[], placeMapPad=()=>{};
+  function clearPad() {mapArrows.forEach(n=>n.remove());mapArrows=[];placeMapPad=()=>{};const box=$('dirs');box.classList?.remove('map-route-controls');box.replaceChildren(); box.style.display='none';}
+  function mapPad(choices,remaining,pick,disabled=false,position) {
+    clearPad();const box=$('dirs');box.classList.add('map-route-controls');box.style.display='flex';
+    box.appendChild(el('strong','travel-remaining',`あと${remaining}歩`));
+    const forward=choices.filter(c=>!c.back&&Number.isFinite(c.distance));
+    const best=Math.min(...forward.map(c=>c.distance));let chosen=false;
+    choices.forEach(c=>{
+      const recommended=!c.back&&c.closer!==false&&Number.isFinite(c.distance)&&c.distance===best;
+      const b=el('button','route-arrow '+(c.back?'route-back':recommended?'route-best':'route-forward'),c.back?'↶':recommended?'➤➤':'➤');
+      b.type='button';b.disabled=disabled;b.title=`${c.label||'進む'}・${c.back?'1歩取り消す':recommended?'目的地への最短方向':'進める方向'}`;
+      b.setAttribute('aria-label',b.title);
+      b.onclick=()=>{if(chosen||disabled)return;chosen=true;clearPad();pick(c.id);};
+      $('wrap').appendChild(b);mapArrows.push(b);
+    });
+    placeMapPad=()=>{
+      const p=position();choices.forEach((c,i)=>{
+        const angle=Math.atan2(c.y,c.x),b=mapArrows[i];if(!b)return;
+        const x=p.x+Math.cos(angle)*70,y=p.y+Math.sin(angle)*70;
+        b.style.left=Math.max(24,Math.min(p.width-24,x))+'px';b.style.top=Math.max(24,Math.min(p.height-24,y))+'px';
+        b.style.setProperty('--direction',c.back?'0rad':angle+'rad');
+      });
+    };placeMapPad();
+  }
   function pad(choices,remaining,pick,disabled=false) {
     clearPad(); if(!choices.length)return;
     const box=$('dirs'); box.style.display='flex';
@@ -117,5 +140,5 @@
     $('wrap').appendChild(box);
     try {await new Promise(resolve=>setTimeout(resolve,1100));} finally {box.remove();}
   }
-  globalThis.TRAVEL_UI={direction,pad,clearPad,dice,spin,destination,token,resetTokens};
+  globalThis.TRAVEL_UI={direction,pad,mapPad,placeMapPad:()=>placeMapPad(),clearPad,dice,spin,destination,token,resetTokens};
 })();
