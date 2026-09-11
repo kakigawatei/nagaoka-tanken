@@ -56,7 +56,7 @@
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
-<script src="travel-ui.js?v=d17"></script>
+<script src="travel-ui.js?v=d18"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -162,9 +162,9 @@ let draw = function (tokenPos) { ctx.clearRect(0, 0, W, H); drawTerrain(); drawT
     if (S.dest === n.id) { ctx.fillStyle = "#d9552f"; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.lineTo(p.x + 34 * DPR, p.y - 33 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 26 * DPR); ctx.fill(); ctx.strokeStyle = "#3a2f26"; ctx.lineWidth = 2 * DPR; ctx.beginPath(); ctx.moveTo(p.x + 10 * DPR, p.y - 12 * DPR); ctx.lineTo(p.x + 10 * DPR, p.y - 40 * DPR); ctx.stroke(); }   // 目的地＝旗
     if (SHOP_NODES.has(n.id) && zoom > 5000) { ctx.fillStyle = "#2a2118"; ctx.font = `${10 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("🃏カード売り場", p.x, p.y + 22 * DPR); }
     if (big) { ctx.fillStyle = "#2a2118"; ctx.font = `${11 * DPR}px sans-serif`; ctx.textAlign = "center"; ctx.fillText((n.name || "").replace(/（.*?）|／.*$/g, "").slice(0, 9), p.x, p.y + 26 * DPR); } });
-  Object.values(OTHERS).forEach((o,i) => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+12*DPR,q.y-12*DPR,DPR,i+1,false,()=>draw()); });
-  S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+(i-1)*20*DPR,q.y-18*DPR,DPR,r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,false,()=>draw()); });
-  const p = scr(tokenPos || P[S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw()); }
+  Object.entries(OTHERS).forEach(([uid,o],i) => { if (o.pos === undefined || !P[o.pos]) return; const q = scr(P[o.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+12*DPR,q.y-12*DPR,DPR,i+1,false,()=>draw(),{key:'other:'+uid,world:P[o.pos]}); });
+  S.rivals.forEach((r, i) => { const q = scr(P[r.pos]); if (q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) return; globalThis.TRAVEL_UI?.token(ctx,q.x+(i-1)*20*DPR,q.y-18*DPR,DPR,r.id?.match(/^s[0-3]$/)?Number(r.id[1]):i+1,false,()=>draw(),{key:'rival:'+(r.id ?? i),world:P[r.pos]}); });
+  const p = scr(tokenPos || P[S.pos]); globalThis.TRAVEL_UI?.token(ctx,p.x,p.y-4*DPR,DPR,S.visualSeat ?? 0,!!tokenPos,()=>draw(),{key:'you',world:tokenPos || P[S.pos]}); }
 addEventListener("resize", () => { layout(); draw(); });
 /* 指でドラッグして地図を見回す（サイコロを振るとコマに戻る） */
 let drag = null; cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; });

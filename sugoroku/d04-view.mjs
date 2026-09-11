@@ -146,6 +146,6 @@ export function createView(bridge) {
     busy(value) {activeLife = value; render();},
     invite(value) {inviteCode = value || ''; invite.textContent = value ? `招待コード: ${value}` : ''; copyInvite.hidden = !value;},
     message(value) {$('msg').textContent = value; status.textContent = value;},
-    newMatch() {panel = null; dismissedResult = null; lobbyRequested = false; entryRequested = false; inviteCode = ''; invite.textContent = ''; copyInvite.hidden = true; hideCard();},
+    newMatch() {globalThis.TRAVEL_UI?.resetTokens?.(); panel = null; dismissedResult = null; lobbyRequested = false; entryRequested = false; inviteCode = ''; invite.textContent = ''; copyInvite.hidden = true; hideCard();},
   };
 }

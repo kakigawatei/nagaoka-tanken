@@ -2,7 +2,8 @@
   const $ = id => document.getElementById(id);
   const el = (tag, cls, text) => {const n=document.createElement(tag); n.className=cls; if(text)n.textContent=text; return n;};
   const positions = {1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  let spinning = null, sprite = null;
+  let spinning = null, tokenFrameRequest = null;
+  const tokenImages = new Map(), tokenMotion = new Map();
   function spin() {
     if(spinning)return spinning;
     const box=el('div','travel-dice travel-spinning'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','サイコロ');
@@ -29,17 +30,35 @@
     row.appendChild(el('strong','travel-dest-distance',`あと ${distance} マス`));
     row.appendChild(el('span','travel-dest-bonus',`援助金 ${bonus}万両${area ? '・'+area : ''}`));box.appendChild(row);
   }
-  function token(ctx,x,y,dpr,variant,moving,redraw) {
-    if(!sprite){sprite=new Image();sprite.onload=redraw;sprite.src='assets/art/kigurumi-children-v1.png';}
-    const v=((variant%4)+4)%4, bob=moving?Math.abs(Math.sin(Date.now()/85))*3:0;
+  function resetTokens() {tokenMotion.clear();}
+  function token(ctx,x,y,dpr,variant,moving,redraw,motion={}) {
+    const v=((variant%4)+4)%4, who=['you','kon','kabuto','ryokan'][v];
+    const key=motion.key ?? who, now=Date.now(), point=motion.world;
+    let state=tokenMotion.get(key);
+    if(!state){state={x:point?.x,y:point?.y,left:false,until:0};tokenMotion.set(key,state);}
+    if(point && (state.x!==point.x || state.y!==point.y)) {
+      if(Number.isFinite(state.x) && Math.abs(point.x-state.x)>1e-10)state.left=point.x<state.x;
+      state.x=point.x;state.y=point.y;state.until=now+360;
+    }
+    const walking=moving||now<state.until;
+    const frame=walking ? 1+Math.floor(now/140)%2 : 1;
+    for(const n of [1,2]) {
+      const name=`${who}_${n}`;
+      if(!tokenImages.has(name)){const im=new Image();im.onload=redraw;im.src=`assets/art/cells/token_${name}.png`;tokenImages.set(name,im);}
+    }
+    const requested=tokenImages.get(`${who}_${frame}`), first=tokenImages.get(`${who}_1`);
+    const sprite=requested.complete&&requested.naturalWidth ? requested : first;
     ctx.save();ctx.fillStyle=['#cc3c40','#238f85','#bf4d94','#ae861b'][v];
     ctx.beginPath();ctx.ellipse(x,y+2*dpr,10*dpr,4*dpr,0,0,Math.PI*2);ctx.fill();
     if(sprite.complete&&sprite.naturalWidth){
-      const sw=sprite.naturalWidth/4,sh=sprite.naturalHeight,h=48*dpr,w=h*sw/sh;
-      ctx.translate(x,y-bob*dpr);ctx.rotate(moving?Math.sin(Date.now()/85)*.06:0);
-      ctx.drawImage(sprite,v*sw,0,sw,sh,-w/2,-h,w,h);
+      const h=48*dpr,w=h*sprite.naturalWidth/sprite.naturalHeight;
+      ctx.translate(x,y);ctx.scale(state.left?-1:1,1);
+      ctx.drawImage(sprite,-w/2,-h,w,h);
     }
     ctx.restore();
+    if(!moving && walking && tokenFrameRequest===null && globalThis.requestAnimationFrame) {
+      tokenFrameRequest=requestAnimationFrame(()=>{tokenFrameRequest=null;redraw();});
+    }
   }
   function direction(x,y) {return Math.abs(x)>Math.abs(y) ? (x>0?'right':'left') : (y>0?'down':'up');}
   function clearPad() {const box=$('dirs'); box.replaceChildren(); box.style.display='none';}
@@ -80,5 +99,5 @@
     $('wrap').appendChild(box);
     try {await new Promise(resolve=>setTimeout(resolve,1100));} finally {box.remove();}
   }
-  globalThis.TRAVEL_UI={direction,pad,clearPad,dice,spin,destination,token};
+  globalThis.TRAVEL_UI={direction,pad,clearPad,dice,spin,destination,token,resetTokens};
 })();
