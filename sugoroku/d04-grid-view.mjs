@@ -1,8 +1,10 @@
 import {layoutMapLabels,mapSpriteSizes} from './grid-board.mjs';
+import {createFieldLayer} from './field-art.mjs';
 
 const colors={blue:'#3984c4',red:'#d9552f',yellow:'#e3bd3c',plain:'#fffdf7',dest:'#3f977e',prop:'#9968ad'};
 const major=new Set(['駅前','寺泊','出雲崎','与板','川西','越路','山古志','栃尾','小国','悠久山']);
-export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Image(),getIcon=()=>null}={}){
+export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Image(),getIcon=()=>null,fieldFetcher}={}){
+ const field=createFieldLayer(display,{redraw,imageFactory,...(fieldFetcher?{fetcher:fieldFetcher}:{})});
  const images=new Map(),byId=new Map(display.nodes.map(n=>[n.id,n]));
  let disposed=false;
  function image(src){
@@ -11,24 +13,32 @@ export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Imag
  }
  const visible=(p,pad,w,h)=>p.x>=-pad&&p.x<=w+pad&&p.y>=-pad&&p.y<=h+pad;
  return {
-  dispose(){disposed=true;for(const im of images.values())im.onload=null;images.clear();},
+  fieldReady:field.ready,
+  dispose(){disposed=true;field.dispose();for(const im of images.values())im.onload=null;images.clear();},
   draw(ctx,{screen,width,height,cell,goal,owner=()=>null,shops=new Set(),path=[],tokens=[]}){
    // CSS-pixel drawing keeps label bounds and sprite sizes consistent at every DPR.
    ctx.fillStyle='#d6e8c4';ctx.fillRect(0,0,width,height);
+   field.ground(ctx,screen,cell,width,height);
    const river=screen({x:-2,y:-8}),end=screen({x:-2,y:25});
    ctx.fillStyle='#8bcce3';ctx.fillRect(river.x-cell*.35,river.y,cell*.7,end.y-river.y);
    const kakigawa=screen({x:1,y:11.7});ctx.fillRect(kakigawa.x,kakigawa.y,cell*7,cell*.45);
    for(const lot of display.scenery||[]){const p=screen(lot),size=cell*1.25;if(!visible(p,size,width,height))continue;
+    if(field.inside(lot))continue;
     const region=['town','rural','hill'].includes(lot.region)?lot.region:'rural';
     const im=image(`assets/art/grid/${region}-v1.png`);if(im)ctx.drawImage(im,p.x-size/2,p.y-size/2,size,size);
    }
    ctx.lineCap='square';ctx.lineJoin='miter';
    for(const [color,factor] of [['#626c65',.22],['#fffdf7',.14]]){
     ctx.strokeStyle=color;ctx.lineWidth=Math.max(.6,Math.min(14,cell*factor));ctx.beginPath();
-    for(const e of display.edges){const [a,b]=Array.isArray(e)?e:[e.a,e.b],p=screen(byId.get(a)),q=screen(byId.get(b));ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);}ctx.stroke();
+    for(const e of display.edges){const [a,b]=Array.isArray(e)?e:[e.a,e.b];if(field.inside(byId.get(a))&&field.inside(byId.get(b)))continue;const p=screen(byId.get(a)),q=screen(byId.get(b));ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);}ctx.stroke();
    }
+   field.roads(ctx,screen,cell);
+   const side=Math.min(23,cell*.38),sizes=mapSpriteSizes(cell),labels=[],shopLabels=[],obstacles=[],buildings=[];
+   for(const lot of display.scenery||[]){const id=field.decoration(lot),p=screen(lot);if(id&&visible(p,cell,width,height))buildings.push({id,p:{x:p.x,y:p.y+cell*.42},size:cell*.9});}
+   for(const n of display.nodes){const id=field.landmark(n),p=screen(n);if(id&&visible(p,80,width,height))buildings.push({id,p:{x:p.x,y:p.y-side/2-4},size:n.id===goal?sizes.goal:sizes.place});}
+   buildings.sort((a,b)=>a.p.y-b.p.y);
+   for(const b of buildings){const rect=field.paint(ctx,b.id,b.p,b.size);if(rect)obstacles.push(rect);}
    if(path.length>1){ctx.beginPath();path.forEach((id,i)=>{const p=screen(byId.get(id));i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.strokeStyle='#d9552f';ctx.lineWidth=Math.max(2,Math.min(5,cell*.08));ctx.stroke();}
-   const side=Math.min(23,cell*.38),sizes=mapSpriteSizes(cell),labels=[],shopLabels=[],obstacles=[];
    const landmarkPoints=display.nodes.filter(n=>n.station).map(screen);
    for(const p of tokens)obstacles.push({x:p.x-sizes.token,y:p.y-sizes.token-8,width:sizes.token*2,height:sizes.token+16});
    const goalNode=byId.get(goal);
@@ -42,7 +52,7 @@ export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Imag
     ctx.fillRect(p.x-side/2,p.y-side/2,side,side);ctx.strokeStyle='#fff';ctx.lineWidth=Math.min(2,Math.max(.5,cell*.04));ctx.strokeRect(p.x-side/2,p.y-side/2,side,side);
     if(n.id===goal){ctx.strokeStyle='#d9552f';ctx.lineWidth=3;ctx.strokeRect(p.x-side/2-4,p.y-side/2-4,side+8,side+8);}
     if(n.station){const size=n.id===goal?sizes.goal:sizes.place;
-     const im=getIcon(n.station);
+     const im=field.landmark(n)?null:getIcon(n.station);
      if(im){ctx.drawImage(im,p.x-size/2,p.y-size-4,size,size);obstacles.push({x:p.x-size/2-4,y:p.y-size-8,width:size+8,height:size+12});}
      if(cell>=32&&n.id!==goal){const text=n.name||n.station;labels.push({x:p.x,y:p.y+side/2+4,text,width:text.length*11+8});}
     }
