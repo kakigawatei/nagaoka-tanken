@@ -191,14 +191,14 @@ function chooseDir(opts) { return new Promise(res => { const wrap = document.get
     const place = () => opts.forEach((o, i) => { const p = scr(P[o.to]); const from = scr(P[S.pos]); const ang = Math.atan2(p.y - from.y, p.x - from.x); const el = els[i]; el.style.left = (p.x / DPR) + "px"; el.style.top = (p.y / DPR) + "px"; el.style.setProperty("--rot", ang + "rad"); el.firstChild.style.transform = `rotate(${ang}rad)`; });
     opts.forEach(o => { const el = document.createElement("button"); el.className = "fork" + (hops(o.to, S.dest) < h0 ? " dest" : ""); el.innerHTML = "<span>➤</span>"; el.title = stName(byId[o.to]) || dirName(S.pos, o.to); el.onclick = () => { els.forEach(e => e.remove()); forkPlace = null; res(o.to); }; wrap.appendChild(el); els.push(el); });
     place(); forkPlace = place; $("msg").textContent = "分かれ道。赤い矢印＝目的地に近い道。迷ったら赤をタップ。"; }); }
-async function roll() { refill(); if (S.dice <= 0 || busy) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
+async function roll() { refill(); if (S.dice <= 0 || busy || $("card").style.display === "block" || rouletteQueued || !S.dest) return; busy = true; S.dice--; if (S.dice === R.diceStockMax - 1) S.lastDice = Date.now(); save();
   if (S.skip > 0 && S.snowGuard) { S.skip = 0; S.snowGuard = 0; $("msg").textContent = "消雪パイプで雪を溶かした。休まず進める！"; }
-  if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; rivalsMove(); save(); busy = false; hud(); draw(); return; }
+  if (S.skip > 0) { S.skip--; $("msg").textContent = "1回休み。雪かきをして過ごした。"; S.turn++; rivalsMove(); settlement(); save(); busy = false; if (pendingGame) applyGame(pendingGame); hud(); draw(); return; }
   let d = 1 + Math.floor(Math.random() * 6); const d0 = d; if (S.triple) { const d2 = 1 + Math.floor(Math.random() * 6), d3 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲🎲 ${d}＋${d2}＋${d3}＝${d + d2 + d3}！`; d += d2 + d3; S.triple = false; } else if (S.double) { const d2 = 1 + Math.floor(Math.random() * 6); $("msg").textContent = `🎲🎲 ${d}＋${d2}＝${d + d2}！`; d += d2; S.double = false; } else $("msg").textContent = "🎲 ころころ…"; hud(); cam = { ...P[S.pos] }; draw(); await playDice(d0); if (!S.triple && !S.double) $("msg").textContent = `🎲 ${d} が出た！`;
   let steps = d, prev = S.prev;
   while (steps > 0) { let nexts = (ADJ[S.pos] || []).filter(x => x !== prev); if (!nexts.length) nexts = ADJ[S.pos];
     let to = nexts[0];
-    if (nexts.length > 1) { if (S.guide > 0) { const D = P[S.dest]; nexts.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); to = nexts[0]; S.guide--; } else { $("msg").textContent = `分かれ道。残り ${steps} マス。どちらへ？`; to = await chooseDir(nexts.map(x => ({ to: x }))); } }
+    if (nexts.length > 1) { if (S.guide > 0) { const distances = destDist(); nexts.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); to = nexts[0]; S.guide--; } else { $("msg").textContent = `分かれ道。残り ${steps} マス。どちらへ？`; to = await chooseDir(nexts.map(x => ({ to: x }))); } }
     await tween(S.pos, to); prev = S.pos; S.pos = to; steps--; if (S.pos === S.dest) break; }
   S.prev = prev; S.turn++; draw(); arrive(); rivalsMove(); settlement(); save(); busy = false; if (pendingGame) applyGame(pendingGame); hud(); }
 /* ---- ライバル（CPU）: プレイヤーが振るたびに1〜6歩。分岐は目的地に近づく方へ。物件に止まると買う ---- */
@@ -215,13 +215,14 @@ function yukinkoAct() { if (!S.yukinko) return; const acts = ["spend", "sell", "
   const holder = WHO().find(w => w.id === S.yukinko); if (!holder) { S.yukinko = null; return; } const same = WHO().filter(w => w.id !== S.yukinko && w.pos === holder.pos); if (same.length) { S.yukinko = same[0].id; $("msg").textContent += `　❄ ゆきんこが ${S.yukinko === "you" ? "あなた" : RIVALS.find(x => x.id === S.yukinko).name} に乗り移った`; } }
 function rivalsMove() { if (!S.dest) return;   // ルーレット待ちの間は誰も（ゆきんこも）動かない
   yukinkoAct(); if (S.rivalSkip > 0) { S.rivalSkip--; return; }
-  S.rivals.forEach((r, i) => { r.dest = S.dest;   // 桃鉄: 目的地は全員共通
+  const raceDest = S.dest; const distances = distFrom(raceDest);
+  S.rivals.forEach((r, i) => { r.dest = raceDest;   // 桃鉄: 目的地は全員共通
     let steps = 1 + Math.floor(Math.random() * 6), prev = r.prev;
-    while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; const D = P[r.dest]; nx.sort((a, b) => Math.hypot(P[a].x - D.x, P[a].y - D.y) - Math.hypot(P[b].x - D.x, P[b].y - D.y)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; if (r.pos === r.dest) break; }
+    while (steps-- > 0) { let nx = (ADJ[r.pos] || []).filter(x => x !== prev); if (!nx.length) nx = ADJ[r.pos]; nx.sort((a, b) => (distances[a] ?? Infinity) - (distances[b] ?? Infinity)); const to = Math.random() < 0.8 ? nx[0] : nx[Math.floor(Math.random() * nx.length)]; prev = r.pos; r.pos = to; if (r.pos === r.dest) break; }
     r.prev = prev; const n = byId[r.pos];
-    if (r.pos === r.dest) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
+    if (r.pos === r.dest && S.dest === raceDest) { const bonus = S.destBonus || destBonus(0); r.money += bonus; r.reached++; $("msg").textContent = `${RIVALS[i].name} が目的地 ${stName(byId[r.pos])} に先着！ 援助金 ${bonus}万両`; attachYukinko(); if (!rouletteQueued) { rouletteQueued = true; rouletteFrom = S.dest; S.dest = null; setTimeout(roulette, 900); } }
     if (n.prop) { const pr = pv(n.prop), o = ownerOf(n.prop); if (!o && r.money >= pr.price && Math.random() < 0.7) { r.money -= pr.price; r.owned.push(n.prop); S.log.push(`${RIVALS[i].name} が ${pr.name} を買った`); }
-      else if (o === "you") { const toll = income(pr, "you"); rpay(r, toll); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
+      else if (o === "you") { const toll = rpay(r, income(pr, "you")); S.money += toll; S.log.push(`${RIVALS[i].name} が ${pr.name} で通行料 ${toll}万両`); } }
     else if (n.t === "blue") r.money += 40; else if (n.t === "red") rpay(r, 30); }); }
 /* ---- 黄マスのカード ---- */
 const CARDS = [
@@ -260,7 +261,7 @@ const EVENTS = [
 ];
 let runEvent = function () { const e = EVENTS[Math.floor(Math.random() * EVENTS.length)]; const v = e.f(); $("msg").textContent = `🎆 ${e.name}: ${e.text.replace("{v}", v)}`; }
 const pv = id => B.properties.find(q => q.id === id);
-const rpay = (r, v) => { r.money = Math.max(-1000, r.money - v); };   // ライバルも同じ下限
+const rpay = (r, v) => { const before = r.money; r.money = Math.max(-1000, r.money - v); return before - r.money; };   // ライバルも同じ下限
 const DEBT_MIN = -1000; const pay = v => { const before = S.money; S.money = Math.max(DEBT_MIN, S.money - v); return before - S.money; };   // 実際に払えた額
 /* 季節増収（デク提案6）: 物件の種類 × 月。花火館は8月×3、酒蔵は冬×2、海の市場は夏×1.5、温泉は冬×2、闘牛は5月・9月×2、アルパカは春×1.5 */
 function monthNow() { const m = 4 + Math.floor((S.turn % TURNS_PER_YEAR) / (TURNS_PER_YEAR / 12)); return m > 12 ? m - 12 : m; }
