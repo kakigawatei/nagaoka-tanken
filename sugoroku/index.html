@@ -40,7 +40,6 @@
 </style><link rel="stylesheet" href="kintsugi-repair.css"></head>
 <body><div id="wrap">
 <canvas id="cv"></canvas>
-<a id="modeHome" href="?" aria-label="遊び方を選び直す">切替</a>
 <section id="modeMenu" aria-label="遊び方を選ぶ" style="display:none">
 <h1>ながおかスゴ録</h1>
 <div class="mode-cast" aria-hidden="true"><img src="assets/art/cells/token_you_1.png" alt=""><img src="assets/art/cells/token_kon_1.png" alt=""><img src="assets/art/cells/token_kabuto_1.png" alt=""><img src="assets/art/cells/token_ryokan_1.png" alt=""></div>
@@ -51,18 +50,21 @@
 <div id="arrow">🎯</div>
 <div id="artPop"><img id="artImg" alt=""><br><span class="cap" id="artCap"></span></div>
 <video id="diceVid" playsinline muted preload="auto" style="position:absolute;left:50%;top:42%;width:62vw;max-width:330px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:4"></video>
-<button id="snd" title="音">🔈</button>
+<nav id="mapTools" aria-label="ゲーム操作"><button id="menuToggle" title="メニュー" aria-label="メニュー" aria-controls="panel" aria-expanded="false">☰</button><button id="roll" title="サイコロ" aria-label="サイコロ">🎲</button><button id="snd" title="音" aria-label="音の切替">🔈</button></nav>
 <div id="intro"><div class="box"><h2 id="iTitle"></h2><p id="iBody"></p><input id="iName" placeholder="旅人の名前（あとで変えられます）" style="display:none"><div class="row"><button id="iNext">つぎへ</button></div></div></div>
 <div class="card" id="card"><h3 id="cTitle"></h3><div id="cBody" style="margin:0 0 10px;font-size:14px;color:#5e5245"></div><div class="row"><button id="cBuy">買う</button><button class="ghost" id="cSkip">やめる</button></div></div>
-<div id="panel"><div id="msg">まずは 🎲サイコロ。分かれ道では赤い矢印が目的地に近い道です。</div>
+<div id="travelStatus"><div id="msg" role="status">サイコロを振ろう</div></div>
 <div class="row" id="dirs" style="display:none"></div>
+<div id="panel" hidden aria-label="メニュー">
+<div class="menu-heading"><strong>メニュー</strong><button id="menuClose" title="閉じる" aria-label="メニューを閉じる">×</button></div>
 <div class="row" id="hand" style="display:none"></div>
-<div class="row"><button id="roll">🎲 サイコロ</button><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
+<div class="row"><button class="ghost" id="assets">物件</button><button class="ghost" id="rank">順位</button><button class="ghost" id="nameBtn">名前</button></div>
+<a id="modeHome" href="?" aria-label="遊び方を選び直す">遊び方を選び直す</a>
 <div id="stock"></div></div>
 </div>
 <script src="data/board_v4.js"></script>
 <script src="data/terrain.js"></script>
-<script src="travel-ui.js?v=d18"></script>
+<script src="travel-ui.js?v=d20"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>

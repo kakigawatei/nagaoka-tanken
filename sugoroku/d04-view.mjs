@@ -34,7 +34,7 @@ export function createView(bridge) {
   const start = element('button', '出発'); const close = element('button', '閉じる', 'ghost');
   const status = element('p'); status.setAttribute('role', 'status');
   lobby.append(heading, back, entry, invite, copyInvite, members, readyLabel, start, other, close, status); $('wrap').appendChild(lobby);
-  const retry = element('button', '再確認', 'ghost'); retry.id = 'd04Retry'; retry.hidden = true; $('panel').appendChild(retry);
+  const retry = element('button', '再確認', 'ghost'); retry.id = 'd04Retry'; retry.hidden = true; ($('travelStatus') || $('panel')).appendChild(retry);
   const cardName = id => bridge.cards.find(c => c.id === id)?.name || id;
   const propertyName = id => bridge.catalog.properties.find(p => p.id === id)?.name || id;
   const current = () => session?.game;

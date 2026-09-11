@@ -4,17 +4,32 @@
   const positions = {1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
   let spinning = null, tokenFrameRequest = null;
   const tokenImages = new Map(), tokenMotion = new Map();
+  const menuButton=typeof document==='undefined' ? null : $('menuToggle');
+  if(menuButton) {
+    const menu=$('panel');
+    const toggle=open=>{menu.hidden=!open;menuButton.setAttribute('aria-expanded',String(open));if(!open)menuButton.focus?.();};
+    menuButton.onclick=()=>toggle(menu.hidden);
+    $('menuClose').onclick=()=>toggle(false);
+    menu.addEventListener('click',event=>{if(event.target.closest('#hand button, #assets, #rank, #nameBtn'))toggle(false);});
+    globalThis.addEventListener?.('keydown',event=>{if(event.key==='Escape'&&!menu.hidden)toggle(false);});
+  }
   function spin() {
     if(spinning)return spinning;
     const box=el('div','travel-dice travel-spinning'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','サイコロ');
     const face=el('div','travel-die travel-spin-face'); face.setAttribute('aria-hidden','true');
-    for(let i=1;i<=9;i++)face.appendChild(el('i',positions[5].includes(i)?'pip on':'pip'));
+    for(let i=1;i<=9;i++)face.appendChild(el('i',positions[1].includes(i)?'pip on':'pip'));
+    const sequence=[1,4,2,6,3,5];let frame=0;
+    const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const interval=reduced ? null : setInterval(()=>{
+      const value=sequence[++frame%sequence.length];
+      Array.from(face.children).forEach((pip,i)=>{pip.className=positions[value].includes(i+1)?'pip on':'pip';});
+    },100);
     const row=el('div','travel-dice-row');row.appendChild(face);box.appendChild(row);
     const button=el('button','travel-throw','投げる');button.type='button';box.appendChild(button);
     $('wrap').appendChild(box);
     spinning=new Promise(resolve=>{
       let done=false;
-      const finish=value=>{if(done)return;done=true;button.disabled=true;box.remove();globalThis.removeEventListener?.('pagehide',cancel);spinning=null;resolve(value);};
+      const finish=value=>{if(done)return;done=true;if(interval!==null)clearInterval(interval);button.disabled=true;box.remove();globalThis.removeEventListener?.('pagehide',cancel);spinning=null;resolve(value);};
       const cancel=()=>finish(false);
       button.onclick=()=>finish(true);
       globalThis.addEventListener?.('pagehide',cancel,{once:true});
