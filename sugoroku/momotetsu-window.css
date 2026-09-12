@@ -1,0 +1,69 @@
+/* ながおかスゴ録 v49: ゲーム窓（masa 2026-09-12 🇦 桃鉄風＝濃紺の窓・白ふち・黄色の見出し・赤/青ボタン）
+   対象: 目的地(#dest)・試走の確認(#dirs)・メッセージ(#travelStatus)・物件(#card)・マス情報(#mapInspect)・メニュー(#panel)・導入(#intro)・絵のキャプション(#artPop .cap)・サイコロ結果
+   kintsugi-repair.css の後に読む。位置やサイズは変えず、見た目だけ差し替える */
+:root{--win:#12306b;--win-deep:#0b1f47;--win-edge:#ffffff;--chip:#ffd23f;--yes:#e8442f;--yes-deep:#9c2416;--no:#2f7fe8;--no-deep:#1b4f95;--win-font:"Zen Maru Gothic","Yu Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif}
+
+/* 窓の共通部品 */
+#dest,#dirs,#travelStatus,#wrap #card,#mapInspect,#panel,#intro .box,.travel-dice-result{
+  background:var(--win)!important;color:#fff!important;border:3px solid var(--win-edge)!important;outline:3px solid var(--win);
+  box-shadow:0 6px 0 var(--win-deep),0 12px 24px rgba(0,0,0,.35)!important;border-radius:6px!important;font-family:var(--win-font);
+}
+#dest *,#dirs *,#travelStatus *,#wrap #card *,#mapInspect *,#panel *,#intro .box *{font-family:var(--win-font)}
+#dest,#dirs,#travelStatus,#wrap #card,#mapInspect,#panel{padding:10px 12px!important}
+
+/* 黄色の見出しチップ */
+.travel-dest-label,#dirs .travel-remaining,#card::before,#mapInspect::before,#panel .menu-heading strong,#intro h2::before{
+  display:inline-block;background:var(--chip);color:var(--win);font-weight:900;font-size:13px;line-height:1.2;padding:3px 10px;border-radius:4px;margin:0 0 6px;letter-spacing:.02em
+}
+#card::before{content:"物件"}
+#mapInspect::before{content:"マスの情報"}
+#intro h2::before{content:"はじめに";display:block;width:fit-content;margin:0 0 6px}
+
+/* 目的地 */
+#dest{pointer-events:none}
+.travel-dest-name{font-size:22px;font-weight:900;color:#fff;margin:2px 0 4px}
+.travel-dest-distance{font-size:24px;font-weight:900;color:#fff}
+.travel-dest-bonus{font-size:12px;color:#dfe7ff}
+#dest #tip{color:#dfe7ff}
+
+/* 試走の確認（あと0歩／このマスに止まりますか？） */
+#dirs .travel-remaining,#dirs.map-route-controls .travel-remaining{font-size:14px;line-height:1.2;flex:0 0 auto}
+.route-summary strong,#dirs.map-route-controls .route-summary strong{font-size:22px;font-weight:900;color:#fff}
+.route-summary p,#dirs.map-route-controls .route-summary p{font-size:14px;color:#dfe7ff}
+.route-summary button,#dirs.map-route-controls .route-summary button{flex:1 1 auto;min-height:44px;font-size:18px;font-weight:900;border-radius:8px;color:#fff;background:var(--yes);box-shadow:0 4px 0 var(--yes-deep)}
+.route-summary p ~ button + button,#dirs.map-route-controls .route-summary p ~ button + button{background:var(--no);box-shadow:0 4px 0 var(--no-deep)}   /* いいえ */
+.route-summary strong + button,#dirs.map-route-controls .route-summary strong + button{flex:0 0 auto;min-width:44px;min-height:36px;padding:2px 10px;font-size:16px;background:transparent;color:#fff;border:2px solid #fff;box-shadow:none}   /* ⓘ */
+#dirs.map-route-controls{bottom:calc(76px + env(safe-area-inset-bottom))}
+
+/* メッセージ帯 */
+#travelStatus{font-weight:900}
+#msg{font-size:15px;color:#fff}
+#d04Retry{background:var(--no);color:#fff;box-shadow:0 3px 0 var(--no-deep)}
+
+/* 物件を買う */
+#card h3,#cTitle{font-size:22px;font-weight:900;color:#fff;margin:4px 0 6px}
+#cBody{color:#dfe7ff!important;font-size:14px}
+#cBuy{background:var(--yes);color:#fff;box-shadow:0 4px 0 var(--yes-deep);font-size:18px;font-weight:900;min-height:48px}
+#cSkip,#card button.ghost{background:var(--no);color:#fff;border:0;box-shadow:0 4px 0 var(--no-deep);font-size:18px;font-weight:900;min-height:48px}
+
+/* マスの情報・メニュー・導入 */
+#mapInspect h3,#inspectTitle{color:#fff;font-size:20px;font-weight:900;margin-top:4px}
+#inspectBody,#inspectBody p{color:#dfe7ff}
+#inspectClose,#menuClose{background:transparent;color:#fff;border:2px solid #fff;border-radius:6px}
+#panel .row button,#panel .row button.ghost,#panel #modeHome,#landmarkList{background:#fff;color:var(--win);border:0;box-shadow:0 3px 0 #9fb0d9;font-weight:900}
+#panel #modeHome{text-align:center;border-radius:12px;padding:12px}
+#stock{color:#dfe7ff}
+#hand > button{background:var(--chip);color:var(--win);box-shadow:0 3px 0 #b8951f}
+#intro .box{padding:18px 16px!important}
+#intro h2,#iTitle{color:#fff;font-size:20px;margin:0 0 8px}
+#intro p,#iBody{color:#dfe7ff}
+#intro input{background:#fff;color:var(--ink);border:2px solid #fff;border-radius:8px}
+#iNext{background:var(--yes);box-shadow:0 4px 0 var(--yes-deep);font-size:18px;font-weight:900}
+
+/* 絵のキャプション・サイコロ結果 */
+#artPop .cap{background:var(--win);color:#fff;border:3px solid #fff;outline:3px solid var(--win);border-radius:6px;box-shadow:0 5px 0 var(--win-deep);font-family:var(--win-font);font-weight:900;font-size:15px;padding:8px 14px}
+.travel-dice-result{font-weight:900;font-size:18px;padding:10px 14px}
+.travel-throw{background:var(--yes);box-shadow:0 5px 0 var(--yes-deep);font-family:var(--win-font);font-weight:900}
+
+/* 横向きの狭い高さでも窓のふちが欠けないように */
+@media(max-height:450px) and (orientation:landscape){#dest,#dirs,#travelStatus{outline-width:2px;border-width:2px!important}}
