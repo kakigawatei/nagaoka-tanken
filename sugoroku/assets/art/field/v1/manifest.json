@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "decorationRadius": {"town":2,"rural":2,"hill":1},
   "tilePixels": 512,
   "logicalPixels": 256,
   "style": "masa-isometric-trial",
