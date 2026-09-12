@@ -34,7 +34,7 @@ export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Imag
    }
    field.roads(ctx,screen,cell);
    const side=Math.min(23,cell*.38),sizes=mapSpriteSizes(cell),labels=[],shopLabels=[],obstacles=[],buildings=[];
-   for(const lot of display.scenery||[]){const id=field.decoration(lot),p=screen(lot);if(id&&visible(p,cell,width,height))buildings.push({id,p:{x:p.x,y:p.y+cell*.42},size:cell*.9});}
+   for(const lot of field.lots()){const id=field.decoration(lot),p=screen(lot);if(id&&visible(p,cell,width,height))buildings.push({id,p:{x:p.x,y:p.y+cell*.42},size:cell*.9});}
    for(const n of display.nodes){const id=field.landmark(n),p=screen(n);if(id&&visible(p,80,width,height))buildings.push({id,p:{x:p.x,y:p.y-side/2-4},size:n.id===goal?sizes.goal:sizes.place});}
    buildings.sort((a,b)=>a.p.y-b.p.y);
    for(const b of buildings){const rect=field.paint(ctx,b.id,b.p,b.size);if(rect)obstacles.push(rect);}

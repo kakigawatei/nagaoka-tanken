@@ -17,6 +17,18 @@ export function roadId(node,neighbors){
  for(const n of neighbors){const dx=n.x-node.x,dy=n.y-node.y;if(Math.abs(dx)+Math.abs(dy)!==1)throw new Error('Non-grid road');mask|=dy===-1?1:dx===1?2:dy===1?4:8;}
  return roads[mask]?'road_'+roads[mask]:null;
 }
+export function decorationLots(display,density){
+ if(!density)return display.scenery||[];
+ const occupied=new Set(display.nodes.map(n=>`${n.x},${n.y}`)),lots=new Map();
+ for(const n of display.nodes){const radius=density[n.region]??1;
+  for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
+   const x=n.x+dx,y=n.y+dy,key=`${x},${y}`,distance=Math.abs(dx)+Math.abs(dy);
+   if(occupied.has(key)||x===-2||(y===12&&x>=1&&x<=8))continue;
+   const old=lots.get(key);if(!old||distance<old.distance)lots.set(key,{x,y,region:n.region,distance});
+  }
+ }
+ return [...lots.values()].sort((a,b)=>a.y-b.y||a.x-b.x).map(({distance,...lot})=>lot);
+}
 export function validateManifest(m){
  if(m?.schemaVersion!==1||m.tilePixels!==512||m.logicalPixels!==256||!m.assets)throw new Error('Invalid field manifest');
  const b=m.trialBounds;
@@ -26,10 +38,11 @@ export function validateManifest(m){
  if(m.groundSeamless===true&&(!m.groundTile||m.assets[m.groundTile]?.layer!=='ground'))throw new Error('Invalid active ground');
  if(m.groundByRegion)for(const region of ['town','rural','hill'])if(m.assets[m.groundByRegion[region]]?.layer!=='ground')throw new Error('Invalid regional ground');
  for(const a of Object.values(m.assets))if(a.scale!==undefined&&(!Number.isFinite(a.scale)||a.scale<0.5||a.scale>2||a.layer!=='building'))throw new Error('Invalid field scale');
+ if(m.decorationRadius)for(const key of ['town','rural','hill'])if(!Number.isInteger(m.decorationRadius[key])||m.decorationRadius[key]<1||m.decorationRadius[key]>2)throw new Error('Invalid decoration density');
  return m;
 }
 export function createFieldLayer(display,{redraw=()=>{},imageFactory=()=>new Image(),fetcher=url=>fetch(url)}={}){
- let manifest=null,disposed=false;const images=new Map(),pending=new Set();
+ let manifest=null,disposed=false,lots=display.scenery||[];const images=new Map(),pending=new Set();
  const byId=new Map(display.nodes.map(n=>[n.id,n])),adj=new Map(display.nodes.map(n=>[n.id,[]]));
  for(const e of display.edges){const [a,b]=Array.isArray(e)?e:[e.a,e.b];adj.get(a).push(byId.get(b));adj.get(b).push(byId.get(a));}
  const routeTiles=new Map(display.nodes.map(n=>[n.id,roadId(n,adj.get(n.id))]));
@@ -45,11 +58,11 @@ export function createFieldLayer(display,{redraw=()=>{},imageFactory=()=>new Ima
     const cancel=()=>finish(false),timer=setTimeout(cancel,15000);pending.add(cancel);
     im.onload=()=>finish(im.naturalWidth===512&&im.naturalHeight===512);im.onerror=cancel;im.src=new URL(a.src,manifestURL).href;
    })));
-   if(disposed)return false;manifest=next;redraw();return true;
+   if(disposed)return false;manifest=next;lots=decorationLots(display,next.decorationRadius);redraw();return true;
   }catch{for(const cancel of [...pending])cancel();images.clear();return false;}
  })();
  function paint(ctx,id,p,w,h=w){const a=manifest?.assets[id],im=images.get(id);if(!a||!im)return null;w*=a.scale??1;h*=a.scale??1;const r={x:p.x-w*a.anchor[0],y:p.y-h*a.anchor[1],width:w,height:h};ctx.drawImage(im,r.x,r.y,w,h);return r;}
- return {ready,inside,
+ return {ready,inside,lots:()=>lots,
   dispose(){disposed=true;manifest=null;for(const cancel of [...pending])cancel();images.clear();regions.clear();},
   ground(ctx,screen,cell,width,height){if(!manifest)return;const b=manifest.trialBounds;
    // Non-seamless trial art is retained on disk, not repeated across the map.
