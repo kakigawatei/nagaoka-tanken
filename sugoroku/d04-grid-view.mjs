@@ -1,11 +1,11 @@
 import {layoutMapLabels,mapSpriteSizes} from './grid-board.mjs';
 import {createFieldLayer} from './field-art.mjs';
-import {createV2GridScene,V2_BOARD} from './d04-v2-scene.mjs';
+import {createV2GridScene,V2_BOARDS} from './d04-v2-scene.mjs';
 
 const colors={blue:'#3984c4',red:'#d9552f',yellow:'#e3bd3c',plain:'#fffdf7',dest:'#3f977e',prop:'#9968ad'};
 const major=new Set(['駅前','寺泊','出雲崎','与板','川西','越路','山古志','栃尾','小国','悠久山']);
 export function createGridScene(display,{redraw=()=>{},imageFactory=()=>new Image(),getIcon=()=>null,fieldFetcher}={}){
- if(display.boardVersion===V2_BOARD)return createV2GridScene(display,{redraw,imageFactory,fieldFetcher});
+ if(V2_BOARDS.includes(display.boardVersion))return createV2GridScene(display,{redraw,imageFactory,fieldFetcher});
  const field=createFieldLayer(display,{redraw,imageFactory,...(fieldFetcher?{fetcher:fieldFetcher}:{})});
  const images=new Map(),byId=new Map(display.nodes.map(n=>[n.id,n]));
  let disposed=false;

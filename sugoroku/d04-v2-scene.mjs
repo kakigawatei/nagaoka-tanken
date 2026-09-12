@@ -2,6 +2,7 @@ import {createV2Terrain} from './v2-terrain.mjs';
 import {mapSpriteSizes} from './grid-board.mjs';
 
 export const V2_BOARD='fe0edaae5362b5d3';
+export const V2_BOARDS=Object.freeze([V2_BOARD,'e3db0f35f89fd889']);
 const colors={blue:'#3984c4',red:'#d9552f',yellow:'#e3bd3c',plain:'#fffdf7',dest:'#3f977e',prop:'#9968ad'};
 export function createV2GridScene(display,{redraw=()=>{},imageFactory=()=>new Image(),fieldFetcher=fetch}={}){
  const anchors={},byId=new Map(display.nodes.map(n=>[n.id,n]));
@@ -12,7 +13,7 @@ export function createV2GridScene(display,{redraw=()=>{},imageFactory=()=>new Im
  const terrain=createV2Terrain(display,{imageFactory,anchors,redraw:()=>{if(!disposed)redraw();}});
  const anchorReady=Promise.resolve().then(()=>fieldFetcher(new URL('./assets/art/field/v1/landmark_anchors.json',import.meta.url),{signal:controller.signal}))
   .then(async r=>{if(!r.ok)throw new Error('ANCHORS_UNAVAILABLE');const data=await r.json();
-   for(const n of display.nodes.filter(n=>n.station)){const a=data[n.station];if(!Array.isArray(a)||a.length!==2||!a.every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw new Error('ANCHOR_INVALID');}
+   for(const id of [...display.nodes.filter(n=>n.station).map(n=>n.station),...(display.landmarkDecorations||[]).map(n=>n.asset)]){const a=data[id];if(!Array.isArray(a)||a.length!==2||!a.every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw new Error('ANCHOR_INVALID');}
    if(!disposed){Object.assign(anchors,data);redraw();}return [];
   }).catch(()=>['landmark_anchors.json']);
  return {

@@ -1,6 +1,6 @@
 import {canonical,catalogMatches} from './d04-catalog.mjs';
 import {DISPLAY_RENDERERS,validateDisplay} from './d04-renderers.mjs';
-export const SUPPORTED_BOARDS=Object.freeze(['8060e7bdbda4cde3','1e48703b19599772','ea18bbd0a8196120','fe0edaae5362b5d3']);
+export const SUPPORTED_BOARDS=Object.freeze(['8060e7bdbda4cde3','1e48703b19599772','ea18bbd0a8196120','fe0edaae5362b5d3','e3db0f35f89fd889']);
 const fail=code=>{throw Object.assign(new Error(code),{boardError:code});};
 export async function fetchBoard(version,{fetcher=fetch,digest=bytes=>crypto.subtle.digest('SHA-256',bytes),supported=SUPPORTED_BOARDS}={}){
  if(!supported.includes(version)||!/^[0-9a-f]{16}$/.test(version))fail('VERSION_MISMATCH');

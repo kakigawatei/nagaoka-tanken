@@ -57,9 +57,11 @@ export function createV2Terrain(display,{redraw=()=>{},imageFactory=()=>new Imag
  const images=new Map(),pending=new Set(),lots=forestLots(display),hill=mountainPlan(display);let disposed=false;
  const sprites=[...lots,...hill.border.map(l=>({...l,border:true}))].sort((a,b)=>a.y-b.y);
  const stationNodes=display.nodes.filter(n=>n.station);
+ const decorations=display.landmarkDecorations||[];
  const names=['ground_grass_01.png','ground_sea_01.png',...forest,...mountains],missing=[];
  function load(src,key=src){return new Promise(resolve=>{const im=imageFactory();let done=false;const finish=ok=>{if(done)return;done=true;clearTimeout(timer);pending.delete(cancel);im.onload=null;im.onerror=null;if(ok&&!disposed)images.set(key,im);else missing.push(key);resolve(ok);};const cancel=()=>finish(false),timer=setTimeout(cancel,15000);pending.add(cancel);im.onload=()=>finish(im.naturalWidth>0);im.onerror=cancel;im.src=src;});}
- const ready=Promise.all([...names.map(n=>load(new URL(n,base).href,n)),...display.nodes.filter(n=>n.station).map(n=>load(new URL(`./assets/art/field/v1/tiles/landmark_${n.station}.png`,import.meta.url).href,n.station))]).then(()=>{if(!disposed)redraw();return {missing:[...missing]};});
+ const landmarkAssets=[...new Set([...stationNodes.map(n=>n.station),...decorations.map(n=>n.asset)])];
+ const ready=Promise.all([...names.map(n=>load(new URL(n,base).href,n)),...landmarkAssets.map(id=>load(new URL(`./assets/art/field/v1/tiles/landmark_${id}.png`,import.meta.url).href,id))]).then(()=>{if(!disposed)redraw();return {missing:[...missing]};});
  const line=(ctx,points,screen)=>{ctx.beginPath();points.forEach((p,i)=>{const q=screen({x:p[0],y:p[1]});i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);});};
  function texture(ctx,id,screen,cell,width,height){const im=images.get(id);if(!im)return;const tile=cell*4,p=screen({x:0,y:0});for(let y=Math.floor(-p.y/tile)*4;y<=(height-p.y)/cell;y+=4)for(let x=Math.floor(-p.x/tile)*4;x<=(width-p.x)/cell;x+=4){const q=screen({x,y}),left=Math.round(q.x),top=Math.round(q.y);ctx.drawImage(im,left,top,Math.round(q.x+tile)-left,Math.round(q.y+tile)-top);}}
  return {ready,lots,dispose(){disposed=true;for(const cancel of [...pending])cancel();images.clear();},
@@ -80,6 +82,8 @@ export function createV2Terrain(display,{redraw=()=>{},imageFactory=()=>new Imag
    // Boundary trees may mask the outline, but never cover the mountain interior.
    ctx.save();ctx.beginPath();ctx.rect(0,0,width,height);for(let i=0;i<hillPolygon.length;i++){const q=screen({x:hillPolygon[i][0],y:hillPolygon[i][1]});i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}ctx.closePath();ctx.clip('evenodd');ctx.drawImage(im,p.x-w/2,p.y-h,w,h);ctx.restore();}
   beforePlaces();
+  // Decorative landmarks have no node, destination, number or name label.
+  if(places)for(const n of decorations){const p=screen(n),im=images.get(n.asset),size=Math.min(90,cell*n.scale),anchor=anchors[n.asset]||[.5,.93];if(!im||p.x+size<0||p.x-size>width||p.y<0||p.y-size>height)continue;ctx.drawImage(im,p.x-size*anchor[0],p.y-size*anchor[1],size,size);}
   const labels=[];
   if(places)for(const n of stationNodes){const p=screen(n),im=images.get(n.station),size=landmarkSize(n,stationNodes,cell),anchor=anchors[n.station]||[.5,.93];if(p.x+size<0||p.x-size>width||p.y<labelTop||p.y>labelBottom)continue;if(im)ctx.drawImage(im,p.x-size*anchor[0],p.y-size*anchor[1],size,size);else{ctx.fillStyle='#245b3d';ctx.fillRect(p.x-3,p.y-3,6,6);}const number=(display.trace?.provisionalStations||stationNodes.map(n=>({station:n.station}))).findIndex(s=>s.station===n.station)+1;labels.push({p,text:n.name,number});}
   const placed=layoutLandmarkLabels(labels,{width:labelWidth,height,top:labelTop,bottom:labelBottom,cell,obstacles});

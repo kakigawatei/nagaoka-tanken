@@ -2,14 +2,15 @@ import {fetchBoard} from './d04-boards.mjs';
 import {DISPLAY_RENDERERS} from './d04-renderers.mjs';
 export const LEGACY_SOLO_BOARD='1e48703b19599772';
 export const LEGACY_SOLO_KEY='nagaoka_sugoroku_solo_'+LEGACY_SOLO_BOARD;
-export const SOLO_BOARD='fe0edaae5362b5d3';
+export const SOLO_BOARD='e3db0f35f89fd889';
 export const SOLO_KEY='nagaoka_sugoroku_solo_'+SOLO_BOARD;
 export const ACTIVE_SOLO_KEY='nagaoka_sugoroku_solo_active_board';
 export const soloKey=version=>'nagaoka_sugoroku_solo_'+version;
 export function selectSoloBoard(storage,defaultBoard=SOLO_BOARD){
  const active=storage.getItem(ACTIVE_SOLO_KEY);
  if(active){if(!/^[a-f0-9]{16}$/.test(active)||!storage.getItem(soloKey(active)))throw new Error('SAVE_VERSION_INVALID');return active;}
- if(storage.getItem(LEGACY_SOLO_KEY))return LEGACY_SOLO_BOARD;
+ // Retain the established legacy-save precedence when the active pointer is absent.
+ for(const version of [LEGACY_SOLO_BOARD,'fe0edaae5362b5d3','8060e7bdbda4cde3'])if(storage.getItem(soloKey(version)))return version;
  return storage.getItem(SOLO_KEY)?SOLO_BOARD:defaultBoard;
 }
 export function readSolo(storage,catalog){
