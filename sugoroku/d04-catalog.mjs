@@ -7,7 +7,8 @@ export function canonical(value) {
 
 export function catalogFromDisplay(board) {
   return {
-    schemaVersion: 1, rulesVersion: 'd04-v1',
+    schemaVersion: 1, rulesVersion: board.rulesVersion === 'd04-towns-v1' ? board.rulesVersion : 'd04-v1',
+    ...(board.rulesVersion === 'd04-towns-v1' ? board.gameplay : {}),
     nodes: board.nodes.map(n => ({id: n.id, t: n.t, ...(n.station ? {station: n.station} : {}), ...(n.prop ? {prop: n.prop} : {})})),
     edges: board.edges.map(e => Array.isArray(e) ? [e[0], e[1]] : [e.a, e.b]).map(([a, b]) => a < b ? [a, b] : [b, a]).sort((a, b) => a[0] - b[0] || a[1] - b[1]),
     stations: board.stations.map(s => ({id: s.id, name: s.name, area: s.area || ''})),

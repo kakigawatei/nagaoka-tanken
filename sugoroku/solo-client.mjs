@@ -1,5 +1,7 @@
 import {fetchBoard} from './d04-boards.mjs';
 import {DISPLAY_RENDERERS} from './d04-renderers.mjs';
+import {townCandidates} from './functions/lib/town-rules.js';
+globalThis.SUGOROKU_TOWN_CANDIDATES=townCandidates;
 export const LEGACY_SOLO_BOARD='1e48703b19599772';
 export const LEGACY_SOLO_KEY='nagaoka_sugoroku_solo_'+LEGACY_SOLO_BOARD;
 export const SOLO_BOARD='e3db0f35f89fd889';
@@ -20,13 +22,13 @@ export function readSolo(storage,catalog){
  if(state.boardVersion!==catalog.boardVersion||!validSeat(state)||state.dest!==null&&!nodes.has(state.dest)||!Array.isArray(state.rivals)||state.rivals.length!==3||!state.rivals.every(validSeat)||!Array.isArray(state.cards)||!Array.isArray(state.log)||!Number.isInteger(state.turn)||state.turn<0||state.turn>108)throw new Error('SAVE_INVALID');
  return state;
 }
-export function connectSolo(bridge,{load=fetchBoard,storage=localStorage,defaultBoard=SOLO_BOARD}={}){
+export function connectSolo(bridge,{load=fetchBoard,storage=localStorage,defaultBoard=SOLO_BOARD,requestedBoard=null}={}){
  let pending=false,done=false;
  async function start(){
   if(pending||done)return;pending=true;bridge.loading();
-  try{const version=selectSoloBoard(storage,defaultBoard);const {display,catalog}=await load(version);if(catalog.boardVersion!==version)throw new Error('SAVE_VERSION_MISMATCH');const state=readSolo(storage,catalog);bridge.boot(display,catalog,DISPLAY_RENDERERS[display.renderer],state);done=true;}
+  try{const version=requestedBoard===null?selectSoloBoard(storage,defaultBoard):requestedBoard;if(!/^[a-f0-9]{16}$/.test(version))throw new Error('SAVE_VERSION_INVALID');const {display,catalog}=await load(version);if(catalog.boardVersion!==version)throw new Error('SAVE_VERSION_MISMATCH');const state=readSolo(storage,catalog);bridge.boot(display,catalog,DISPLAY_RENDERERS[display.renderer],state);done=true;}
   catch{bridge.failed(start);}finally{pending=false;}
  }
  return start;
 }
-if(globalThis.SUGOROKU_SOLO_VIEW)connectSolo(globalThis.SUGOROKU_SOLO_VIEW)();
+if(globalThis.SUGOROKU_SOLO_VIEW)connectSolo(globalThis.SUGOROKU_SOLO_VIEW,{requestedBoard:new URLSearchParams(location.search).get('solo')})();
