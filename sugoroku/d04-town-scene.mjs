@@ -21,7 +21,7 @@ export function createTownScene(display,options={}){
    for(const [i,t] of entries.entries()){
     const p=screen(nodes.get(t.nodeId));if(p.x<0||p.x>width-64||p.y<0||p.y>height)continue;
     if(cell<24){ctx.fillStyle=palette[districts.indexOf(t.district)%palette.length];const size=Math.max(2,Math.min(7,cell*.55));ctx.fillRect(p.x-size/2,p.y-size/2,size,size);}
-    else if(p.y>=(args.labelTop??130)&&p.y<=(args.labelBottom??height-64)&&(!display.gameplay?.stopPolicy||nodes.get(t.nodeId).t==='prop'||nodes.get(t.nodeId).t==='dest'||t.nodeId===goal||cell>=55))items.push({p,text:t.name,number:i+1});
+    else if(p.y>=(args.labelTop??130)&&p.y<=(args.labelBottom??height-64)&&(!display.gameplay?.stopPolicy||nodes.get(t.nodeId).t==='prop'||nodes.get(t.nodeId).t==='dest'||t.nodeId===goal||cell>=55&&display.townLabelPolicy!=='key-stops-v1'))items.push({p,text:t.name,number:i+1});
     if(t.nodeId===goal){ctx.strokeStyle='#cf351b';ctx.lineWidth=3;ctx.strokeRect(p.x-6,p.y-6,12,12);}
    }
    labels=cell>=24?layoutLandmarkLabels(items,{width:width-64,height,top:args.labelTop??130,bottom:args.labelBottom??height-64,cell,obstacles:(args.tokens||[]).map(p=>({x:p.x-20,y:p.y-45,width:40,height:50}))}):[];
