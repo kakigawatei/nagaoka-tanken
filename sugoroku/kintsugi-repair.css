@@ -194,6 +194,12 @@ html,body,button,a,input,label{touch-action:manipulation;}
 .route-arrow.route-back{color:#166aa3;}
 .route-arrow:disabled{opacity:.45;}
 .route-arrow:focus-visible{outline:3px solid #166aa3;outline-offset:2px;}
+.route-arrow.route-triangle{width:56px;height:56px;min-height:56px;line-height:1;text-shadow:none;filter:drop-shadow(0 3px 0 #593c24);background:transparent;box-shadow:none;--triangle-color:#ffbe24;}
+.route-triangle.route-best{--triangle-color:#ef62d0;}
+.route-triangle.route-back{--triangle-color:#9371ef;}
+.route-triangle-face{position:absolute;inset:1px;display:block;clip-path:polygon(8% 2%,98% 50%,8% 98%);background:#fff;pointer-events:none;}
+.route-triangle-face::after{content:'';position:absolute;inset:5px;clip-path:polygon(8% 2%,98% 50%,8% 98%);background:var(--triangle-color);}
+.route-triangle:active .route-triangle-face{filter:brightness(1.15);}
 #wrap:has(#panel:not([hidden])) .route-arrow,#wrap:has(#mapInspect:not([hidden])) .route-arrow{visibility:hidden;pointer-events:none;}
 #wrap:has(#mapInspect:not([hidden])) #dirs.map-route-controls{visibility:hidden;pointer-events:none;}
 #dirs.map-route-controls{left:10px;right:68px;bottom:calc(46px + env(safe-area-inset-bottom));width:auto;max-width:310px;max-height:160px;padding:5px 8px;gap:4px;flex-wrap:wrap;}

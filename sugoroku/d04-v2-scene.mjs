@@ -34,7 +34,7 @@ export function createV2GridScene(display,{redraw=()=>{},imageFactory=()=>new Im
       // Keep the overview road continuous; the destination remains visible.
       if(cell<16&&n.id!==goal)continue;
       const owned=n.prop?owner(n.prop):null;
-      ctx.fillStyle=n.prop?colors.prop:colors[n.t]||colors.plain;ctx.fillRect(p.x-side/2,p.y-side/2,side,side);
+      ctx.fillStyle=display.gameplay?.stopPolicy==='mixed-town-stops-v1'?(colors[n.t]||colors.plain):n.prop?colors.prop:colors[n.t]||colors.plain;ctx.fillRect(p.x-side/2,p.y-side/2,side,side);
       ctx.strokeStyle=owned==='you'?'#e0b84a':owned?'#9c8bd6':'#fff';ctx.lineWidth=owned?3:Math.min(2,Math.max(.5,cell*.04));ctx.strokeRect(p.x-side/2,p.y-side/2,side,side);
       if(shops.has(n.id)&&cell>=32){ctx.fillStyle='#724a1f';ctx.fillRect(p.x-side*.18,p.y-side*.18,side*.36,side*.36);}
       if(n.id===goal){ctx.strokeStyle='#d9552f';ctx.lineWidth=3;ctx.strokeRect(p.x-side/2-4,p.y-side/2-4,side+8,side+8);}

@@ -79,23 +79,57 @@
   }
   function direction(x,y) {return Math.abs(x)>Math.abs(y) ? (x>0?'right':'left') : (y>0?'down':'up');}
   let mapArrows=[], placeMapPad=()=>{};
+  function referenceArrowPosition(c,p){
+    const f=p.frame||{left:8,right:p.width-76,top:100,bottom:p.height-140};
+    const size=56,half=size/2;
+    const left=Math.max(half+4,f.left+half),right=Math.max(left,p.width>150?Math.min(p.width-half-4,f.right-half):left);
+    const top=Math.max(half+4,f.top+half),bottom=Math.max(top,Math.min(p.height-half-4,f.bottom-half));
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),key=direction(c.x,c.y);
+    let x=clamp(p.x,left,right),y=clamp(p.y,top,bottom);
+    if(key==='left')x=left;if(key==='right')x=right;if(key==='up')y=top;if(key==='down')y=bottom;
+    // If the available field is short, move a vertical control sideways to leave the token visible.
+    if(Math.abs(x-p.x)<half+26&&y+half>p.y-66&&y-half<p.y+12){
+      if(key==='up'||key==='down')x=Math.abs(left-p.x)>Math.abs(right-p.x)?left:right;
+      else y=Math.abs(top-p.y)>Math.abs(bottom-p.y)?top:bottom;
+    }
+    return {x,y,size};
+  }
+  function referenceArrowPositions(choices,p){
+    const f=p.frame||{left:8,right:p.width-76,top:100,bottom:p.height-140},placed=[];
+    const token={x:p.x-26,y:p.y-66,width:52,height:78};
+    const overlaps=(a,b)=>Math.abs(a.x-b.x)<58&&Math.abs(a.y-b.y)<58;
+    const tokenHit=q=>q.x+28>token.x&&q.x-28<token.x+token.width&&q.y+28>token.y&&q.y-28<token.y+token.height;
+    for(const c of choices){
+      const ideal=referenceArrowPosition(c,p),key=direction(c.x,c.y),options=[ideal];
+      for(const t of [0,1,.25,.75,.5]){
+        const x=Math.max(32,f.left+28)+(Math.max(32,f.right-28)-Math.max(32,f.left+28))*t;
+        const y=Math.max(32,f.top+28)+(Math.max(32,f.bottom-28)-Math.max(32,f.top+28))*t;
+        options.push({...ideal,...(key==='up'||key==='down'?{x}:{y})});
+      }
+      const q=options.find(q=>!tokenHit(q)&&!placed.some(other=>overlaps(q,other)))||options.find(q=>!placed.some(other=>overlaps(q,other)))||ideal;
+      placed.push(q);
+    }return placed;
+  }
   function clearPad() {mapArrows.forEach(n=>n.remove());mapArrows=[];placeMapPad=()=>{};const box=$('dirs');box.classList?.remove('map-route-controls');box.replaceChildren(); box.style.display='none';}
   function mapPad(choices,remaining,pick,disabled=false,position) {
     clearPad();const box=$('dirs');box.classList.add('map-route-controls');box.style.display='flex';
     box.appendChild(el('strong','travel-remaining',`あと${remaining}歩`));
     const forward=choices.filter(c=>!c.back&&Number.isFinite(c.distance));
     const best=Math.min(...forward.map(c=>c.distance));let chosen=false;
+    const reference=!!position().reference;
     choices.forEach(c=>{
       const recommended=!c.back&&c.closer!==false&&Number.isFinite(c.distance)&&c.distance===best;
       const b=el('button','route-arrow '+(c.back?'route-back':recommended?'route-best':'route-forward'),c.back?'↶':recommended?'➤➤':'➤');
+      if(reference){b.textContent='';b.className+=' route-triangle';const face=el('span','route-triangle-face');face.setAttribute('aria-hidden','true');b.appendChild(face);}
       b.type='button';b.disabled=disabled;b.title=`${c.label||'進む'}・${c.back?'1歩取り消す':recommended?'目的地への最短方向':'進める方向'}`;
       b.setAttribute('aria-label',b.title);
       b.onclick=()=>{if(chosen||disabled)return;chosen=true;clearPad();pick(c.id);};
       $('wrap').appendChild(b);mapArrows.push(b);
     });
     placeMapPad=()=>{
-      const p=position();choices.forEach((c,i)=>{
+      const p=position(),referencePositions=reference?referenceArrowPositions(choices,p):null;choices.forEach((c,i)=>{
         const angle=Math.atan2(c.y,c.x),b=mapArrows[i];if(!b)return;
+        if(reference){const q=referencePositions[i];b.style.left=q.x+'px';b.style.top=q.y+'px';b.style.setProperty('--direction',angle+'rad');return;}
         const x=p.x+Math.cos(angle)*70,y=p.y+Math.sin(angle)*70;
         b.style.left=Math.max(24,Math.min(p.width-24,x))+'px';b.style.top=Math.max(24,Math.min(p.height-24,y))+'px';
         b.style.setProperty('--direction',c.back?'0rad':angle+'rad');
@@ -140,5 +174,5 @@
     $('wrap').appendChild(box);
     try {await new Promise(resolve=>setTimeout(resolve,1100));} finally {box.remove();}
   }
-  globalThis.TRAVEL_UI={direction,pad,mapPad,placeMapPad:()=>placeMapPad(),clearPad,dice,spin,destination,token,resetTokens};
+  globalThis.TRAVEL_UI={direction,pad,mapPad,referenceArrowPosition,referenceArrowPositions,placeMapPad:()=>placeMapPad(),clearPad,dice,spin,destination,token,resetTokens};
 })();

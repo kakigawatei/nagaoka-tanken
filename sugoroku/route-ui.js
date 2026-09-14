@@ -44,6 +44,7 @@
         const no=button('いいえ',()=>{if(!locked&&state.undo())render();});no.disabled=locked;details.appendChild(yes);details.appendChild(no);
       }
       host.appendChild(details);
+      globalThis.TRAVEL_UI.placeMapPad?.();
     }
     render();
     return {render,setLocked(value){locked=value;render();},close(){closed=true;TRAVEL_UI.clearPad();config.preview(null,[]);}};

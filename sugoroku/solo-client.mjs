@@ -1,7 +1,9 @@
 import {fetchBoard} from './d04-boards.mjs';
 import {DISPLAY_RENDERERS} from './d04-renderers.mjs';
-import {townCandidates} from './functions/lib/town-rules.js';
+import {townCandidates,townDestinationPool,canBuyAtStop} from './functions/lib/town-rules.js';
 globalThis.SUGOROKU_TOWN_CANDIDATES=townCandidates;
+globalThis.SUGOROKU_TOWN_POOL=townDestinationPool;
+globalThis.SUGOROKU_CAN_BUY=canBuyAtStop;
 export const LEGACY_SOLO_BOARD='1e48703b19599772';
 export const LEGACY_SOLO_KEY='nagaoka_sugoroku_solo_'+LEGACY_SOLO_BOARD;
 export const SOLO_BOARD='e3db0f35f89fd889';
