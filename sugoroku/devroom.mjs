@@ -99,6 +99,7 @@ const HTML = `
       <label>内容</label><textarea id="drText" maxlength="500" placeholder="例：サイコロを振った後に画面が戻らない／目的地の矢印をもっと大きく／〇〇神社の写真を送りたい"></textarea>
       <label>どこで（画面やマスの名前・任意）</label><input id="drWhere" maxlength="60" placeholder="例：寺泊の分かれ道／決算の画面">
       <label>名前（更新ノートに載る呼び名・12文字まで）</label><input id="drName" maxlength="12" placeholder="例：ゆうき">
+      <div id="drConsentWrap" style="display:none;margin-top:10px"><label style="display:flex;gap:8px;align-items:flex-start;font-weight:500;color:#2a2118;font-size:13px;line-height:1.5;cursor:pointer"><input type="checkbox" id="drConsent" style="width:20px;height:20px;margin-top:1px;flex:none">送った名前・写真・情報をゲームの中で使ってOK（人の顔が写った写真は送りません）</label><div class="dr-note">写真そのものの受付は準備中。いまは場所の名前と「どんな写真か」を書いてください。用意ができたら更新ノートで知らせます。</div></div>
       <div class="row" style="margin-top:12px"><button id="drSend">送る</button></div>
       <div class="dr-note" id="drMsg"></div>
     </div>
@@ -116,7 +117,9 @@ function mount() {
   $("drClose").onclick = close; el.addEventListener("click", e => { if (e.target === el) close(); });
   el.querySelectorAll(".dr-tabs button").forEach(b => b.onclick = () => showTab(b.dataset.t));
   $("drName").value = playerName();
-  $("drTypes").querySelectorAll("button").forEach(b => b.onclick = () => { $("drTypes").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
+  const syncConsent = () => { const k = ($("drTypes").querySelector("button.on") || {}).dataset?.k; $("drConsentWrap").style.display = k === "spot" ? "block" : "none"; };
+  $("drTypes").querySelectorAll("button").forEach(b => b.onclick = () => { $("drTypes").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); syncConsent(); });
+  window.__drSyncConsent = syncConsent;
   $("drSend").onclick = send;
 }
 function showTab(t) {
@@ -126,7 +129,7 @@ function showTab(t) {
 }
 export function open(tab) { mount(); $("devroom").classList.add("show"); showTab(tab || "home"); }
 function close() { const e = $("devroom"); if (e) e.classList.remove("show"); }
-function goPost(type, prefill) { showTab("post"); if (type) $("drTypes").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.k === type)); if (prefill) $("drText").value = prefill; }
+function goPost(type, prefill) { showTab("post"); if (type) $("drTypes").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.k === type)); if (window.__drSyncConsent) window.__drSyncConsent(); if (prefill) $("drText").value = prefill; }
 
 /* ---- ホーム: 今のお題 → 2つの大きなボタン → 募集中 → 投票中 → 最新の更新 → 自分 ---- */
 async function renderHome() {
@@ -152,12 +155,13 @@ async function send() {
   const type = ($("drTypes").querySelector("button.on") || {}).dataset?.k || "other", name = $("drName").value.trim().slice(0, 12), where = $("drWhere").value.trim().slice(0, 60), text = $("drText").value.trim();
   const msg = $("drMsg");
   if (text.length < 4) { msg.textContent = "内容をもう少し書いてください（4文字以上）"; return; }
+  if (type === "spot" && !$("drConsent").checked) { msg.textContent = "名所の情報は「ゲームの中で使ってOK」にチェックしてから送ってください"; return; }
   $("drSend").disabled = true; msg.textContent = "送っています…";
   try {
     const { db, uid } = await connect();
     try { localStorage.setItem("devroom_name", name); } catch (e) {}
     const ver = (document.querySelector('script[src*="d04-client"]') ? "d04" : "solo") + " " + (new URLSearchParams(location.search).get("mode") || "");
-    await addDoc(collection(db, "sugoroku_feedback"), { uid, name: name || "旅人", type, where, text, ver: ver.trim(), ua: navigator.userAgent.slice(0, 80), t: Date.now(), createdAt: new Date().toISOString() });
+    await addDoc(collection(db, "sugoroku_feedback"), { uid, name: name || "旅人", type, where, text, consent: type === "spot", ver: ver.trim(), ua: navigator.userAgent.slice(0, 80), t: Date.now(), createdAt: new Date().toISOString() });
     $("drText").value = ""; $("drWhere").value = ""; msg.textContent = "ありがとう！月曜にまとめて、木曜の更新ノートで返事します。";
   } catch (e) { console.error(e); msg.textContent = (e && e.code === "permission-denied") ? "いまは受付の準備中です（運営がルールを設定するまで送れません）" : "送れませんでした。電波の良い所でもう一度。"; }
   finally { $("drSend").disabled = false; }
@@ -194,16 +198,20 @@ async function renderNotes() {
 async function renderVote() {
   const box = $("drVote"); box.innerHTML = "<p>読み込み中…</p>";
   const n = await loadNotes(); const votes = n.votes; const now = Date.now();
-  if (!votes.length) { box.innerHTML = "<p>いま投票中のものはありません。要望がぶつかったときに、ここで決めます（48時間・1人1票・結果は更新ノートに）。</p>"; return; }
+  if (!votes.length) { box.innerHTML = "<p>いま投票中のものはありません。要望がぶつかったときに、ここで決めます（48時間・端末ごとに1票・結果は更新ノートに）。</p><p class='dr-note'>投票は参考にする材料で、最終決定は運営です。</p>"; return; }
   let db, uid; try { ({ db, uid } = await connect()); } catch (e) { box.innerHTML = "<p>読み込めませんでした</p>"; return; }
   const parts = [];
   for (const v of votes) {
     const closed = Date.parse(v.until) < now; let mine = null; const counts = {};
-    try { const snap = await getDocs(query(collection(db, "sugoroku_ballots"), where("voteId", "==", v.id))); snap.forEach(d => { const b = d.data(); counts[b.choice] = (counts[b.choice] || 0) + 1; if (b.uid === uid) mine = b.choice; }); } catch (e) {}
+    const until = Date.parse(v.until), from = v.from ? Date.parse(v.from) : 0;
+    try { const snap = await getDocs(query(collection(db, "sugoroku_ballots"), where("voteId", "==", v.id))); snap.forEach(d => { const b = d.data();
+      /* 偽の票は数えない: 選択肢の範囲外・締切後・開始前のものは無効（エル監査 2026-09-21） */
+      if (!Number.isInteger(b.choice) || b.choice < 0 || b.choice >= v.options.length || typeof b.t !== "number" || b.t > until || b.t < from) return;
+      counts[b.choice] = (counts[b.choice] || 0) + 1; if (b.uid === uid) mine = b.choice; }); } catch (e) {}
     const total = Object.values(counts).reduce((a, b) => a + b, 0); const show = closed || mine !== null;
     parts.push(`<div class="vote" data-v="${esc(v.id)}"><b>${esc(v.title)}</b><div style="font-size:12px;color:#8a7a5c">${closed ? "締切" : "締切 " + esc(v.until.slice(5, 16).replace("T", " "))}${total ? " ・ " + total + "票" : ""}${v.result ? " ・ 結果：" + esc(v.result) : ""}</div>${v.body ? `<div style="font-size:13px;margin-top:4px">${esc(v.body)}</div>` : ""}<div class="opts">${v.options.map((o, i) => `<button ${closed ? "disabled" : ""} data-c="${i}" class="${mine === i ? "mine" : ""}">${esc(o)}${show ? `<div class="bar"><i style="width:${total ? Math.round((counts[i] || 0) / total * 100) : 0}%"></i></div><span style="font-size:11px;color:#8a7a5c">${counts[i] || 0}票</span>` : ""}</button>`).join("")}</div></div>`);
   }
-  box.innerHTML = parts.join("");
+  box.innerHTML = parts.join("") + "<p class='dr-note'>端末ごとに1票（同じ端末からは1回）。投票は参考にする材料で、最終決定は運営です。</p>";
   box.querySelectorAll(".vote").forEach(el => el.querySelectorAll("button[data-c]").forEach(b => b.onclick = async () => {
     const vid = el.dataset.v, c = +b.dataset.c;
     try { await setDoc(doc(db, "sugoroku_ballots", vid + "_" + uid), { voteId: vid, uid, choice: c, t: Date.now() }); renderVote(); }
@@ -214,21 +222,22 @@ async function myStats(n) {
   const { db, uid } = await connect();
   const snap = await getDocs(query(collection(db, "sugoroku_feedback"), where("uid", "==", uid)));
   const mine = []; snap.forEach(d => mine.push(Object.assign({ id: d.id }, d.data())));
-  let pts = 0, adopted = 0;
-  for (const r of mine) { pts += WEIGHT[r.type] || 1; const s = n.statuses[r.id]; if (s && (s.status === "done" || s.status === "planned")) { pts += WEIGHT.adopted; adopted++; } }
+  let pts = 0, adopted = 0, pending = 0;
+  /* 加点は運営が「直します／反映済み」にした投稿だけ（連投・重複・見送りでは上がらない・エル監査 2026-09-21） */
+  for (const r of mine) { const s = n.statuses[r.id]; if (s && (s.status === "done" || s.status === "planned")) { pts += (WEIGHT[r.type] || 1) + WEIGHT.adopted; adopted++; } else if (!s || s.status === "new") pending++; }
   let votes = 0; try { const vs = await getDocs(query(collection(db, "sugoroku_ballots"), where("uid", "==", uid))); votes = vs.size; pts += votes * WEIGHT.vote; } catch (e) {}
   const extra = n.credits.find(c => c.uid === uid); if (extra && extra.bonus) pts += extra.bonus;
   pts = Math.round(pts * 10) / 10; let rank = RANKS[0][1], next = null;
   for (let i = 0; i < RANKS.length; i++) { if (pts >= RANKS[i][0]) rank = RANKS[i][1]; else { next = RANKS[i]; break; } }
-  return { pts, rank, next: next ? next[1] : null, nextLeft: next ? Math.round((next[0] - pts) * 10) / 10 : 0, count: mine.length, adopted, votes };
+  return { pts, rank, next: next ? next[1] : null, nextLeft: next ? Math.round((next[0] - pts) * 10) / 10 : 0, count: mine.length, adopted, pending, votes };
 }
 async function renderMe() {
   const box = $("drMe"); box.innerHTML = "<p>読み込み中…</p>";
   try {
     const n = await loadNotes(); const m = await myStats(n);
     box.innerHTML = `<div class="rank">${esc(m.rank)}</div><div>貢献ポイント <b>${m.pts}</b>${m.next ? `　次の「${esc(m.next)}」まであと ${m.nextLeft}` : ""}</div>
-      <table style="margin-top:8px"><tr><td>投稿</td><td>${m.count}件</td></tr><tr><td>採用・対応中</td><td>${m.adopted}件</td></tr><tr><td>投票</td><td>${m.votes}回</td></tr></table>
-      <div class="dr-note">重み：バグ報告 1／要望 3／名所の情報 2／投票 0.2／採用されたら +3。「開発メンバー」以上の人は更新ノートにクレジットが載り、年間上位には功労者カードを贈ります。</div>
+      <table style="margin-top:8px"><tr><td>投稿</td><td>${m.count}件（審査待ち ${m.pending}件）</td></tr><tr><td>採用・対応中</td><td>${m.adopted}件</td></tr><tr><td>投票</td><td>${m.votes}回</td></tr></table>
+      <div class="dr-note">ポイントが入るのは運営が「直します／反映済み」にした投稿（バグ 1／要望 3／名所 2＋採用 3）と投票（0.2）。審査待ち・同じ声・見送りには入りません。「開発メンバー」以上の人は更新ノートにクレジットが載り、年間上位には功労者カードを贈ります。</div>
       ${n.credits.length ? `<h4 style="margin:14px 0 4px">貢献の多い人</h4><table>${n.credits.slice(0, 10).map((c, i) => `<tr><td>${i + 1}</td><td>${esc(c.name)}</td><td>${esc(c.rank || "")}</td><td style="text-align:right">${esc(c.points)}</td></tr>`).join("")}</table>` : ""}`;
   } catch (e) { console.error(e); box.innerHTML = "<p>読み込めませんでした" + (e && e.code === "permission-denied" ? "（受付の準備中）" : "") + "</p>"; }
 }
