@@ -1,6 +1,12 @@
 {
-  "_": "開発室の運営データ。毎週月曜にポムがフィードバックをまとめ、木曜の更新で書き換える。statuses は sugoroku_feedback の doc id → {status: new|planned|vote|done|declined|dup, reply}。votes は {id, title, body, options[], until(ISO), result}。credits は貢献の多い人 [{uid, name, rank, points, bonus}]",
+  "_": "開発室の運営データ。毎週月曜にポムがフィードバックをまとめ、木曜の更新で書き換える。topics=いま聞きたいこと（ホームの黒い枠・until で消える）／tasks=募集（名所の写真や名前など）／statuses は sugoroku_feedback の doc id → {status: new|planned|vote|done|declined|dup, reply}／votes は {id, title, body, options[], until(ISO), result}／credits は貢献の多い人 [{uid, name, rank, points, bonus}]",
   "cycle": { "triage": "月曜", "release": "木曜", "voteHours": 48, "weights": { "bug": 1, "idea": 3, "spot": 2, "other": 1, "vote": 0.2, "adopted": 3 } },
+  "topics": [
+    { "id": "t1", "title": "目的地の矢印と分かれ道のボタン、迷わず進めた？", "body": "迷った場所・分かりにくかった画面があれば、どこで何が起きたかを教えてください。", "until": "2026-10-02T00:00:00+09:00" }
+  ],
+  "tasks": [
+    { "id": "k1", "title": "名所の写真を募集", "body": "地図に出てくる名所（神社・公園・市場など）の写真。撮った場所の名前を添えて。採用したら更新ノートに「写真：〇〇さん」と載せます。人の顔が写っていないものを。", "until": "2026-10-31T00:00:00+09:00" }
+  ],
   "updates": [],
   "statuses": {},
   "votes": [],
