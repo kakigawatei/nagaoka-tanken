@@ -6,12 +6,11 @@
 import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { validBallot, WEIGHT, RANKS } from './devroom-rules.mjs?v=1';
 
 const CFG = { apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" };
 const TYPES = [["bug", "🐞", "バグ・おかしい所"], ["idea", "💡", "要望・こうしたい"], ["spot", "📷", "名所の情報（名前・写真）"], ["other", "💬", "その他"]];
 const STATUS = { new: ["受付", "#8a7a5c"], planned: ["直します", "#2c6e49"], vote: ["投票中", "#8a5cc4"], done: ["反映済み", "#1f5fa8"], declined: ["見送り", "#a04030"], dup: ["同じ声あり", "#8a7a5c"] };
-const WEIGHT = { bug: 1, idea: 3, spot: 2, other: 1, vote: 0.2, adopted: 3 };
-const RANKS = [[0, "旅人"], [1, "見習い開発者"], [10, "協力隊"], [30, "開発メンバー"], [100, "名誉市民"]];
 let fb = null, notes = null, likesCache = null, myLikes = new Set(), listSort = "new";
 
 function pickApp() { const n = getApps().map(a => a.name); if (n.includes("sugoroku-d04")) return getApp("sugoroku-d04"); if (n.includes("[DEFAULT]")) return getApp(); return initializeApp(CFG); }
@@ -27,15 +26,6 @@ function playerName() {
   try { const k = localStorage.getItem("devroom_name"); if (k) return k; } catch (e) {}
   try { for (const k of Object.keys(localStorage)) { if (/sugoroku/.test(k)) { const v = JSON.parse(localStorage.getItem(k) || "{}"); if (v && typeof v.name === "string" && v.name && v.name !== "旅人") return v.name; } } } catch (e) {}
   return "";
-}
-/* 有効票の判定（画面・貢献点・月曜の取り出しツールで同じ）: 実在する投票・選択肢の範囲内・受付日時（サーバー時刻 createdAt）が開始〜締切の間。createdAt が無い票は無効 */
-function ballotTime(b) { const c = b && b.createdAt; if (c && typeof c.toMillis === "function") return c.toMillis(); if (c && typeof c.seconds === "number") return c.seconds * 1000; return null; }
-function validBallot(b, votes) {
-  const v = votes.find(x => x.id === b.voteId); if (!v) return null;
-  if (!Number.isInteger(b.choice) || b.choice < 0 || b.choice >= v.options.length) return null;
-  const t = ballotTime(b); if (t === null) return null;
-  if (t > Date.parse(v.until) || (v.from && t < Date.parse(v.from))) return null;
-  return v;
 }
 const esc = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const $ = id => document.getElementById(id);
