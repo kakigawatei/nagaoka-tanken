@@ -22,7 +22,7 @@ async function connect() {
   const user = auth.currentUser || (await signInAnonymously(auth)).user;
   fb = { db: getFirestore(app), uid: user.uid }; return fb;
 }
-async function loadNotes() { if (notes) return notes; try { notes = await (await fetch("data/devroom_notes.json?v=" + Math.floor(Date.now() / 3600000))).json(); } catch (e) { notes = {}; } for (const k of ["updates", "votes", "credits", "topics", "tasks"]) notes[k] = notes[k] || []; notes.statuses = notes.statuses || {}; return notes; }
+async function loadNotes() { if (notes) return notes; try { notes = await (await fetch("data/devroom_notes.json?v=" + Math.floor(Date.now() / 600000))).json(); } catch (e) { notes = {}; } for (const k of ["updates", "votes", "credits", "topics", "tasks"]) notes[k] = notes[k] || []; notes.statuses = notes.statuses || {}; return notes; }
 function playerName() {
   try { const k = localStorage.getItem("devroom_name"); if (k) return k; } catch (e) {}
   try { for (const k of Object.keys(localStorage)) { if (/sugoroku/.test(k)) { const v = JSON.parse(localStorage.getItem(k) || "{}"); if (v && typeof v.name === "string" && v.name && v.name !== "旅人") return v.name; } } } catch (e) {}
