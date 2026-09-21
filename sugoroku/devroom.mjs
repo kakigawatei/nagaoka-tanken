@@ -5,7 +5,7 @@
 //   運営側の状態（採用/見送り/返事/更新ノート/お題/募集/投票の定義/貢献の集計）は data/devroom_notes.json（リポジトリ・毎週ポムが更新）
 import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const CFG = { apiKey: "AIzaSyDtDZIEQtBzjujnpTDcXt1QeEU2r-wbg74", authDomain: "kakigawatei-franchise.firebaseapp.com", projectId: "kakigawatei-franchise" };
 const TYPES = [["bug", "🐞", "バグ・おかしい所"], ["idea", "💡", "要望・こうしたい"], ["spot", "📷", "名所の情報（名前・写真）"], ["other", "💬", "その他"]];
@@ -27,6 +27,15 @@ function playerName() {
   try { const k = localStorage.getItem("devroom_name"); if (k) return k; } catch (e) {}
   try { for (const k of Object.keys(localStorage)) { if (/sugoroku/.test(k)) { const v = JSON.parse(localStorage.getItem(k) || "{}"); if (v && typeof v.name === "string" && v.name && v.name !== "旅人") return v.name; } } } catch (e) {}
   return "";
+}
+/* 有効票の判定（画面・貢献点・月曜の取り出しツールで同じ）: 実在する投票・選択肢の範囲内・受付日時（サーバー時刻 createdAt）が開始〜締切の間。createdAt が無い票は無効 */
+function ballotTime(b) { const c = b && b.createdAt; if (c && typeof c.toMillis === "function") return c.toMillis(); if (c && typeof c.seconds === "number") return c.seconds * 1000; return null; }
+function validBallot(b, votes) {
+  const v = votes.find(x => x.id === b.voteId); if (!v) return null;
+  if (!Number.isInteger(b.choice) || b.choice < 0 || b.choice >= v.options.length) return null;
+  const t = ballotTime(b); if (t === null) return null;
+  if (t > Date.parse(v.until) || (v.from && t < Date.parse(v.from))) return null;
+  return v;
 }
 const esc = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const $ = id => document.getElementById(id);
@@ -198,23 +207,22 @@ async function renderNotes() {
 async function renderVote() {
   const box = $("drVote"); box.innerHTML = "<p>読み込み中…</p>";
   const n = await loadNotes(); const votes = n.votes; const now = Date.now();
-  if (!votes.length) { box.innerHTML = "<p>いま投票中のものはありません。要望がぶつかったときに、ここで決めます（48時間・端末ごとに1票・結果は更新ノートに）。</p><p class='dr-note'>投票は参考にする材料で、最終決定は運営です。</p>"; return; }
+  if (!votes.length) { box.innerHTML = "<p>いま投票中のものはありません。要望がぶつかったときに、ここで決めます（48時間・アカウントごとに1票・結果は更新ノートに）。</p><p class='dr-note'>投票は参考にする材料で、最終決定は運営です。</p>"; return; }
   let db, uid; try { ({ db, uid } = await connect()); } catch (e) { box.innerHTML = "<p>読み込めませんでした</p>"; return; }
   const parts = [];
   for (const v of votes) {
     const closed = Date.parse(v.until) < now; let mine = null; const counts = {};
-    const until = Date.parse(v.until), from = v.from ? Date.parse(v.from) : 0;
     try { const snap = await getDocs(query(collection(db, "sugoroku_ballots"), where("voteId", "==", v.id))); snap.forEach(d => { const b = d.data();
-      /* 偽の票は数えない: 選択肢の範囲外・締切後・開始前のものは無効（エル監査 2026-09-21） */
-      if (!Number.isInteger(b.choice) || b.choice < 0 || b.choice >= v.options.length || typeof b.t !== "number" || b.t > until || b.t < from) return;
-      counts[b.choice] = (counts[b.choice] || 0) + 1; if (b.uid === uid) mine = b.choice; }); } catch (e) {}
+      if (b.uid === uid) mine = b.choice;   /* 自分の票は表示用（無効でも押した事実は見せる） */
+      if (!validBallot(b, votes)) return;   /* 偽の票は数えない（エル監査 2026-09-21） */
+      counts[b.choice] = (counts[b.choice] || 0) + 1; }); } catch (e) {}
     const total = Object.values(counts).reduce((a, b) => a + b, 0); const show = closed || mine !== null;
     parts.push(`<div class="vote" data-v="${esc(v.id)}"><b>${esc(v.title)}</b><div style="font-size:12px;color:#8a7a5c">${closed ? "締切" : "締切 " + esc(v.until.slice(5, 16).replace("T", " "))}${total ? " ・ " + total + "票" : ""}${v.result ? " ・ 結果：" + esc(v.result) : ""}</div>${v.body ? `<div style="font-size:13px;margin-top:4px">${esc(v.body)}</div>` : ""}<div class="opts">${v.options.map((o, i) => `<button ${closed ? "disabled" : ""} data-c="${i}" class="${mine === i ? "mine" : ""}">${esc(o)}${show ? `<div class="bar"><i style="width:${total ? Math.round((counts[i] || 0) / total * 100) : 0}%"></i></div><span style="font-size:11px;color:#8a7a5c">${counts[i] || 0}票</span>` : ""}</button>`).join("")}</div></div>`);
   }
-  box.innerHTML = parts.join("") + "<p class='dr-note'>端末ごとに1票（同じ端末からは1回）。投票は参考にする材料で、最終決定は運営です。</p>";
+  box.innerHTML = parts.join("") + "<p class='dr-note'>アカウント（匿名）ごとに1票。投票は参考にする材料で、最終決定は運営です。</p>";
   box.querySelectorAll(".vote").forEach(el => el.querySelectorAll("button[data-c]").forEach(b => b.onclick = async () => {
     const vid = el.dataset.v, c = +b.dataset.c;
-    try { await setDoc(doc(db, "sugoroku_ballots", vid + "_" + uid), { voteId: vid, uid, choice: c, t: Date.now() }); renderVote(); }
+    try { await setDoc(doc(db, "sugoroku_ballots", vid + "_" + uid), { voteId: vid, uid, choice: c, t: Date.now(), createdAt: serverTimestamp() }); renderVote(); }
     catch (e) { alert(e && e.code === "permission-denied" ? "この投票はもう締め切られたか、投票済みです" : "投票できませんでした"); }
   }));
 }
@@ -225,7 +233,7 @@ async function myStats(n) {
   let pts = 0, adopted = 0, pending = 0;
   /* 加点は運営が「直します／反映済み」にした投稿だけ（連投・重複・見送りでは上がらない・エル監査 2026-09-21） */
   for (const r of mine) { const s = n.statuses[r.id]; if (s && (s.status === "done" || s.status === "planned")) { pts += (WEIGHT[r.type] || 1) + WEIGHT.adopted; adopted++; } else if (!s || s.status === "new") pending++; }
-  let votes = 0; try { const vs = await getDocs(query(collection(db, "sugoroku_ballots"), where("uid", "==", uid))); votes = vs.size; pts += votes * WEIGHT.vote; } catch (e) {}
+  let votes = 0; try { const vs = await getDocs(query(collection(db, "sugoroku_ballots"), where("uid", "==", uid))); vs.forEach(d => { if (validBallot(d.data(), n.votes)) votes++; }); pts += votes * WEIGHT.vote; } catch (e) {}   /* 有効票だけ加点（エル再監査） */
   const extra = n.credits.find(c => c.uid === uid); if (extra && extra.bonus) pts += extra.bonus;
   pts = Math.round(pts * 10) / 10; let rank = RANKS[0][1], next = null;
   for (let i = 0; i < RANKS.length; i++) { if (pts >= RANKS[i][0]) rank = RANKS[i][1]; else { next = RANKS[i]; break; } }
