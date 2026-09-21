@@ -235,6 +235,8 @@ async function renderMe() {
 
 /* 入口: 地図右の 🛠（#devTool）とメニューの「開発室」（#devRoomBtn）。?devroom=1 で自動で開く */
 window.addEventListener("DOMContentLoaded", () => {
+  /* 地図右の 🛠 は他の白いボタンと同じ見た目に（index.html の共通 button は朱色） */
+  const st = document.createElement("style"); st.textContent = "#devTool{background:#fff;color:#2a2118;border:1px solid #ccc;box-shadow:0 2px 5px #0002}"; document.head.appendChild(st);
   const b = $("devRoomBtn"); if (b) b.onclick = () => { const p = $("panel"); if (p) p.hidden = true; open("home"); };
   const t = $("devTool"); if (t) t.onclick = () => open("home");
   if (new URLSearchParams(location.search).get("devroom") === "1") setTimeout(() => open("home"), 800);
