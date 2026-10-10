@@ -4,7 +4,11 @@ assets/original/
 # Capacitor（ネイティブ生成物・ビルド成果物。Pages配信に含めない）
 www/
 ios/
-android/
+# android/ はコミットする（Google Play 用・GitHub Actions でAABを組む）。ビルド成果物は android/.gitignore で除外
+android/out_ci/
+*.jks
+*.keystore
+*.pass
 .DS_Store
 
 # 加盟店請求書：口座情報（絶対にコミットしない。公開リポジトリのため）
