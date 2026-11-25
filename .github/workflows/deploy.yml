@@ -37,6 +37,9 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/site
+      # 2026-11-25: 荷物を上げた直後に deploy が「github-pages が見つからない」で落ちることが続いた（荷物は上がっている）→ 少し待ってから公開
+      - name: Wait for artifact to be ready
+        run: sleep 60
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
