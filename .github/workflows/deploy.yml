@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       # 2026-11-25: 公開の中身が 1.3GB になり Pages の上限 1GB を超えて deploy が失敗した。
       # 画面で使わない物（ig の動画＝投稿済みリール・tools＝作業用・android）を公開する荷物からだけ外す（ファイルは消さない）。
       - name: Make site folder (exclude large non-site files)
@@ -34,9 +34,9 @@ jobs:
             --exclude 'node_modules/' --exclude 'ig/*.mp4' --exclude 'ig/*.mov' ./ "$RUNNER_TEMP/site/"
           du -sh "$RUNNER_TEMP/site"
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/site
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
